@@ -1,87 +1,92 @@
 # Repository Guidelines
 
+## Project Context
+
+`td` is a local PC prototype for a Go/Ebitengine tower-defense game. The intended game blends exploration, base-building, resource gathering, and conventional tower-defense combat in a medieval wizardry fantasy setting.
+
+The repository is currently bootstrapped but does not yet contain product feature code. The first implementation plan is `plans/00-initial-ebitengine-menu.md`.
+
 ## ExecPlans
 
-When writing complex features or significant refactors, use an ExecPlan (as described in `PLANS.md`) from design to implementation.
+When writing complex features or significant refactors, use an ExecPlan as described in `PLANS.md`.
 
-Create new ExecPlan files under `plans/` with a two-digit ordering prefix and a short kebab-case name, for example `plans/00-add-feature-x.md` or `plans/01-security-overhaul.md`. Use the next unused number after the highest existing prefixed plan so multiple plans remain easy to scan in sequence.
+Create new ExecPlan files under `plans/` with a two-digit ordering prefix and a short kebab-case name, for example `plans/00-initial-ebitengine-menu.md` or `plans/01-static-prototype-scene.md`. Use the next unused number after the highest existing prefixed plan.
 
-When creating an ExecPlan that adds or changes code, include a final `Progress` and `Concrete Steps` item to check line counts for hand-written code files. Use the `CODESTYLE.md` preference that code files stay below 600 lines. If any file exceeds that preference, list the file and line count, recommend a concrete response such as a refactor, code split, fixture move, helper extraction, library addition, or documented exception, and ask the user to approve that extra work before implementing it unless the accepted plan already included it.
+When creating an ExecPlan that adds or changes code, include a final `Progress` and `Concrete Steps` item to check line counts for hand-written code files. Use the `CODESTYLE.md` preference that code files stay below 600 lines. If any file exceeds that preference, list the file and line count, recommend a concrete response, and ask the user to approve extra work before implementing it unless the accepted plan already included it.
 
 ## Planning and Change Intake
 
-Treat requested changes as suggested directions until the scope, tradeoffs, and long-term consequences are understood. If you see any problem with a requested change, push back before proceeding: explain the concern plainly, ask clarifying questions, and offer concrete alternatives when a different scope, sequence, or implementation would better protect the codebase.
+Treat requested changes as suggested directions until scope, tradeoffs, and long-term consequences are understood. If a requested change would create unclear boundaries, premature abstractions, avoidable technical debt, or product scope drift, explain the concern plainly and offer concrete alternatives before proceeding.
 
-When creating a plan, even a small one, gather as much relevant information as practical from the user and the repository. Ask as many questions as needed to understand feature scope, expected workflows, future extension points, migration risks, maintainability costs, context growth, and how easy the resulting system will be for future contributors to understand.
-
-Do not treat planning for updates, features, or refactors as a quick or lightweight task. Strongly prefer doing the work correctly over doing it quickly, even when the better path is initially more technically complex or requires more upfront effort. If a shortcut would create technical debt, unclear boundaries, hidden coupling, future maintenance drag, or unnecessary context bloat, say so and recommend a more durable approach before implementation.
-
-## Project Bootstrap Skill
-
-Use the repo-local `project-bootstrap` skill for the first customization pass after a user clones this template for a real project. Load `.agents/skills/project-bootstrap/SKILL.md`, gather the project brief and setup requirements, suggest alternatives when the requested stack or sequence creates avoidable risk, update the root control documents with project-specific truth, install only approved setup frameworks or packages, and finish with an ordered ExecPlan for initial setup.
-
-Do not use `project-bootstrap` to implement product feature code. Its job is to prepare the repository and create the plan that later implementation work will follow.
+Planning for gameplay systems should gather enough context about player workflow, future extension points, testing strategy, and maintainability before code changes begin. The current first slice is deliberately small: initialize Go/Ebitengine and create a main menu with a quit option.
 
 ## Core Documents
 
 Treat the root documentation files as durable project control documents:
+
 - `README.md` explains what the project is, how to run it, and how to validate changes.
-- `PRODUCT.md` captures the current user-visible product state, workflows, capability boundaries, and important limitations.
-- `ROADMAP.md` captures the intended product direction, planned capabilities, strategic priorities, and explicit non-priorities.
-- `PLANS.md` defines how ExecPlans must be written and maintained, including final code-file line-count checks for code-changing plans.
-- `CODESTYLE.md` defines source formatting, naming, golang annotation expectations, documentation style, strict commenting standards, and code-file size expectations.
-- `DESIGN.md` captures the semantic design system in descriptive language, backed by concrete values w here needed, and defines the professional UI/UX review pass for UI-affecting ExecPlan work.
-- `ARCHITECTURE.md` captures the high-level codemap, architectural boundaries, and invariants.
+- `PRODUCT.md` captures current user-visible product state, workflows, capability boundaries, and important limitations.
+- `ROADMAP.md` captures intended product direction, planned capabilities, strategic priorities, and explicit non-priorities.
+- `DESIGN.md` captures medieval wizardry visual direction, interaction principles, and visual-review expectations.
+- `PLANS.md` defines how ExecPlans must be written and maintained.
+- `CODESTYLE.md` defines Go source formatting, naming, documentation style, commenting standards, and code-file size expectations.
+- `ARCHITECTURE.md` captures high-level code ownership, boundaries, and invariants.
 
-When a change materially affects current user-visible capabilities, workflows, scope boundaries, or important product limitations, update `PRODUCT.md` in the same change. When a change materially affects product vision, intended audience, strategic priorities, planned capabilities, sequencing assumptions, or explicit non-priorities, update `ROADMAP.md` in the same change. When a change materially affects source coding conventions, naming rules, golang annotation expectations, documentation conventions, or commenting standards, update `CODESTYLE.md` in the same change. When a change materially affects product design language, update `DESIGN.md` in the same change. When a change materially affects structure, ownership, or system boundaries, update `ARCHITECTURE.md` in the same change.
+When a change materially affects current user-visible capabilities, workflows, scope boundaries, or important product limitations, update `PRODUCT.md` in the same change. When a change materially affects product vision, intended audience, strategic priorities, planned capabilities, sequencing assumptions, or explicit non-priorities, update `ROADMAP.md` in the same change. When a change materially affects source conventions, naming rules, documentation conventions, or commenting standards, update `CODESTYLE.md` in the same change. When a change materially affects design language, update `DESIGN.md` in the same change. When a change materially affects structure, ownership, or system boundaries, update `ARCHITECTURE.md` in the same change.
 
-If you introduce a new root-level `ALLCAPS.md` file, treat it as a new control document by default. In the same change:
-- Define the file's purpose and scope inside the file itself.
-- Update this `Core Documents` section so future contributors know the file exists and when it matters.
-- Update `PLANS.md` if ExecPlans are expected to read, update, or validate that file.
-- State what kinds of code or product changes must keep the new file in sync.
+If you introduce a new root-level `ALLCAPS.md` file, treat it as a new control document by default. Define its purpose inside the file, update this section, update `PLANS.md` if ExecPlans must read or validate it, and state what kinds of changes must keep it in sync.
 
+## Project Structure and Module Organization
 
-## Code Style and Commenting Requirements
+The first implementation plan will initialize the Go module. Until then, there is no runtime code.
 
-Follow `CODESTYLE.md` for source formatting, naming rules, documentation style, strict commenting standards, and code-file size expectations. That file is canonical; keep detailed style and commenting rules there instead of duplicating them in this guide.
+Expected layout after initialization:
 
-`CODESTYLE.md` also defines the strong preference to keep hand-written code files below 600 lines and to treat larger files as a review signal, not an automatic refactor mandate.
+- `cmd/td/` contains the executable entry point and Ebitengine startup.
+- `internal/` contains reusable game packages once behavior outgrows the entry point.
+- `assets/` contains static runtime assets once assets exist.
+- `plans/` contains ordered ExecPlans and plan evidence.
+- `.agents/skills/` contains repo-local agent workflows.
+- `.codex/config.toml` contains Codex project defaults, not app configuration.
 
-## Project Structure & Module Organization
-This repository is intentionally minimal at the moment. Keep runtime code in `src/`, tests in `tests/`, keep static assets in `assets/`, portable contributor utilities in `scripts/`, and long-lived documentation in the repository root.
-
-When adding application code, keep the layout simple and predictable:
-- Keep project-scoped Codex configuration in `.codex/config.toml`. The current default model is `gpt-5.5`.
-- Keep repo-local agent workflows in `.agents/skills/`. The `project-bootstrap` skill owns the guided template customization workflow, `ask-questions-if-underspecified` owns high-risk clarification.
-- Put runtime code in a top-level `src/` directory.
-- Mirror tests under `tests/`.
-- Keep static assets in `assets/` if they are needed later.
-- Leave repository-level documentation in the root.
+Keep the layout simple. Do not create a scene framework, ECS, asset pipeline, save system, campaign system, or packaging setup until a plan shows why it is needed.
 
 ## Build, Test, and Development Commands
-There is no checked-in application build or test toolchain yet. The existing npm manifest is only for contributor tooling such as `agent-browser`, Stitch mockup generation, and tests for those utilities. Until an application toolchain is added, use lightweight repo checks:
 
-- `git status` shows pending changes before commit or review.
-- `rg --files --hidden -g '!.git/**'` lists the current file set quickly, including `.codex/config.toml`.
-- `git log --oneline` shows the existing commit style.
+There is no checked-in Go module yet. Until `plans/00-initial-ebitengine-menu.md` is implemented, use lightweight repository checks:
 
-If you introduce a language toolchain, add its canonical commands to this section in the same change. Prefer a single documented entry point such as `make test`, `npm test`, or `pytest`.
+- `rg --files --hidden -g '!.git/**'` lists the current file set.
+- `git diff --check` checks for whitespace errors.
+- `git status --short` shows pending changes.
 
-If you add formatters or linters, run them before opening a PR and document their canonical commands here, in `README.md`, and in `CODESTYLE.md`.
+After the first implementation plan is complete, use:
+
+- `go test ./...` to run all tests.
+- `go run ./cmd/td` to start the local prototype.
+- `go mod tidy` after dependency or import changes.
+
+No Makefile, CI pipeline, release process, license, or packaging workflow is defined yet.
 
 ## Testing Guidelines
-New behavior should ship with tests. Mirror the source layout inside `tests/` and name tests after the unit under test, for example `tests/test_cli.py`.
 
-Because no framework is configured yet, contributors should add a test runner together with any non-trivial code and document how to execute it locally.
+New behavior should ship with tests when it can be exercised without a graphics window. For Ebitengine work, prefer tests around pure behavior such as menu hit testing, action selection, geometry, state transitions, and later gameplay rules.
 
-## Commit & Pull Request Guidelines
-The current history starts with a short imperative commit message: `Initial commit`. Follow that pattern: concise subject line, imperative mood, no trailing period.
+Manual visual validation is acceptable for the first desktop window and menu rendering. Save visual evidence under the active plan directory when a plan changes rendered output.
+
+## Design and Visual Review
+
+Follow `DESIGN.md` for the medieval wizardry direction. UI changes should prioritize readable text, stable hit targets, and clear interaction states before decorative styling.
+
+When work affects rendered game output, the ExecPlan should say what screenshot or visual evidence will be captured. If there is no existing runnable app, record that no screenshotable baseline exists before implementation and capture the first rendered result after implementation.
+
+## Commit and Pull Request Guidelines
+
+Follow the existing short imperative commit style, such as `Initial commit`.
 
 Pull requests should explain:
+
 - What changed
 - Why it changed
 - How it was validated
 
-Include linked issues when applicable. Add screenshots only when the change affects rendered output or documentation presentation.
-
+Include screenshots when the change affects rendered game output or documentation presentation.

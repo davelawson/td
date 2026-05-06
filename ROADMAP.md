@@ -1,104 +1,61 @@
-# Product Roadmap: [Project Name]
+# Product Roadmap: td
 
-Use this document as the durable source of truth for where the product is intended to go. Its purpose is to answer, at any given moment, "what future state are we aiming toward, and which product directions matter most?"
+`ROADMAP.md` is the durable source of truth for where `td` is intended to go. Update it when the long-lived product vision, intended audience, planned capabilities, sequencing assumptions, or explicit non-priorities change.
 
-This file is for durable product direction. Update it when the repository's long-lived product vision, intended audience, strategic priorities, planned capabilities, sequencing assumptions, or explicit non-priorities change in a meaningful way.
+## Product Vision
 
-This file is not a ticket backlog, sprint board, or implementation spec. Keep it focused on medium- and long-lived direction rather than day-to-day execution. Concrete implementation work should still be described in ExecPlans and code changes.
+`td` is intended to become a local PC tower-defense game where a player explores a fantasy environment, gathers resources, builds and improves a base, and then survives tower-defense threats. The game direction is medieval wizardry: spellcraft, enchanted structures, hostile creatures, and readable tactical spaces should carry the identity more than modern military or sci-fi motifs.
 
-## 1. Product Vision
+The mature game should make preparation and defense feel connected. Exploration and resource gathering should feed base-building decisions, while base layout and magical tower choices should matter during conventional wave-defense encounters.
 
-Describe the intended future of the product in a few paragraphs.
+## Intended Users and End State
 
-Cover:
-- who the product is ultimately for
-- what core job it should help them do
-- what makes the product worth choosing
-- what kind of product it is trying to become over time
+The primary intended user is a single local PC player who likes strategy games with planning, spatial pressure, and progression. Success means the player can make understandable choices before an attack, watch those choices affect the defense, and improve their next attempt through better exploration, gathering, and building.
 
-Example starter:
+The secondary user is the developer maintaining the prototype. Success for this user means the project remains small, understandable, and easy to test while the core loop is still uncertain.
 
-"[Project Name] is intended to become [type of product] for [user]. In its mature form, it helps them [core job] with emphasis on [key differentiators]."
+## Strategic Principles
 
-## 2. Intended Users and End State
+- Prove one observable workflow at a time before expanding game systems.
+- Keep the local desktop prototype simple until the core loop is fun.
+- Prefer clear, deterministic gameplay code over premature framework abstractions.
+- Let medieval wizardry shape visual language, naming, and later content choices.
+- Treat save/load, campaign structure, and distribution as later work.
 
-Describe the users or operators the product is meant to serve as it matures.
+## Current Phase
 
-For each one, explain:
-- who they are
-- what their larger objective is
-- what success would look like for them in the intended end state
+The current phase is prototype foundation. The immediate goal is not to make a tower-defense encounter; it is to create a runnable Ebitengine app with a visible main menu and a clean quit path, proving the repository can build, run, test, and show a game window.
 
-It is acceptable for this section to be broader than `PRODUCT.md`, because this file is about where the product is going rather than what it supports today.
+## Near-Term Priorities
 
-## 3. Strategic Principles
+The first priority is `plans/00-initial-ebitengine-menu.md`: initialize Go and Ebitengine, create a minimal app entry point, draw a main menu, and make the quit option close the app cleanly.
 
-State the durable product principles that should guide prioritization and tradeoffs.
+After that, the next likely priorities are a static prototype scene, simple input handling, a placeholder map, and an early tower-defense loop with fixed paths and placeholder shapes. These should remain separate plans so the codebase grows from verified behavior rather than speculative architecture.
 
-Examples:
-- prefer fast individual workflows over deep customization
-- optimize for internal operators before self-serve external users
-- make collaboration a later concern, not an initial one
-- keep the product understandable by first-time users within minutes
+## Later Opportunities
 
-These should be stable enough that they meaningfully guide future plans.
+Later roadmap opportunities include exploration spaces, resource nodes, base-building placement rules, magical tower archetypes, enemy waves, combat resolution, UI panels, art assets, audio, progression, and eventually platform packaging.
 
-## 4. Current Phase
+Campaign structure and save/load may become important after the prototype has enough systems to preserve meaningful progress. They are intentionally not part of the first phase.
 
-Describe the current phase of the roadmap in plain language.
+## Explicit Non-Priorities
 
-Examples:
-- proving the core workflow
-- hardening an internal tool
-- expanding from single-user to team workflows
-- preparing for external beta
+The current roadmap window does not prioritize saving games, campaign progression, multiplayer, online services, mod support, release packaging, Steam integration, analytics, or production art pipelines.
 
-This section should explain what the present phase is trying to achieve, not merely list tasks.
+## Relationship To Other Control Documents
 
-## 5. Near-Term Priorities
+- `PRODUCT.md` describes current product truth.
+- `README.md` explains onboarding, status, commands, and layout.
+- `DESIGN.md` captures the intended fantasy visual language.
+- `ARCHITECTURE.md` describes intended code structure and boundaries.
+- `CODESTYLE.md` describes source conventions.
+- `PLANS.md` describes how substantial work is planned.
+- `AGENTS.md` describes repository-specific coding-agent behavior.
 
-Describe the major capabilities or product improvements that should happen next.
+`ROADMAP.md` may describe capabilities that do not exist yet. `PRODUCT.md` should only describe current reality.
 
-For each priority, state:
-- what outcome it is meant to unlock
-- why it matters now
-- what kinds of work are likely to follow from it
+## Open Questions
 
-Keep this at roadmap level. Do not turn it into a checklist of implementation tickets.
-
-Current template-level priority: improve UI planning workflows so agents can
-show multiple visual options before implementation, use supplied samples as
-style references, and preserve the selected direction as durable plan evidence.
-
-## 6. Later Opportunities
-
-Describe important opportunities that are plausible or desirable, but not immediate priorities.
-
-This section helps contributors distinguish "important later" from "important now."
-
-## 7. Explicit Non-Priorities
-
-State which ideas, user segments, or capabilities are intentionally not being prioritized in the current roadmap window.
-
-This section exists to prevent accidental scope drift. If a proposal would change one of these non-priorities, that should be treated as a roadmap change, not a routine implementation detail.
-
-## 8. Relationship To Other Control Documents
-
-Use this file together with the other root documents:
-
-- `README.md` explains what the repository is, how to run it, and how to contribute.
-- `PRODUCT.md` explains what the product currently does today.
-- `CODESTYLE.md` explains source formatting, naming, TypeScript annotation expectations, documentation style, strict commenting standards, and code-file size expectations.
-- `ARCHITECTURE.md` explains how the system is structured internally.
-- `PLANS.md` explains how substantial changes should be planned and executed.
-- `AGENTS.md` explains repository-specific instructions for coding agents.
-
-`ROADMAP.md` may intentionally describe capabilities that do not yet exist. `PRODUCT.md` should only describe capabilities that exist now. When these files differ, treat `ROADMAP.md` as future intent and `PRODUCT.md` as current reality.
-
-## 9. Open Questions
-
-Track durable product-direction questions that are important enough to stay visible but are not yet settled.
-
-- [Question]
-- [Question]
-
+- How should exploration transition into tower-defense encounters?
+- What resources should the player gather, and how should they constrain base-building?
+- Should the long-term game use tile-based maps, freeform placement, or another spatial model?

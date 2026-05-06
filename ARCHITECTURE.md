@@ -1,148 +1,93 @@
-# Architecture: [Project Name]
+# Architecture: td
 
-Keep this document short, stable, and practical. Its job is to help a new contributor answer two questions quickly:
+`ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-1. Where does the thing that does X live?
-2. What architectural boundaries or invariants must I not break while changing it?
-
-Prefer durable structure over transient details. Name important directories, modules, entry points, and types, but do not turn this file into low-level implementation notes.
+The repository does not yet contain runtime code. The first implementation plan will initialize Go and Ebitengine.
 
 ## System Overview
 
-Describe the problem the project solves from a user's perspective.
+`td` is a local PC tower-defense game prototype. The intended game combines exploration, base-building, resource gathering, and conventional tower-defense combat in a medieval wizardry fantasy setting.
 
-Cover:
-- What the system does.
-- The main kinds of users or operators.
-- The most important user-visible workflows.
-- The one-sentence explanation of how the codebase is organized to support those workflows.
-
-Example starter:
-
-"[Project Name] lets [user] do [core job]. The codebase is organized around [major layers or subsystems], with [boundary] separating [concern A] from [concern B]."
+The planned codebase should be organized around a small Ebitengine executable in `cmd/td/` and reusable internal packages under `internal/`. Early code should keep menu state, rendering, input handling, and game-loop wiring easy to understand before larger gameplay systems are introduced.
 
 ## Codemap
 
-List the main code areas and what each one owns. Keep it at the level of directories, packages, services, major modules, or top-level entry points.
+- `cmd/td/` will own the executable entry point, Ebitengine window setup, and process startup.
+- `internal/menu/` may own main-menu state, button hit testing, and menu actions once the first screen has enough behavior to justify a package.
+- `internal/game/` may later own top-level game state and transitions between menu, exploration, base-building, and defense scenes.
+- `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
+- `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
+- `plans/` stores ordered ExecPlans. `plans/00-initial-ebitengine-menu.md` is the first implementation plan.
+- `.agents/skills/` stores repo-local agent workflows.
+- `.codex/config.toml` stores Codex defaults only; it is not application configuration.
 
-Suggested shape:
-- `src/[entrypoint]` - Starts the application, wires dependencies, and owns process startup.
-- `src/[feature_or_domain]` - Contains the core business rules for ...
-- `src/[api_or_transport]` - Accepts external requests and translates them into domain operations.
-- `src/[storage_or_infra]` - Talks to databases, queues, filesystems, or external APIs.
-- `CODESTYLE.md` - Owns source formatting, naming, TypeScript annotation expectations, documentation style, strict commenting standards, and code-file size expectations for template-derived code.
-- `.codex/config.toml` - Owns project-scoped Codex defaults, including the default model used by trusted Codex sessions.
-- `.agents/skills/` - Owns repo-local agent workflows. `project-bootstrap` guides the first template-to-project customization pass, `ask-questions-if-underspecified` protects unclear work from premature implementation, `agent-browser` points agents to version-matched browser automation guidance, `review-ui-screenshots` defines the deliberate post-capture UX inspection pass for UI evidence, and `ui-mockups` defines the pre-implementation workflow for generating selectable Stitch-backed UI mockup options.
-- `plans/` - Stores ExecPlans for substantial work. Plan filenames use two-digit prefixes, such as `00-add-feature-x.md`, so multiple plans sort in the order they were created. UI-affecting plans also reserve `plans/<name-of-plan>/screenshots/` for explicit before-and-after screenshot steps, `plans/<name-of-plan>/mockups/` for optional pre-implementation mockup options, and should name the screenshot UX review step, while code-changing plans end with a hand-written code-file line-count review.
-- `scripts/` - Stores portable contributor utilities that should work from any clone in the expected environment. `scripts/win-screenshot` captures the full Windows desktop from Windows 11 with WSL by invoking Windows PowerShell and the Win32 desktop capture APIs. `scripts/stitch-mockups.mjs` and its helper modules under `scripts/stitch-mockups/` generate Google Stitch mockup options and local reference-style summaries for active ExecPlans.
-- `tests/` - Mirrors `src/` and verifies ...
-- `assets/` - Stores static assets used by ...
-
-Add more sections only when the project genuinely needs them.
+Do not create packages before they have a clear responsibility. A single small `cmd/td/main.go` is acceptable for the first menu slice if it remains easy to read and testable behavior is factored out when needed.
 
 ## Main Flows
 
-Describe the few core request or data flows that matter most.
+### First Planned App Flow
 
-Use prose or a short numbered list. For each flow, state:
-- Where it starts.
-- Which layers it passes through.
-- Where side effects happen.
-- Where validation, authorization, persistence, or rendering decisions are made.
+1. A contributor runs `go run ./cmd/td` from the repository root after the first implementation plan is complete.
+2. `cmd/td` configures an Ebitengine window and starts the game loop.
+3. Ebitengine calls `Update` for input and state changes, `Draw` for rendering, and `Layout` for logical screen sizing.
+4. The main menu renders a title and a quit option.
+5. When the user activates quit, `Update` returns Ebitengine's termination signal so the desktop app closes cleanly.
 
-Template:
-1. A [request/event/user action] enters through `[path or module]`.
-2. `[module]` validates and normalizes the input.
-3. `[module]` applies the core business rules.
-4. `[module]` performs side effects such as persistence, network calls, or rendering.
-5. `[module]` returns a result to `[caller or UI]`.
+### Future Gameplay Flow
 
-Template bootstrap flow:
-1. A contributor clones the template and asks Codex to use `.agents/skills/project-bootstrap/SKILL.md`.
-2. The skill instructs the agent to inspect the current clone, gather the product brief, challenge risky choices, and confirm the bootstrap scope.
-3. The agent updates root control documents and installs approved setup tooling without implementing product feature code.
-4. The agent writes the next ordered ExecPlan under `plans/` so the first implementation slice can proceed from repository context instead of chat history; if the planned work can affect frontend presentation, the plan includes explicit baseline screenshot capture, after-implementation screenshot capture, and screenshot UX review steps.
+1. A player starts from the menu.
+2. The game enters an exploration or base-management scene.
+3. The player gathers resources and builds or upgrades defenses.
+4. A tower-defense encounter applies enemy movement, tower targeting, damage, resource changes, and win or loss conditions.
+5. The game returns results to the player through the UI and later progression systems.
 
-UI mockup selection flow:
-1. A contributor planning meaningful UI work invokes `.agents/skills/ui-mockups/SKILL.md` while authoring or refining an ExecPlan.
-2. The skill instructs the agent to read `DESIGN.md`, the active plan, and any supplied local reference image or Stitch export bundle.
-3. The agent runs `npm run stitch:mockups` with `STITCH_API_KEY` or OAuth-based Stitch credentials. The script copies approved local reference artifacts, extracts style signals with Cheerio and css-tree, calls Google Stitch through `@google/stitch-sdk`, and writes option artifacts under `plans/<plan-stem>/mockups/`.
-4. The agent presents the generated options to the user, waits for a selected or hybrid direction, then records that decision in the plan before implementation begins.
+This future flow is roadmap intent, not current behavior.
 
 ## Architectural Invariants
 
-State the rules that should stay true even as the code changes.
+- Keep Ebitengine process startup in `cmd/td/`.
+- Keep reusable game logic in `internal/` packages when it outgrows the entry point.
+- Keep pure state transitions and hit testing testable without opening a graphics window.
+- Do not let rendering helpers own gameplay rules.
+- Do not introduce save, campaign, networking, or distribution architecture during the first menu slice.
+- Keep `.codex/config.toml` limited to agent configuration.
 
-Examples:
-- Domain logic does not import UI code.
-- Transport handlers do not contain business rules.
-- Persistence code is the only layer allowed to know table or collection layout.
-- Feature modules may depend on shared utilities, but shared utilities may not depend on feature modules.
-- Tests should verify behavior through public entry points before relying on internals.
+## Boundaries and External Dependencies
 
-Write the invariants that matter for this repository, not generic ones.
+The first external runtime dependency will be Ebitengine through `github.com/hajimehoshi/ebiten/v2`. It owns the desktop window, game loop, drawing surface, and input APIs. Game code should treat Ebitengine callbacks as the boundary between OS/window events and project-owned state.
 
-## Boundaries & External Dependencies
-
-Call out important system boundaries and what crosses them.
-
-Examples:
-- Browser to server boundary.
-- API layer to domain layer boundary.
-- Domain layer to persistence boundary.
-- Application to third-party service boundary.
-- Build-time generation to runtime execution boundary.
-
-For each boundary, note:
-- Which module owns it.
-- What type of data crosses it.
-- What must be validated or translated there.
+Go module files will be introduced by the first ExecPlan. Until then, there are no application dependencies.
 
 ## Cross-Cutting Concerns
 
-Document the concerns that affect multiple areas of the codebase.
-
-Possible topics:
-- Authentication and authorization.
-- Logging and observability.
-- Error handling.
-- Configuration and secrets.
-- Performance constraints.
-- Background jobs or asynchronous work.
-- Caching.
-- Accessibility.
-- Multi-tenancy.
-
-Only include the concerns that materially shape the project.
-
 ### Configuration
 
-Codex-specific defaults live in `.codex/config.toml`. Keep this file limited to project-scoped agent configuration; do not use it as an application configuration file once runtime code exists.
+There is no application configuration system yet. If configuration becomes necessary, prefer explicit Go constants for prototype-only values before adding config files.
 
-Stitch mockup generation reads `STITCH_API_KEY`, or `STITCH_ACCESS_TOKEN` with `GOOGLE_CLOUD_PROJECT`, from the local environment. `.env.example` documents the variable names, but real credentials must stay untracked.
+### Assets
+
+There are no real assets yet. Early prototypes may draw shapes and text directly. When assets arrive, store them under `assets/` and keep loading code separated from gameplay rules.
+
+### Testing
+
+Use `go test ./...` after the Go module exists. Prefer tests for pure behavior such as button hit testing, menu action selection, state transitions, map rules, and combat calculations.
+
+### Accessibility and Usability
+
+Menus should have readable text, clear interaction states, and stable targets. Keyboard navigation should be considered once the menu has more than the first quit action.
 
 ## How To Extend The System Safely
 
-Give a new contributor a short playbook for common changes.
+To add the first executable app, follow `plans/00-initial-ebitengine-menu.md` instead of improvising from chat history.
 
-Template prompts:
-- To add a new feature, start in ...
-- To add a new external integration, extend ...
-- To add a new page or screen, wire it through ...
-- To change shared data shapes, update ... and then validate ...
-- To change the default Codex model, update `.codex/config.toml` and the control documents that describe the agent workflow.
-- To customize a fresh clone for a real project, use `.agents/skills/project-bootstrap/SKILL.md`, then execute the ordered ExecPlan it creates in a later implementation pass.
-- To add or change repo-local agent workflows, keep them under `.agents/skills/`, make the frontmatter trigger description specific, and update `README.md`, `PRODUCT.md`, `ARCHITECTURE.md`, and `AGENTS.md` when the workflow changes how contributors use the template.
-- To change source conventions or commenting standards, update `CODESTYLE.md` and remove duplicated wording from other control documents.
-- To add or change portable contributor tools, keep them under `scripts/`, document their environment assumptions in `README.md` and `AGENTS.md`, and validate them from a fresh repository-relative command when practical.
-- To generate pre-implementation UI mockups, create or continue the relevant ExecPlan, use `.agents/skills/ui-mockups/SKILL.md`, run `npm run stitch:mockups`, save artifacts under `plans/<plan-stem>/mockups/`, and record the user's selected direction before editing UI code.
+To add a new screen later, keep the transition logic explicit and avoid building a large scene framework before there are at least two or three real screens with shared needs.
 
-If there are common mistakes, name them explicitly.
+To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input.
+
+To add assets, place files under `assets/`, document source and licensing, and avoid mixing asset-loading details into gameplay rules.
 
 ## Open Questions
 
-Track unresolved architectural questions that should stay visible.
-
-- [Question]
-- [Question]
-
+- What package boundaries will be useful after the first menu screen exists?
+- Should the project use a custom scene manager, or keep explicit state transitions until repetition appears?
+- What base resolution should become the long-term rendering target?
