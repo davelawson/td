@@ -1,0 +1,148 @@
+# Architecture: [Project Name]
+
+Keep this document short, stable, and practical. Its job is to help a new contributor answer two questions quickly:
+
+1. Where does the thing that does X live?
+2. What architectural boundaries or invariants must I not break while changing it?
+
+Prefer durable structure over transient details. Name important directories, modules, entry points, and types, but do not turn this file into low-level implementation notes.
+
+## System Overview
+
+Describe the problem the project solves from a user's perspective.
+
+Cover:
+- What the system does.
+- The main kinds of users or operators.
+- The most important user-visible workflows.
+- The one-sentence explanation of how the codebase is organized to support those workflows.
+
+Example starter:
+
+"[Project Name] lets [user] do [core job]. The codebase is organized around [major layers or subsystems], with [boundary] separating [concern A] from [concern B]."
+
+## Codemap
+
+List the main code areas and what each one owns. Keep it at the level of directories, packages, services, major modules, or top-level entry points.
+
+Suggested shape:
+- `src/[entrypoint]` - Starts the application, wires dependencies, and owns process startup.
+- `src/[feature_or_domain]` - Contains the core business rules for ...
+- `src/[api_or_transport]` - Accepts external requests and translates them into domain operations.
+- `src/[storage_or_infra]` - Talks to databases, queues, filesystems, or external APIs.
+- `CODESTYLE.md` - Owns source formatting, naming, TypeScript annotation expectations, documentation style, strict commenting standards, and code-file size expectations for template-derived code.
+- `.codex/config.toml` - Owns project-scoped Codex defaults, including the default model used by trusted Codex sessions.
+- `.agents/skills/` - Owns repo-local agent workflows. `project-bootstrap` guides the first template-to-project customization pass, `ask-questions-if-underspecified` protects unclear work from premature implementation, `agent-browser` points agents to version-matched browser automation guidance, `review-ui-screenshots` defines the deliberate post-capture UX inspection pass for UI evidence, and `ui-mockups` defines the pre-implementation workflow for generating selectable Stitch-backed UI mockup options.
+- `plans/` - Stores ExecPlans for substantial work. Plan filenames use two-digit prefixes, such as `00-add-feature-x.md`, so multiple plans sort in the order they were created. UI-affecting plans also reserve `plans/<name-of-plan>/screenshots/` for explicit before-and-after screenshot steps, `plans/<name-of-plan>/mockups/` for optional pre-implementation mockup options, and should name the screenshot UX review step, while code-changing plans end with a hand-written code-file line-count review.
+- `scripts/` - Stores portable contributor utilities that should work from any clone in the expected environment. `scripts/win-screenshot` captures the full Windows desktop from Windows 11 with WSL by invoking Windows PowerShell and the Win32 desktop capture APIs. `scripts/stitch-mockups.mjs` and its helper modules under `scripts/stitch-mockups/` generate Google Stitch mockup options and local reference-style summaries for active ExecPlans.
+- `tests/` - Mirrors `src/` and verifies ...
+- `assets/` - Stores static assets used by ...
+
+Add more sections only when the project genuinely needs them.
+
+## Main Flows
+
+Describe the few core request or data flows that matter most.
+
+Use prose or a short numbered list. For each flow, state:
+- Where it starts.
+- Which layers it passes through.
+- Where side effects happen.
+- Where validation, authorization, persistence, or rendering decisions are made.
+
+Template:
+1. A [request/event/user action] enters through `[path or module]`.
+2. `[module]` validates and normalizes the input.
+3. `[module]` applies the core business rules.
+4. `[module]` performs side effects such as persistence, network calls, or rendering.
+5. `[module]` returns a result to `[caller or UI]`.
+
+Template bootstrap flow:
+1. A contributor clones the template and asks Codex to use `.agents/skills/project-bootstrap/SKILL.md`.
+2. The skill instructs the agent to inspect the current clone, gather the product brief, challenge risky choices, and confirm the bootstrap scope.
+3. The agent updates root control documents and installs approved setup tooling without implementing product feature code.
+4. The agent writes the next ordered ExecPlan under `plans/` so the first implementation slice can proceed from repository context instead of chat history; if the planned work can affect frontend presentation, the plan includes explicit baseline screenshot capture, after-implementation screenshot capture, and screenshot UX review steps.
+
+UI mockup selection flow:
+1. A contributor planning meaningful UI work invokes `.agents/skills/ui-mockups/SKILL.md` while authoring or refining an ExecPlan.
+2. The skill instructs the agent to read `DESIGN.md`, the active plan, and any supplied local reference image or Stitch export bundle.
+3. The agent runs `npm run stitch:mockups` with `STITCH_API_KEY` or OAuth-based Stitch credentials. The script copies approved local reference artifacts, extracts style signals with Cheerio and css-tree, calls Google Stitch through `@google/stitch-sdk`, and writes option artifacts under `plans/<plan-stem>/mockups/`.
+4. The agent presents the generated options to the user, waits for a selected or hybrid direction, then records that decision in the plan before implementation begins.
+
+## Architectural Invariants
+
+State the rules that should stay true even as the code changes.
+
+Examples:
+- Domain logic does not import UI code.
+- Transport handlers do not contain business rules.
+- Persistence code is the only layer allowed to know table or collection layout.
+- Feature modules may depend on shared utilities, but shared utilities may not depend on feature modules.
+- Tests should verify behavior through public entry points before relying on internals.
+
+Write the invariants that matter for this repository, not generic ones.
+
+## Boundaries & External Dependencies
+
+Call out important system boundaries and what crosses them.
+
+Examples:
+- Browser to server boundary.
+- API layer to domain layer boundary.
+- Domain layer to persistence boundary.
+- Application to third-party service boundary.
+- Build-time generation to runtime execution boundary.
+
+For each boundary, note:
+- Which module owns it.
+- What type of data crosses it.
+- What must be validated or translated there.
+
+## Cross-Cutting Concerns
+
+Document the concerns that affect multiple areas of the codebase.
+
+Possible topics:
+- Authentication and authorization.
+- Logging and observability.
+- Error handling.
+- Configuration and secrets.
+- Performance constraints.
+- Background jobs or asynchronous work.
+- Caching.
+- Accessibility.
+- Multi-tenancy.
+
+Only include the concerns that materially shape the project.
+
+### Configuration
+
+Codex-specific defaults live in `.codex/config.toml`. Keep this file limited to project-scoped agent configuration; do not use it as an application configuration file once runtime code exists.
+
+Stitch mockup generation reads `STITCH_API_KEY`, or `STITCH_ACCESS_TOKEN` with `GOOGLE_CLOUD_PROJECT`, from the local environment. `.env.example` documents the variable names, but real credentials must stay untracked.
+
+## How To Extend The System Safely
+
+Give a new contributor a short playbook for common changes.
+
+Template prompts:
+- To add a new feature, start in ...
+- To add a new external integration, extend ...
+- To add a new page or screen, wire it through ...
+- To change shared data shapes, update ... and then validate ...
+- To change the default Codex model, update `.codex/config.toml` and the control documents that describe the agent workflow.
+- To customize a fresh clone for a real project, use `.agents/skills/project-bootstrap/SKILL.md`, then execute the ordered ExecPlan it creates in a later implementation pass.
+- To add or change repo-local agent workflows, keep them under `.agents/skills/`, make the frontmatter trigger description specific, and update `README.md`, `PRODUCT.md`, `ARCHITECTURE.md`, and `AGENTS.md` when the workflow changes how contributors use the template.
+- To change source conventions or commenting standards, update `CODESTYLE.md` and remove duplicated wording from other control documents.
+- To add or change portable contributor tools, keep them under `scripts/`, document their environment assumptions in `README.md` and `AGENTS.md`, and validate them from a fresh repository-relative command when practical.
+- To generate pre-implementation UI mockups, create or continue the relevant ExecPlan, use `.agents/skills/ui-mockups/SKILL.md`, run `npm run stitch:mockups`, save artifacts under `plans/<plan-stem>/mockups/`, and record the user's selected direction before editing UI code.
+
+If there are common mistakes, name them explicitly.
+
+## Open Questions
+
+Track unresolved architectural questions that should stay visible.
+
+- [Question]
+- [Question]
+
