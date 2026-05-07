@@ -2,13 +2,13 @@
 
 `td` is a local PC prototype for a 2D tower-defense game built with Go and Ebitengine. The intended game combines exploration, base-building, resource gathering, and conventional tower-defense combat in a medieval wizardry fantasy setting.
 
-The repository now contains the first runnable prototype slice: a Go/Ebitengine desktop app with a main menu and a quit option. Gameplay systems and static assets have not been implemented yet.
+The repository now contains a small runnable prototype shell: a Go/Ebitengine desktop app with a main menu, placeholder New Game and Settings screens, a disabled Load option, and a quit option. Gameplay systems, real settings, save/load behavior, and static assets have not been implemented yet.
 
 ## Current Status
 
 - Stage: local runnable prototype foundation.
 - Runtime stack: Go with Ebitengine.
-- Current playable slice: a desktop app that shows a main menu with a quit option; pressing quit closes the app.
+- Current playable slice: a desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` and `Settings` open placeholder screens with `Back` buttons, `Load` is disabled, and `Quit` closes the app.
 - Current non-goals: saving games and campaign structure.
 - Repository operations such as license, CI, release packaging, and distribution are intentionally deferred.
 

@@ -6,11 +6,11 @@
 
 `td` is planned as a PC tower-defense game prototype for a single local player. The intended game blends exploration, base-building, resource gathering, and conventional tower-defense encounters in a medieval wizardry fantasy setting.
 
-The current repository ships the smallest playable shell: a local Go/Ebitengine desktop app that opens a main menu and can quit cleanly. It does not yet include tower-defense gameplay, exploration, base-building, resources, saves, campaign structure, art assets, release packaging, or CI.
+The current repository ships a small playable shell: a local Go/Ebitengine desktop app that opens a main menu, can navigate to placeholder New Game and Settings screens, shows Load as disabled, and can quit cleanly. It does not yet include tower-defense gameplay, exploration, base-building, resources, saves, real settings, campaign structure, art assets, release packaging, or CI.
 
 ## Users and Jobs To Be Done
 
-The current user is the developer-player validating whether the game can become a playable local prototype. Their immediate job is to run the desktop application, confirm that a visible game window appears, and confirm that the quit path closes cleanly.
+The current user is the developer-player validating whether the game can become a playable local prototype. Their immediate job is to run the desktop application, confirm that a visible game window appears, navigate the small menu flow, and confirm that the quit path closes cleanly.
 
 Future players are expected to want a strategy game where they explore, build a base, gather resources, and defend against threats with tower-defense mechanics. Those systems do not exist yet and belong to the roadmap rather than current product truth.
 
@@ -26,15 +26,15 @@ Future players are expected to want a strategy game where they explore, build a 
 
 ### Planning Workflow
 
-`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. The first plan is `plans/00-initial-ebitengine-menu.md`, which initializes the Go module and Ebitengine app and creates the first menu screen.
+`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. `plans/00-initial-ebitengine-menu.md` initialized the Go module and Ebitengine app. `plans/01-expanded-main-menu.md` expands the main menu flow.
 
 ### Runtime Shell
 
-`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, pure menu behavior under `internal/menu/`, and Go tests for menu hit testing and action selection.
+`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, pure menu behavior under `internal/menu/`, and Go tests for menu hit testing, disabled menu targets, and action selection.
 
 ### Missing Gameplay And Operations
 
-`Core`: There is currently no tower-defense encounter, exploration, base-building, resource gathering, asset pipeline, save system, campaign system, CI pipeline, license, or release packaging.
+`Core`: There is currently no tower-defense encounter, exploration, base-building, resource gathering, asset pipeline, save system, settings implementation, campaign system, CI pipeline, license, or release packaging.
 
 ## Core Workflows
 
@@ -44,14 +44,15 @@ A contributor opens the repository, reads the root control documents, and sees t
 
 ### Main Menu Workflow
 
-A contributor runs `go run ./cmd/td`, sees a desktop window titled `td` with a medieval wizardry main menu, clicks the quit option, and observes the app closing cleanly.
+A contributor runs `go run ./cmd/td` and sees a desktop window titled `td` with a medieval wizardry main menu. The menu offers `New`, `Load`, `Settings`, and `Quit`. Clicking `New` opens a placeholder New Game screen with a `Back` button. Clicking `Settings` opens a placeholder Settings screen with a `Back` button. Clicking either `Back` button returns to the main menu. `Load` is visibly disabled and does nothing because saving and loading do not exist yet. Clicking `Quit` closes the app cleanly.
 
 ## Product Constraints and Known Limits
 
 - The current target is a local prototype only.
 - Distribution, release packaging, CI, license selection, and store targets are deferred.
-- The first playable version intentionally includes only a main menu and quit behavior.
+- The current playable shell intentionally includes only a small menu flow and quit behavior.
 - Saving the game and campaign structure are explicit non-goals for the first phase.
+- Settings are represented only by a placeholder screen; no configurable options exist yet.
 - Exploration, base-building, resource gathering, and tower-defense gameplay are intended but not implemented.
 
 ## Non-Goals

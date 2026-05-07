@@ -8,13 +8,60 @@ import (
 	"path/filepath"
 	"testing"
 
+	"td/internal/menu"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type screenshotGame struct {
 	*game
-	path     string
-	captured bool
+	targets []screenshotTarget
+	index   int
+}
+
+type screenshotTarget struct {
+	mode screenMode
+	path string
+}
+
+// TestHandleActionRoutesMenuScreens verifies menu actions change screens or quit.
+func TestHandleActionRoutesMenuScreens(t *testing.T) {
+	game, err := newGame()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := game.handleAction(menu.ActionNew); err != nil {
+		t.Fatal(err)
+	}
+	if game.screen != screenNewGame {
+		t.Fatalf("screen = %v, want %v", game.screen, screenNewGame)
+	}
+
+	if err := game.handleAction(menu.ActionBack); err != nil {
+		t.Fatal(err)
+	}
+	if game.screen != screenMainMenu {
+		t.Fatalf("screen = %v, want %v", game.screen, screenMainMenu)
+	}
+
+	if err := game.handleAction(menu.ActionSettings); err != nil {
+		t.Fatal(err)
+	}
+	if game.screen != screenSettings {
+		t.Fatalf("screen = %v, want %v", game.screen, screenSettings)
+	}
+
+	if err := game.handleAction(menu.ActionNone); err != nil {
+		t.Fatal(err)
+	}
+	if game.screen != screenSettings {
+		t.Fatalf("screen = %v, want %v", game.screen, screenSettings)
+	}
+
+	if err := game.handleAction(menu.ActionQuit); !errors.Is(err, ebiten.Termination) {
+		t.Fatalf("handleAction(ActionQuit) = %v, want ebiten.Termination", err)
+	}
 }
 
 // TestCaptureMainMenuScreenshot writes visual evidence when explicitly enabled.
@@ -28,38 +75,48 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	path := filepath.Join("..", "..", "plans", "00-initial-ebitengine-menu", "screenshots", "main-menu.png")
-	capture := &screenshotGame{game: game, path: path}
+	basePath := filepath.Join("..", "..", "plans", "01-expanded-main-menu", "screenshots")
+	capture := &screenshotGame{
+		game: game,
+		targets: []screenshotTarget{
+			{mode: screenMainMenu, path: filepath.Join(basePath, "main-menu.png")},
+			{mode: screenNewGame, path: filepath.Join(basePath, "new-game-placeholder.png")},
+			{mode: screenSettings, path: filepath.Join(basePath, "settings-placeholder.png")},
+		},
+	}
 
 	ebiten.SetWindowTitle("td")
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	if err := ebiten.RunGame(capture); err != nil && !errors.Is(err, ebiten.Termination) {
 		t.Fatal(err)
 	}
-	if !capture.captured {
-		t.Fatal("expected screenshot capture before termination")
+	if capture.index != len(capture.targets) {
+		t.Fatalf("captured %d screenshots, want %d", capture.index, len(capture.targets))
 	}
 }
 
-// Update terminates after Draw captures the first rendered frame.
+// Update sets the next screen to capture or terminates after all captures.
 func (g *screenshotGame) Update() error {
-	if g.captured {
+	if g.index >= len(g.targets) {
 		return ebiten.Termination
 	}
+	g.game.screen = g.targets[g.index].mode
 	return nil
 }
 
-// Draw renders the menu and writes the first frame to disk.
+// Draw renders the current target screen and writes the frame to disk.
 func (g *screenshotGame) Draw(screen *ebiten.Image) {
-	g.game.Draw(screen)
-	if g.captured {
+	if g.index >= len(g.targets) {
 		return
 	}
 
-	if err := os.MkdirAll(filepath.Dir(g.path), 0o755); err != nil {
+	g.game.Draw(screen)
+	target := g.targets[g.index]
+
+	if err := os.MkdirAll(filepath.Dir(target.path), 0o755); err != nil {
 		panic(err)
 	}
-	file, err := os.Create(g.path)
+	file, err := os.Create(target.path)
 	if err != nil {
 		panic(err)
 	}
@@ -70,5 +127,5 @@ func (g *screenshotGame) Draw(screen *ebiten.Image) {
 	if err := png.Encode(file, frame); err != nil {
 		panic(err)
 	}
-	g.captured = true
+	g.index++
 }

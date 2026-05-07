@@ -28,11 +28,22 @@ var (
 	mutedTextColor  = color.RGBA{R: 184, G: 172, B: 139, A: 255}
 	hoverColor      = color.RGBA{R: 150, G: 124, B: 49, A: 255}
 	buttonColor     = color.RGBA{R: 74, G: 83, B: 68, A: 255}
+	disabledColor   = color.RGBA{R: 51, G: 57, B: 51, A: 255}
 	accentColor     = color.RGBA{R: 98, G: 90, B: 145, A: 255}
 )
 
+type screenMode int
+
+const (
+	screenMainMenu screenMode = iota
+	screenNewGame
+	screenSettings
+)
+
 type game struct {
-	buttons     []menu.Button
+	screen      screenMode
+	mainButtons []menu.Button
+	backButton  menu.Button
 	hoverAction menu.Action
 	titleFace   *text.GoTextFace
 	bodyFace    *text.GoTextFace
@@ -61,20 +72,24 @@ func newGame() (*game, error) {
 		return nil, err
 	}
 
-	quitButton := menu.Button{
-		Label:  "Quit",
-		X:      screenWidth/2 - 110,
-		Y:      348,
-		W:      220,
-		H:      62,
-		Action: menu.ActionQuit,
-	}
-
 	return &game{
-		buttons: []menu.Button{quitButton},
+		mainButtons: []menu.Button{
+			{Label: "New", X: screenWidth/2 - 110, Y: 252, W: 220, H: 44, Action: menu.ActionNew},
+			{Label: "Load", X: screenWidth/2 - 110, Y: 306, W: 220, H: 44, Disabled: true},
+			{Label: "Settings", X: screenWidth/2 - 110, Y: 360, W: 220, H: 44, Action: menu.ActionSettings},
+			{Label: "Quit", X: screenWidth/2 - 110, Y: 414, W: 220, H: 44, Action: menu.ActionQuit},
+		},
+		backButton: menu.Button{
+			Label:  "Back",
+			X:      screenWidth/2 - 110,
+			Y:      384,
+			W:      220,
+			H:      54,
+			Action: menu.ActionBack,
+		},
 		titleFace: &text.GoTextFace{
 			Source: source,
-			Size:   88,
+			Size:   74,
 		},
 		bodyFace: &text.GoTextFace{
 			Source: source,
@@ -90,12 +105,25 @@ func newGame() (*game, error) {
 // Update handles pointer input and returns a clean termination signal on quit.
 func (g *game) Update() error {
 	cursorX, cursorY := ebiten.CursorPosition()
-	g.hoverAction = menu.ActionAt(g.buttons, cursorX, cursorY)
+	g.hoverAction = menu.ActionAt(g.activeButtons(), cursorX, cursorY)
 
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
-		if menu.ActionAt(g.buttons, cursorX, cursorY) == menu.ActionQuit {
-			return ebiten.Termination
-		}
+		return g.handleAction(menu.ActionAt(g.activeButtons(), cursorX, cursorY))
+	}
+	return nil
+}
+
+// handleAction applies a selected menu action to the current game state.
+func (g *game) handleAction(action menu.Action) error {
+	switch action {
+	case menu.ActionNew:
+		g.screen = screenNewGame
+	case menu.ActionSettings:
+		g.screen = screenSettings
+	case menu.ActionBack:
+		g.screen = screenMainMenu
+	case menu.ActionQuit:
+		return ebiten.Termination
 	}
 	return nil
 }
@@ -104,8 +132,17 @@ func (g *game) Update() error {
 func (g *game) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	g.drawBackdrop(screen)
-	g.drawMenuPanel(screen)
-	g.drawButtons(screen)
+	switch g.screen {
+	case screenNewGame:
+		g.drawPlaceholderPanel(screen, "New Game", "The first expedition is not prepared yet.")
+		g.drawButtons(screen, g.activeButtons())
+	case screenSettings:
+		g.drawSettingsPanel(screen)
+		g.drawButtons(screen, g.activeButtons())
+	default:
+		g.drawMenuPanel(screen)
+		g.drawButtons(screen, g.activeButtons())
+	}
 }
 
 // Layout returns the fixed logical resolution for the prototype.
@@ -125,35 +162,79 @@ func (g *game) drawBackdrop(screen *ebiten.Image) {
 	}
 }
 
+// activeButtons returns the buttons available on the current screen.
+func (g *game) activeButtons() []menu.Button {
+	switch g.screen {
+	case screenNewGame, screenSettings:
+		return []menu.Button{g.backButton}
+	default:
+		return g.mainButtons
+	}
+}
+
 // drawMenuPanel renders the title area and menu copy.
 func (g *game) drawMenuPanel(screen *ebiten.Image) {
 	panelX := float32(220)
-	panelY := float32(132)
+	panelY := float32(82)
 	panelW := float32(520)
-	panelH := float32(300)
+	panelH := float32(398)
 
 	vector.FillRect(screen, panelX, panelY, panelW, panelH, panelColor, false)
 	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
 	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
 
-	g.drawCenteredText(screen, "td", g.titleFace, 185, textColor)
-	g.drawCenteredText(screen, "Arcane defenses await their first command.", g.bodyFace, 286, mutedTextColor)
+	g.drawCenteredText(screen, "td", g.titleFace, 122, textColor)
+	g.drawCenteredText(screen, "Arcane defenses await their first command.", g.bodyFace, 214, mutedTextColor)
 }
 
 // drawButtons renders menu buttons with hover feedback.
-func (g *game) drawButtons(screen *ebiten.Image) {
-	for _, button := range g.buttons {
+func (g *game) drawButtons(screen *ebiten.Image, buttons []menu.Button) {
+	for _, button := range buttons {
 		fill := buttonColor
 		edge := panelEdgeColor
-		if g.hoverAction == button.Action {
+		labelColor := textColor
+		if button.Disabled {
+			fill = disabledColor
+			edge = color.RGBA{R: 83, G: 84, B: 73, A: 255}
+			labelColor = mutedTextColor
+		} else if g.hoverAction != menu.ActionNone && g.hoverAction == button.Action {
 			fill = hoverColor
 			edge = textColor
 		}
 
 		vector.FillRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), fill, false)
 		vector.StrokeRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), 3, edge, false)
-		g.drawCenteredText(screen, button.Label, g.buttonFace, float64(button.Y+15), textColor)
+		g.drawCenteredText(screen, button.Label, g.buttonFace, float64(button.Y+9), labelColor)
 	}
+}
+
+// drawPlaceholderPanel renders a temporary screen reached from the main menu.
+func (g *game) drawPlaceholderPanel(screen *ebiten.Image, title, message string) {
+	panelX := float32(180)
+	panelY := float32(128)
+	panelW := float32(600)
+	panelH := float32(340)
+
+	vector.FillRect(screen, panelX, panelY, panelW, panelH, panelColor, false)
+	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
+	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
+
+	g.drawCenteredText(screen, title, g.titleFace, 174, textColor)
+	g.drawCenteredText(screen, message, g.bodyFace, 286, mutedTextColor)
+}
+
+// drawSettingsPanel renders the temporary settings screen.
+func (g *game) drawSettingsPanel(screen *ebiten.Image) {
+	panelX := float32(180)
+	panelY := float32(128)
+	panelW := float32(600)
+	panelH := float32(340)
+
+	vector.FillRect(screen, panelX, panelY, panelW, panelH, panelColor, false)
+	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
+	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
+
+	g.drawCenteredText(screen, "Settings", g.titleFace, 214, textColor)
 }
 
 // drawCenteredText draws one line centered horizontally at the given y coordinate.
