@@ -24,15 +24,23 @@ The secondary user is the developer maintaining the prototype. Success for this 
 
 ## Current Phase
 
-The current phase is early prototype foundation. The repository can now build, test, and run a small Ebitengine app with a visible main menu and a clean quit path. The immediate product goal is still not to make a full tower-defense encounter; the next work should add one observable gameplay-facing slice at a time.
+The current phase is still early prototype foundation, but the repository now has a more complete runnable shell than the first menu slice. It can build, test, and run a 1920x1080 Go/Ebitengine desktop app with a resizable pixel-sized layout, a main menu, a New Game configuration screen for entering a Wizard name, a placeholder Settings screen, disabled Load and Start options, and a clean quit path.
+
+The immediate product goal is not to make a full tower-defense encounter. The next work should move beyond menus by adding one observable gameplay-facing slice at a time while preserving the small, testable codebase.
 
 ## Near-Term Priorities
 
-The first priority, `plans/00-initial-ebitengine-menu.md`, has produced the runnable menu shell. The next likely priorities are a static prototype scene, simple input handling, a placeholder map, and an early tower-defense loop with fixed paths and placeholder shapes. These should remain separate plans so the codebase grows from verified behavior rather than speculative architecture.
+The completed foundation plans have established the runnable app, expanded menu flow, menu package boundary, New Game configuration screen, and current 1920x1080 resize policy. The next priorities should remain separate plans so the codebase grows from verified behavior rather than speculative architecture.
+
+1. Add a static prototype scene. This should be the first non-menu rendered view: a placeholder medieval wizardry map or defended clearing with simple drawn shapes, no real gameplay, and screenshot evidence under its active plan directory.
+2. Connect New Game to the first scene when there is a safe target to enter. The Start button should become active only when it can show a real scene; save data, campaign flow, and progression should remain out of scope.
+3. Add basic scene interaction. Prove one small interaction model, such as camera movement, cursor inspection, or player-position movement, before adding combat or resource rules.
+4. Add an early deterministic defense loop. Use fixed paths, placeholder enemies, placeholder towers, simple targeting, and testable combat rules before adding art assets or broader encounter variety.
+5. Add the first resource and base-building slice. Introduce gathering, costs, and placement only after the defense loop has a visible baseline that can show why those decisions matter.
 
 ## Later Opportunities
 
-Later roadmap opportunities include exploration spaces, resource nodes, base-building placement rules, magical tower archetypes, enemy waves, combat resolution, UI panels, art assets, audio, progression, and eventually platform packaging.
+Later roadmap opportunities include larger exploration spaces, resource nodes, base-building placement rules, magical tower archetypes, enemy waves, combat resolution, UI panels, art assets, audio, progression, and eventually platform packaging.
 
 Campaign structure and save/load may become important after the prototype has enough systems to preserve meaningful progress. They are intentionally not part of the first phase.
 
@@ -57,3 +65,5 @@ The current roadmap window does not prioritize saving games, campaign progressio
 - How should exploration transition into tower-defense encounters?
 - What resources should the player gather, and how should they constrain base-building?
 - Should the long-term game use tile-based maps, freeform placement, or another spatial model?
+- Should gameplay rendering use the menu's pixel-sized resize policy, or should the world view introduce a separate camera and scaling model?
+- What is the first scene interaction that best proves the game direction: camera movement, cursor inspection, or direct player movement?
