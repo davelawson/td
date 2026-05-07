@@ -2,7 +2,7 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository contains an early runtime shell: a Go module, a small Ebitengine executable with explicit menu screen modes, and a testable menu package.
+The repository contains an early runtime shell: a Go module, a small Ebitengine executable, and a menu package that owns the current menu flow.
 
 ## System Overview
 
@@ -12,8 +12,8 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 
 ## Codemap
 
-- `cmd/td/` owns the executable entry point, Ebitengine window setup, menu rendering, local screen-mode transitions, input handling, and process startup.
-- `internal/menu/` owns menu button hit testing, disabled-target handling, and action selection that can be tested without opening a graphics window.
+- `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, quit termination handling, fixed logical layout, and process startup.
+- `internal/menu/` owns menu screen state, menu rendering, button hit testing, disabled-target handling, action selection, and placeholder menu screens.
 - `internal/game/` may later own top-level game state and transitions between menu, exploration, base-building, and defense scenes.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
@@ -21,7 +21,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 - `.agents/skills/` stores repo-local agent workflows.
 - `.codex/config.toml` stores Codex defaults only; it is not application configuration.
 
-Do not create packages before they have a clear responsibility. A single small `cmd/td/main.go` is acceptable for the first menu slice if it remains easy to read and testable behavior is factored out when needed.
+Do not create packages before they have a clear responsibility. `internal/menu/` exists because the current menu now has enough state, rendering, and testable behavior to justify a menu-owned package. Do not turn it into a general scene framework before real gameplay screens create repeated needs.
 
 ## Main Flows
 
@@ -30,11 +30,12 @@ Do not create packages before they have a clear responsibility. A single small `
 1. A contributor runs `go run ./cmd/td` from the repository root.
 2. `cmd/td` configures an Ebitengine window and starts the game loop.
 3. Ebitengine calls `Update` for input and state changes, `Draw` for rendering, and `Layout` for logical screen sizing.
-4. The main menu renders `New`, disabled `Load`, `Settings`, and `Quit`.
-5. When the user activates `New`, the executable switches its local screen mode to a placeholder New Game screen with a `Back` button.
-6. When the user activates `Settings`, the executable switches its local screen mode to a placeholder Settings screen with a `Back` button.
-7. When the user activates `Back`, the executable returns to the main menu.
-8. When the user activates `Quit`, `Update` returns Ebitengine's termination signal so the desktop app closes cleanly.
+4. `cmd/td` forwards pointer state to `internal/menu`.
+5. The menu package renders `New`, disabled `Load`, `Settings`, and `Quit`.
+6. When the user activates `New`, the menu switches to a placeholder New Game screen with a `Back` button.
+7. When the user activates `Settings`, the menu switches to a placeholder Settings screen with a `Back` button.
+8. When the user activates `Back`, the menu returns to the main menu.
+9. When the user activates `Quit`, the menu reports a quit action and `cmd/td` returns Ebitengine's termination signal so the desktop app closes cleanly.
 
 ### Future Gameplay Flow
 
@@ -51,7 +52,7 @@ This future flow is roadmap intent, not current behavior.
 - Keep Ebitengine process startup in `cmd/td/`.
 - Keep reusable game logic in `internal/` packages when it outgrows the entry point.
 - Keep pure state transitions and hit testing testable without opening a graphics window.
-- Keep the current menu screen switching explicit in `cmd/td/` until there are enough real screens to justify a shared scene abstraction.
+- Keep the current menu screen switching explicit inside `internal/menu/` until there are enough real non-menu screens to justify a shared scene abstraction.
 - Do not let rendering helpers own gameplay rules.
 - Do not introduce save, campaign, networking, or distribution architecture during the first menu slice.
 - Keep `.codex/config.toml` limited to agent configuration.
