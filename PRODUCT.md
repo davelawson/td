@@ -6,11 +6,11 @@
 
 `td` is planned as a PC tower-defense game prototype for a single local player. The intended game blends exploration, base-building, resource gathering, and conventional tower-defense encounters in a medieval wizardry fantasy setting.
 
-The current repository does not yet ship a playable game. It is in bootstrap state: the project has a defined direction, Go/Ebitengine has been selected as the runtime stack, and the first implementation plan describes how to create the smallest playable desktop app.
+The current repository ships the smallest playable shell: a local Go/Ebitengine desktop app that opens a main menu and can quit cleanly. It does not yet include tower-defense gameplay, exploration, base-building, resources, saves, campaign structure, art assets, release packaging, or CI.
 
 ## Users and Jobs To Be Done
 
-The current user is the developer-player validating whether the game can become a playable local prototype. Their immediate job is to turn the repository into a runnable desktop application with a visible game window and a working quit path.
+The current user is the developer-player validating whether the game can become a playable local prototype. Their immediate job is to run the desktop application, confirm that a visible game window appears, and confirm that the quit path closes cleanly.
 
 Future players are expected to want a strategy game where they explore, build a base, gather resources, and defend against threats with tower-defense mechanics. Those systems do not exist yet and belong to the roadmap rather than current product truth.
 
@@ -28,19 +28,23 @@ Future players are expected to want a strategy game where they explore, build a 
 
 `Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. The first plan is `plans/00-initial-ebitengine-menu.md`, which initializes the Go module and Ebitengine app and creates the first menu screen.
 
-### Missing Runtime
+### Runtime Shell
 
-`Core`: There is currently no Go module, executable game, test suite, asset pipeline, save system, campaign system, CI pipeline, license, or release packaging.
+`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, pure menu behavior under `internal/menu/`, and Go tests for menu hit testing and action selection.
+
+### Missing Gameplay And Operations
+
+`Core`: There is currently no tower-defense encounter, exploration, base-building, resource gathering, asset pipeline, save system, campaign system, CI pipeline, license, or release packaging.
 
 ## Core Workflows
 
 ### Repository Bootstrap
 
-A contributor opens the repository, reads the root control documents, and sees that `td` is a local Go/Ebitengine PC game prototype. The workflow ends with a repository that has project-specific control documents and a first implementation plan, but no product feature code yet.
+A contributor opens the repository, reads the root control documents, and sees that `td` is a local Go/Ebitengine PC game prototype. The bootstrap workflow has already produced project-specific control documents and the first runnable menu shell.
 
-### First Planned Playable Workflow
+### Main Menu Workflow
 
-After `plans/00-initial-ebitengine-menu.md` is implemented, a contributor should be able to run `go run ./cmd/td`, see a desktop window with a medieval wizardry main menu, click a quit option, and observe the app closing cleanly.
+A contributor runs `go run ./cmd/td`, sees a desktop window titled `td` with a medieval wizardry main menu, clicks the quit option, and observes the app closing cleanly.
 
 ## Product Constraints and Known Limits
 

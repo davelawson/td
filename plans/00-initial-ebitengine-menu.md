@@ -13,20 +13,35 @@ The plan intentionally stops at the smallest playable shell. It does not impleme
 ## Progress
 
 - [x] (2026-05-06T21:06Z) Created the initial self-contained plan during project bootstrap.
-- [ ] Verify local Go and Ebitengine environment assumptions before editing code.
-- [ ] Record baseline evidence that no runnable app exists before implementation.
-- [ ] Initialize the Go module and add the Ebitengine dependency.
-- [ ] Create the Ebitengine app entry point and main-menu behavior.
-- [ ] Add tests for menu hit testing or menu action selection without opening a graphics window.
-- [ ] Capture the first rendered main-menu screenshot and review it against `DESIGN.md`.
-- [ ] Update control documents if implementation changes current product behavior, architecture, style, or design guidance.
-- [ ] Run `go test ./...` and `go run ./cmd/td` validation.
-- [ ] Check hand-written code-file line counts and report any file over the 600-line preference before proposing extra work.
+- [x] (2026-05-06T21:18Z) Verified local environment before editing code: `go version` reported `go1.24.4 linux/amd64`, satisfying the Go 1.22-or-newer requirement.
+- [x] (2026-05-06T21:19Z) Recorded baseline evidence at `plans/00-initial-ebitengine-menu/screenshots/baseline-no-app.txt`; before module initialization, `go run ./cmd/td` failed because there was no main module.
+- [x] (2026-05-06T21:21Z) Initialized module `td` and added Ebitengine dependency `github.com/hajimehoshi/ebiten/v2 v2.9.9`.
+- [x] (2026-05-06T21:25Z) Created `cmd/td/main.go` with Ebitengine startup, a rendered medieval wizardry main menu, hover feedback, and quit behavior through `ebiten.Termination`.
+- [x] (2026-05-06T21:25Z) Added `internal/menu/` with tests for button hit testing and menu action selection.
+- [x] (2026-05-06T21:31Z) Captured rendered menu screenshot at `plans/00-initial-ebitengine-menu/screenshots/main-menu.png` and reviewed it against `DESIGN.md`.
+- [x] (2026-05-06T21:34Z) Updated `README.md`, `PRODUCT.md`, `ARCHITECTURE.md`, and `ROADMAP.md` to reflect the implemented runnable shell and current sequencing.
+- [x] (2026-05-06T21:35Z) Ran `go test ./...`, screenshot capture validation, `go run ./cmd/td` launch validation, `git diff --check`, and `git status --short`.
+- [x] (2026-05-06T21:35Z) Checked hand-written Go file line counts; no file exceeded the 600-line preference.
 
 ## Surprises & Discoveries
 
 - Observation: No implementation has started yet.
   Evidence: The repository has no `go.mod`, `cmd/td/`, `internal/`, or runtime source files at plan creation.
+
+- Observation: Local Go version is newer than the minimum needed for current Ebitengine.
+  Evidence: `go version` printed `go version go1.24.4 linux/amd64`.
+
+- Observation: The selected stable Ebitengine version records a Go 1.24 module directive.
+  Evidence: `github.com/hajimehoshi/ebiten/v2@v2.9.9/go.mod` begins with `go 1.24.0`, and this repository's `go.mod` was initialized by Go 1.24.4.
+
+- Observation: Before initialization, the failure mode was no Go module rather than only a missing `cmd/td` package.
+  Evidence: `go run ./cmd/td` printed `go: cannot find main module, but found .git/config in /home/dave/dev/ai/td`.
+
+- Observation: Ebitengine images cannot be read before the game loop starts.
+  Evidence: An initial screenshot-capture test that encoded an `ebiten.Image` before `RunGame` panicked with `ui: ReadPixels cannot be called before the game starts`; the final capture path runs through `ebiten.RunGame` and then terminates after the first captured frame.
+
+- Observation: The local display can launch the Ebitengine window, but there is no automated pointer-click tool installed for end-to-end quit clicking.
+  Evidence: `timeout 5s go run ./cmd/td` produced no startup error and timed out with code 124 because the app remained open; `xdotool`, `scrot`, `gnome-screenshot`, and `import` were not available.
 
 ## Decision Log
 
@@ -46,9 +61,48 @@ The plan intentionally stops at the smallest playable shell. It does not impleme
   Rationale: Current Ebitengine package documentation recommends returning `Termination` from `Update` to halt desktop execution without making `RunGame` return an error.
   Date/Author: 2026-05-06 / Codex
 
+- Decision: Pin Ebitengine to stable `v2.9.9` rather than an alpha release.
+  Rationale: `go list -m -versions github.com/hajimehoshi/ebiten/v2` showed `v2.9.9` as the latest stable version and `v2.10.0` only as alpha versions.
+  Date/Author: 2026-05-06 / Codex
+
+- Decision: Factor pure menu behavior into `internal/menu/`.
+  Rationale: Button hit testing and action selection are useful behavior that can be tested without opening a graphics window, matching the architecture and testing guidance.
+  Date/Author: 2026-05-06 / Codex
+
+- Decision: Add a gated screenshot-capture test in `cmd/td`.
+  Rationale: The environment had an X display but no common screenshot CLI tools. The gated test renders the real Ebitengine frame during `RunGame`, saves `main-menu.png`, and is skipped during normal `go test ./...` unless `TD_CAPTURE_SCREENSHOT` is set.
+  Date/Author: 2026-05-06 / Codex
+
 ## Outcomes & Retrospective
 
-No implementation outcomes exist yet. At completion, summarize the files created, the exact validation results, screenshot evidence, and the final hand-written code-file line-count review. If any hand-written code file exceeds 600 lines, list the path, line count, likely cause, recommended response, and whether the user approved, deferred, or rejected extra refactor work.
+Implementation completed the first runnable shell. The repository now has module files, Ebitengine startup in `cmd/td/`, a testable `internal/menu/` package, baseline evidence, and a rendered menu screenshot. The app opens a window titled `td`, draws a readable medieval wizardry main menu with a visible `Quit` target, and returns `ebiten.Termination` when the quit button is clicked.
+
+Validation results:
+
+    go test ./...
+    ok  	td/cmd/td	0.013s
+    ok  	td/internal/menu	(cached)
+
+    TD_CAPTURE_SCREENSHOT=1 go test ./cmd/td -run TestCaptureMainMenuScreenshot -count=1
+    ok  	td/cmd/td	0.615s
+
+    timeout 5s go run ./cmd/td
+    Exit code: 124 after the app launched and stayed open with no startup error. This validates window startup in the available environment, but automated click-to-quit validation was not possible because no pointer automation tool was installed.
+
+    git diff --check
+    No whitespace errors.
+
+The screenshot at `plans/00-initial-ebitengine-menu/screenshots/main-menu.png` has readable parchment-colored text, a stable quit target, gold edges, muted green surfaces, and restrained violet accents. It matches `DESIGN.md` for the first technical slice.
+
+Final hand-written Go file line-count review:
+
+    36 internal/menu/menu.go
+    43 internal/menu/menu_test.go
+    74 cmd/td/main_test.go
+    166 cmd/td/main.go
+    319 total
+
+No file exceeds or approaches the 600-line preference, so no extra split or user-approved refactor is needed.
 
 ## Context and Orientation
 
@@ -56,7 +110,7 @@ No implementation outcomes exist yet. At completion, summarize the files created
 
 Ebitengine is a Go 2D game engine. In this project it will own the desktop window, game loop, drawing surface, and input APIs. The app should implement Ebitengine's `Game` interface with `Update`, `Draw`, and `Layout` methods. `Update` changes state and handles input, `Draw` renders to the screen, and `Layout` returns the logical screen size.
 
-The repository currently has no `README` gaps after bootstrap, but it still has no Go module or runtime code. This plan creates those pieces.
+The repository now has a Go module, runtime code, menu tests, and first visual evidence. The completed implementation created those pieces while keeping the first slice limited to a menu and quit path.
 
 ## Plan of Work
 
@@ -167,7 +221,8 @@ Important planned artifacts:
     go.mod
     go.sum
     cmd/td/main.go
-    internal/menu/ (optional, if pure menu behavior is factored out)
+    cmd/td/main_test.go
+    internal/menu/
     plans/00-initial-ebitengine-menu/screenshots/baseline-no-app.txt
     plans/00-initial-ebitengine-menu/screenshots/main-menu.png
 
@@ -211,3 +266,7 @@ If a separate menu package is created, it should expose only pure behavior neede
     func (b Button) Contains(x, y int) bool
 
 Do not add a UI widget library, scene framework, ECS, asset manager, save system, campaign system, or packaging dependency in this plan unless a blocker appears and the user approves the added scope.
+
+## Revision Notes
+
+2026-05-06 / Codex: Updated this ExecPlan after implementation so the living sections, context, artifacts, validation results, screenshot evidence, and line-count review reflect the completed runnable menu shell.

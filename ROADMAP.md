@@ -24,13 +24,11 @@ The secondary user is the developer maintaining the prototype. Success for this 
 
 ## Current Phase
 
-The current phase is prototype foundation. The immediate goal is not to make a tower-defense encounter; it is to create a runnable Ebitengine app with a visible main menu and a clean quit path, proving the repository can build, run, test, and show a game window.
+The current phase is early prototype foundation. The repository can now build, test, and run a small Ebitengine app with a visible main menu and a clean quit path. The immediate product goal is still not to make a full tower-defense encounter; the next work should add one observable gameplay-facing slice at a time.
 
 ## Near-Term Priorities
 
-The first priority is `plans/00-initial-ebitengine-menu.md`: initialize Go and Ebitengine, create a minimal app entry point, draw a main menu, and make the quit option close the app cleanly.
-
-After that, the next likely priorities are a static prototype scene, simple input handling, a placeholder map, and an early tower-defense loop with fixed paths and placeholder shapes. These should remain separate plans so the codebase grows from verified behavior rather than speculative architecture.
+The first priority, `plans/00-initial-ebitengine-menu.md`, has produced the runnable menu shell. The next likely priorities are a static prototype scene, simple input handling, a placeholder map, and an early tower-defense loop with fixed paths and placeholder shapes. These should remain separate plans so the codebase grows from verified behavior rather than speculative architecture.
 
 ## Later Opportunities
 

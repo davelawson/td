@@ -1,0 +1,9 @@
+Before implementation there is no runnable app and no screenshotable baseline.
+
+Command:
+    go run ./cmd/td
+
+Observed result before implementation:
+    go: cannot find main module, but found .git/config in /home/dave/dev/ai/td
+        to create a module there, run:
+        go mod init

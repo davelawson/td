@@ -2,18 +2,18 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository does not yet contain runtime code. The first implementation plan will initialize Go and Ebitengine.
+The repository contains the first runtime slice: a Go module, a small Ebitengine executable, and a testable menu package.
 
 ## System Overview
 
 `td` is a local PC tower-defense game prototype. The intended game combines exploration, base-building, resource gathering, and conventional tower-defense combat in a medieval wizardry fantasy setting.
 
-The planned codebase should be organized around a small Ebitengine executable in `cmd/td/` and reusable internal packages under `internal/`. Early code should keep menu state, rendering, input handling, and game-loop wiring easy to understand before larger gameplay systems are introduced.
+The codebase is organized around a small Ebitengine executable in `cmd/td/` and reusable internal packages under `internal/`. Early code should keep menu state, rendering, input handling, and game-loop wiring easy to understand before larger gameplay systems are introduced.
 
 ## Codemap
 
-- `cmd/td/` will own the executable entry point, Ebitengine window setup, and process startup.
-- `internal/menu/` may own main-menu state, button hit testing, and menu actions once the first screen has enough behavior to justify a package.
+- `cmd/td/` owns the executable entry point, Ebitengine window setup, first menu rendering, input handling, and process startup.
+- `internal/menu/` owns main-menu button hit testing and action selection that can be tested without opening a graphics window.
 - `internal/game/` may later own top-level game state and transitions between menu, exploration, base-building, and defense scenes.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
@@ -56,7 +56,7 @@ This future flow is roadmap intent, not current behavior.
 
 The first external runtime dependency will be Ebitengine through `github.com/hajimehoshi/ebiten/v2`. It owns the desktop window, game loop, drawing surface, and input APIs. Game code should treat Ebitengine callbacks as the boundary between OS/window events and project-owned state.
 
-Go module files will be introduced by the first ExecPlan. Until then, there are no application dependencies.
+Go module files are checked in. The current runtime dependency is Ebitengine and the Go support libraries required by the module.
 
 ## Cross-Cutting Concerns
 
