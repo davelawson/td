@@ -8,7 +8,8 @@ The repository now contains a small runnable prototype shell: a Go/Ebitengine de
 
 - Stage: local runnable prototype foundation.
 - Runtime stack: Go with Ebitengine.
-- Current playable slice: a desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` opens a configuration screen with Wizard name entry plus disabled `Start` and active `Cancel`, `Settings` opens a placeholder screen with `Back`, `Load` is disabled, and `Quit` closes the app.
+- Current playable slice: a 1920x1080 desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` opens a configuration screen with Wizard name entry plus disabled `Start` and active `Cancel`, `Settings` opens a placeholder screen with `Back`, `Load` is disabled, and `Quit` closes the app.
+- Current display policy: the window is resizable, and the drawable layout follows the actual window size so text remains raw-pixel-sized instead of being stretched during upscaling.
 - Current non-goals: saving games and campaign structure.
 - Repository operations such as license, CI, release packaging, and distribution are intentionally deferred.
 

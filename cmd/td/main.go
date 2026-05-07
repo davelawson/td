@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	screenWidth  = 960
-	screenHeight = 540
+	defaultWindowWidth  = 1920
+	defaultWindowHeight = 1080
 )
 
 type app struct {
@@ -22,7 +22,7 @@ type app struct {
 // main starts the Ebitengine desktop application.
 func main() {
 	ebiten.SetWindowTitle("td")
-	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetWindowSize(defaultWindowWidth, defaultWindowHeight)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
 	app, err := newApp()
@@ -36,7 +36,7 @@ func main() {
 
 // newApp creates the app state used by Ebitengine callbacks.
 func newApp() (*app, error) {
-	mainMenu, err := menu.New(screenWidth, screenHeight)
+	mainMenu, err := menu.New(defaultWindowWidth, defaultWindowHeight)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,12 @@ func (a *app) Draw(screen *ebiten.Image) {
 	a.mainMenu.Draw(screen)
 }
 
-// Layout returns the fixed logical resolution for the prototype.
+// Layout returns a pixel-sized drawable layout for the current window.
 func (a *app) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth, screenHeight
+	if outsideWidth <= 0 || outsideHeight <= 0 {
+		outsideWidth = defaultWindowWidth
+		outsideHeight = defaultWindowHeight
+	}
+	a.mainMenu.Resize(outsideWidth, outsideHeight)
+	return outsideWidth, outsideHeight
 }

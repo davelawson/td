@@ -6,7 +6,7 @@
 
 `td` is planned as a PC tower-defense game prototype for a single local player. The intended game blends exploration, base-building, resource gathering, and conventional tower-defense encounters in a medieval wizardry fantasy setting.
 
-The current repository ships a small playable shell: a local Go/Ebitengine desktop app that opens a main menu, can navigate to a New Game configuration screen and a placeholder Settings screen, shows Load and New Game Start as disabled, accepts a Wizard name for future new games, and can quit cleanly. It does not yet include tower-defense gameplay, exploration, base-building, resources, saves, real settings, campaign structure, art assets, release packaging, or CI.
+The current repository ships a small playable shell: a local Go/Ebitengine desktop app that opens a 1920x1080 main menu, can navigate to a New Game configuration screen and a placeholder Settings screen, shows Load and New Game Start as disabled, accepts a Wizard name for future new games, and can quit cleanly. Its resizable window uses a pixel-sized drawable layout so text does not stretch when the window is enlarged. It does not yet include tower-defense gameplay, exploration, base-building, resources, saves, real settings, campaign structure, art assets, release packaging, or CI.
 
 ## Users and Jobs To Be Done
 
@@ -26,7 +26,7 @@ Future players are expected to want a strategy game where they explore, build a 
 
 ### Planning Workflow
 
-`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. `plans/00-initial-ebitengine-menu.md` initialized the Go module and Ebitengine app. `plans/01-expanded-main-menu.md` expanded the main menu flow. `plans/03-new-game-configuration.md` adds the Wizard name configuration screen.
+`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. `plans/00-initial-ebitengine-menu.md` initialized the Go module and Ebitengine app. `plans/01-expanded-main-menu.md` expanded the main menu flow. `plans/03-new-game-configuration.md` adds the Wizard name configuration screen. `plans/04-resolution-and-pixel-text-scaling.md` sets the 1920x1080 default window and current resize policy.
 
 ### Runtime Shell
 
@@ -44,7 +44,7 @@ A contributor opens the repository, reads the root control documents, and sees t
 
 ### Main Menu Workflow
 
-A contributor runs `go run ./cmd/td` and sees a desktop window titled `td` with a medieval wizardry main menu. The menu offers `New`, `Load`, `Settings`, and `Quit`. Clicking `New` opens a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button. Typing edits the Wizard name and Backspace removes the last typed character. Clicking `Cancel` returns to the main menu. Clicking `Settings` opens a placeholder Settings screen with a `Back` button. Clicking `Back` returns to the main menu. `Load` is visibly disabled and does nothing because saving and loading do not exist yet. Clicking `Quit` closes the app cleanly.
+A contributor runs `go run ./cmd/td` and sees a 1920x1080 desktop window titled `td` with a medieval wizardry main menu. Resizing the window recenters the menu in the current drawable area while text keeps its raw pixel size. The menu offers `New`, `Load`, `Settings`, and `Quit`. Clicking `New` opens a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button. Typing edits the Wizard name and Backspace removes the last typed character. Clicking `Cancel` returns to the main menu. Clicking `Settings` opens a placeholder Settings screen with a `Back` button. Clicking `Back` returns to the main menu. `Load` is visibly disabled and does nothing because saving and loading do not exist yet. Clicking `Quit` closes the app cleanly.
 
 ## Product Constraints and Known Limits
 

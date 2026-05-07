@@ -2,6 +2,11 @@ package menu
 
 import "testing"
 
+const (
+	testWidth  = 1920
+	testHeight = 1080
+)
+
 // TestButtonContainsIncludesTopLeft verifies inclusive top-left hit bounds.
 func TestButtonContainsIncludesTopLeft(t *testing.T) {
 	button := Button{X: 10, Y: 20, W: 100, H: 40}
@@ -75,12 +80,13 @@ func TestActionAtIgnoresDisabledButtons(t *testing.T) {
 
 // TestMenuUpdateRoutesMenuScreens verifies menu actions change menu screens or report quit.
 func TestMenuUpdateRoutesMenuScreens(t *testing.T) {
-	menu, err := New(960, 540)
+	menu, err := New(testWidth, testHeight)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if action := menu.Update(Input{CursorX: 480, CursorY: 274, Clicked: true}); action != ActionNew {
+	newButton := menu.buttonForAction(ActionNew)
+	if action := menu.Update(clickInput(newButton)); action != ActionNew {
 		t.Fatalf("Update(new click) = %v, want %v", action, ActionNew)
 	}
 	if menu.Screen() != ScreenNewGame {
@@ -90,14 +96,16 @@ func TestMenuUpdateRoutesMenuScreens(t *testing.T) {
 		t.Fatal("expected wizard name field to focus after entering new game")
 	}
 
-	if action := menu.Update(Input{CursorX: 300, CursorY: 411, Clicked: true}); action != ActionBack {
+	cancelButton := menu.buttonForAction(ActionBack)
+	if action := menu.Update(clickInput(cancelButton)); action != ActionBack {
 		t.Fatalf("Update(cancel click) = %v, want %v", action, ActionBack)
 	}
 	if menu.Screen() != ScreenMain {
 		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenMain)
 	}
 
-	if action := menu.Update(Input{CursorX: 480, CursorY: 382, Clicked: true}); action != ActionSettings {
+	settingsButton := menu.buttonForAction(ActionSettings)
+	if action := menu.Update(clickInput(settingsButton)); action != ActionSettings {
 		t.Fatalf("Update(settings click) = %v, want %v", action, ActionSettings)
 	}
 	if menu.Screen() != ScreenSettings {
@@ -112,7 +120,8 @@ func TestMenuUpdateRoutesMenuScreens(t *testing.T) {
 	}
 
 	menu.SetScreenForTest(ScreenMain)
-	if action := menu.Update(Input{CursorX: 480, CursorY: 436, Clicked: true}); action != ActionQuit {
+	quitButton := menu.buttonForAction(ActionQuit)
+	if action := menu.Update(clickInput(quitButton)); action != ActionQuit {
 		t.Fatalf("Update(quit click) = %v, want %v", action, ActionQuit)
 	}
 	if menu.Screen() != ScreenMain {
@@ -122,7 +131,7 @@ func TestMenuUpdateRoutesMenuScreens(t *testing.T) {
 
 // TestWizardNameInputEditsFocusedField verifies keyboard edits on the name field.
 func TestWizardNameInputEditsFocusedField(t *testing.T) {
-	menu, err := New(960, 540)
+	menu, err := New(testWidth, testHeight)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,7 +150,7 @@ func TestWizardNameInputEditsFocusedField(t *testing.T) {
 
 // TestWizardNameInputCapsLength verifies the name field keeps a stable width.
 func TestWizardNameInputCapsLength(t *testing.T) {
-	menu, err := New(960, 540)
+	menu, err := New(testWidth, testHeight)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -155,31 +164,80 @@ func TestWizardNameInputCapsLength(t *testing.T) {
 
 // TestWizardNameFocusFollowsFieldClick verifies field clicks activate text entry.
 func TestWizardNameFocusFollowsFieldClick(t *testing.T) {
-	menu, err := New(960, 540)
+	menu, err := New(testWidth, testHeight)
 	if err != nil {
 		t.Fatal(err)
 	}
 	menu.SetScreenForTest(ScreenNewGame)
 	menu.wizardNameFocused = false
 
-	menu.Update(Input{CursorX: 480, CursorY: 306, Clicked: true})
+	fieldX, fieldY, fieldW, fieldH := menu.wizardNameFieldBounds()
+	menu.Update(Input{CursorX: fieldX + fieldW/2, CursorY: fieldY + fieldH/2, Clicked: true})
 	if !menu.WizardNameFocused() {
 		t.Fatal("expected wizard name field click to focus text entry")
 	}
 }
 
+// TestMenuResizeRecentersButtonTargets verifies resizing updates hit geometry.
+func TestMenuResizeRecentersButtonTargets(t *testing.T) {
+	menu, err := New(testWidth, testHeight)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	menu.Resize(2560, 1440)
+	newButton := menu.buttonForAction(ActionNew)
+	if newButton.X+newButton.W/2 != 1280 {
+		t.Fatalf("new button center x = %d, want %d", newButton.X+newButton.W/2, 1280)
+	}
+
+	if action := menu.Update(clickInput(newButton)); action != ActionNew {
+		t.Fatalf("Update(resized new click) = %v, want %v", action, ActionNew)
+	}
+}
+
 // TestDisabledStartDoesNothing verifies Start is visible but inert.
 func TestDisabledStartDoesNothing(t *testing.T) {
-	menu, err := New(960, 540)
+	menu, err := New(testWidth, testHeight)
 	if err != nil {
 		t.Fatal(err)
 	}
 	menu.SetScreenForTest(ScreenNewGame)
 
-	if action := menu.Update(Input{CursorX: 620, CursorY: 412, Clicked: true}); action != ActionNone {
+	startButton := menu.disabledButtonWithLabel("Start")
+	if action := menu.Update(clickInput(startButton)); action != ActionNone {
 		t.Fatalf("Update(start click) = %v, want %v", action, ActionNone)
 	}
 	if menu.Screen() != ScreenNewGame {
 		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenNewGame)
+	}
+}
+
+// buttonForAction returns the active button that reports action.
+func (m *Menu) buttonForAction(action Action) Button {
+	for _, button := range m.activeButtons() {
+		if button.Action == action && !button.Disabled {
+			return button
+		}
+	}
+	return Button{}
+}
+
+// disabledButtonWithLabel returns the active disabled button with label.
+func (m *Menu) disabledButtonWithLabel(label string) Button {
+	for _, button := range m.activeButtons() {
+		if button.Label == label && button.Disabled {
+			return button
+		}
+	}
+	return Button{}
+}
+
+// clickInput returns a click at the center of button.
+func clickInput(button Button) Input {
+	return Input{
+		CursorX: button.X + button.W/2,
+		CursorY: button.Y + button.H/2,
+		Clicked: true,
 	}
 }

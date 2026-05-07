@@ -28,7 +28,7 @@ Avoid letting the whole interface become a single purple, beige, or dark-blue pa
 
 - The first screen should be the actual game menu, not a marketing or explanation page.
 - Menu choices should have stable hit boxes and clear hover or focus feedback.
-- Text must remain readable at the target window size.
+- Text must remain readable at the target window size. The current desktop target opens at 1920x1080, and menu text should remain raw-pixel-sized when the window is enlarged instead of stretching with the window.
 - Quit behavior must be obvious and should close the app cleanly.
 - Keyboard access should be considered early, even when the first slice only requires pointer input.
 
@@ -41,5 +41,5 @@ For Ebitengine desktop work, visual evidence can be a screenshot saved under the
 ## Open Questions
 
 - Should the game eventually use pixel art, painterly 2D, or another asset style?
-- What base resolution and scaling policy should the prototype standardize on?
+- Should later gameplay use the menu's current pixel-sized resize policy, or should world rendering gain a separate camera and scaling policy?
 - Should early menus use custom font assets, or wait until gameplay systems exist?

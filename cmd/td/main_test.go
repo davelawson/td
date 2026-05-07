@@ -35,7 +35,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "03-new-game-configuration", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "04-resolution-and-pixel-text-scaling", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -46,7 +46,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 	}
 
 	ebiten.SetWindowTitle("td")
-	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetWindowSize(defaultWindowWidth, defaultWindowHeight)
 	if err := ebiten.RunGame(capture); err != nil && !errors.Is(err, ebiten.Termination) {
 		t.Fatal(err)
 	}
@@ -82,7 +82,7 @@ func (a *screenshotApp) Draw(screen *ebiten.Image) {
 	}
 	defer file.Close()
 
-	frame := image.NewRGBA(image.Rect(0, 0, screenWidth, screenHeight))
+	frame := image.NewRGBA(image.Rect(0, 0, defaultWindowWidth, defaultWindowHeight))
 	screen.ReadPixels(frame.Pix)
 	if err := png.Encode(file, frame); err != nil {
 		panic(err)

@@ -12,8 +12,8 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 
 ## Codemap
 
-- `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, quit termination handling, fixed logical layout, and process startup.
-- `internal/menu/` owns menu screen state, menu rendering, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
+- `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, quit termination handling, pixel-sized Ebitengine layout, and process startup.
+- `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
 - `internal/game/` may later own top-level game state and transitions between menu, exploration, base-building, and defense scenes.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
@@ -28,8 +28,8 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 ### Current Menu Flow
 
 1. A contributor runs `go run ./cmd/td` from the repository root.
-2. `cmd/td` configures an Ebitengine window and starts the game loop.
-3. Ebitengine calls `Update` for input and state changes, `Draw` for rendering, and `Layout` for logical screen sizing.
+2. `cmd/td` configures a 1920x1080 Ebitengine window and starts the game loop.
+3. Ebitengine calls `Update` for input and state changes, `Draw` for rendering, and `Layout` for drawable sizing. `Layout` follows the current window size so resizing does not stretch text as part of a fixed framebuffer.
 4. `cmd/td` forwards pointer and keyboard input state to `internal/menu`.
 5. The menu package renders `New`, disabled `Load`, `Settings`, and `Quit`.
 6. When the user activates `New`, the menu switches to a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button.
@@ -51,6 +51,7 @@ This future flow is roadmap intent, not current behavior.
 ## Architectural Invariants
 
 - Keep Ebitengine process startup in `cmd/td/`.
+- Keep the current display policy as a pixel-sized drawable layout: the initial window is 1920x1080, resizes update menu geometry, and text remains raw-pixel-sized rather than stretched by framebuffer scaling.
 - Keep reusable game logic in `internal/` packages when it outgrows the entry point.
 - Keep pure state transitions, hit testing, and simple menu text input testable without opening a graphics window.
 - Keep the current menu screen switching explicit inside `internal/menu/` until there are enough real non-menu screens to justify a shared scene abstraction.
@@ -96,4 +97,4 @@ To add assets, place files under `assets/`, document source and licensing, and a
 
 - What package boundaries will be useful after the first menu screen exists?
 - Should the project use a custom scene manager, or keep explicit state transitions until repetition appears?
-- What base resolution should become the long-term rendering target?
+- Should later gameplay use the same pixel-sized layout policy as the current menus, or introduce a separate world camera?
