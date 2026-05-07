@@ -2,13 +2,13 @@
 
 `td` is a local PC prototype for a 2D tower-defense game built with Go and Ebitengine. The intended game combines exploration, base-building, resource gathering, and conventional tower-defense combat in a medieval wizardry fantasy setting.
 
-The repository now contains a small runnable prototype shell: a Go/Ebitengine desktop app with a main menu, placeholder New Game and Settings screens, a disabled Load option, and a quit option. Gameplay systems, real settings, save/load behavior, and static assets have not been implemented yet.
+The repository now contains a small runnable prototype shell: a Go/Ebitengine desktop app with a main menu, a New Game configuration screen for entering a Wizard name, a placeholder Settings screen, disabled Load and Start options, and a quit option. Gameplay systems, real settings, save/load behavior, and static assets have not been implemented yet.
 
 ## Current Status
 
 - Stage: local runnable prototype foundation.
 - Runtime stack: Go with Ebitengine.
-- Current playable slice: a desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` and `Settings` open placeholder screens with `Back` buttons, `Load` is disabled, and `Quit` closes the app.
+- Current playable slice: a desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` opens a configuration screen with Wizard name entry plus disabled `Start` and active `Cancel`, `Settings` opens a placeholder screen with `Back`, `Load` is disabled, and `Quit` closes the app.
 - Current non-goals: saving games and campaign structure.
 - Repository operations such as license, CI, release packaging, and distribution are intentionally deferred.
 
@@ -30,7 +30,7 @@ Use these commands from the repository root:
 - `cmd/td/` contains the Ebitengine executable entry point.
 - `DESIGN.md` records the medieval wizardry design direction and UI review expectations.
 - `go.mod` and `go.sum` define the Go module and runtime dependencies.
-- `internal/menu/` contains testable menu hit-testing and action-selection behavior.
+- `internal/menu/` contains testable menu hit-testing, action-selection, screen-routing, and Wizard name input behavior.
 - `PLANS.md` defines how ExecPlans are written and maintained.
 - `PRODUCT.md` records current user-visible product truth.
 - `ROADMAP.md` records intended product direction and explicit non-priorities.

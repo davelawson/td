@@ -80,28 +80,31 @@ func TestMenuUpdateRoutesMenuScreens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if action := menu.Update(480, 274, true); action != ActionNew {
+	if action := menu.Update(Input{CursorX: 480, CursorY: 274, Clicked: true}); action != ActionNew {
 		t.Fatalf("Update(new click) = %v, want %v", action, ActionNew)
 	}
 	if menu.Screen() != ScreenNewGame {
 		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenNewGame)
 	}
+	if !menu.WizardNameFocused() {
+		t.Fatal("expected wizard name field to focus after entering new game")
+	}
 
-	if action := menu.Update(480, 411, true); action != ActionBack {
-		t.Fatalf("Update(back click) = %v, want %v", action, ActionBack)
+	if action := menu.Update(Input{CursorX: 300, CursorY: 411, Clicked: true}); action != ActionBack {
+		t.Fatalf("Update(cancel click) = %v, want %v", action, ActionBack)
 	}
 	if menu.Screen() != ScreenMain {
 		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenMain)
 	}
 
-	if action := menu.Update(480, 382, true); action != ActionSettings {
+	if action := menu.Update(Input{CursorX: 480, CursorY: 382, Clicked: true}); action != ActionSettings {
 		t.Fatalf("Update(settings click) = %v, want %v", action, ActionSettings)
 	}
 	if menu.Screen() != ScreenSettings {
 		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenSettings)
 	}
 
-	if action := menu.Update(4, 30, true); action != ActionNone {
+	if action := menu.Update(Input{CursorX: 4, CursorY: 30, Clicked: true}); action != ActionNone {
 		t.Fatalf("Update(outside click) = %v, want %v", action, ActionNone)
 	}
 	if menu.Screen() != ScreenSettings {
@@ -109,10 +112,74 @@ func TestMenuUpdateRoutesMenuScreens(t *testing.T) {
 	}
 
 	menu.SetScreenForTest(ScreenMain)
-	if action := menu.Update(480, 436, true); action != ActionQuit {
+	if action := menu.Update(Input{CursorX: 480, CursorY: 436, Clicked: true}); action != ActionQuit {
 		t.Fatalf("Update(quit click) = %v, want %v", action, ActionQuit)
 	}
 	if menu.Screen() != ScreenMain {
 		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenMain)
+	}
+}
+
+// TestWizardNameInputEditsFocusedField verifies keyboard edits on the name field.
+func TestWizardNameInputEditsFocusedField(t *testing.T) {
+	menu, err := New(960, 540)
+	if err != nil {
+		t.Fatal(err)
+	}
+	menu.SetScreenForTest(ScreenNewGame)
+
+	menu.Update(Input{Typed: []rune("Merlin")})
+	if menu.WizardName() != "Merlin" {
+		t.Fatalf("wizard name = %q, want %q", menu.WizardName(), "Merlin")
+	}
+
+	menu.Update(Input{Backspace: true})
+	if menu.WizardName() != "Merli" {
+		t.Fatalf("wizard name = %q, want %q", menu.WizardName(), "Merli")
+	}
+}
+
+// TestWizardNameInputCapsLength verifies the name field keeps a stable width.
+func TestWizardNameInputCapsLength(t *testing.T) {
+	menu, err := New(960, 540)
+	if err != nil {
+		t.Fatal(err)
+	}
+	menu.SetScreenForTest(ScreenNewGame)
+
+	menu.Update(Input{Typed: []rune("SixteenRuneNamesAndMore")})
+	if got := len([]rune(menu.WizardName())); got != wizardNameMaxRunes {
+		t.Fatalf("wizard name length = %d, want %d", got, wizardNameMaxRunes)
+	}
+}
+
+// TestWizardNameFocusFollowsFieldClick verifies field clicks activate text entry.
+func TestWizardNameFocusFollowsFieldClick(t *testing.T) {
+	menu, err := New(960, 540)
+	if err != nil {
+		t.Fatal(err)
+	}
+	menu.SetScreenForTest(ScreenNewGame)
+	menu.wizardNameFocused = false
+
+	menu.Update(Input{CursorX: 480, CursorY: 306, Clicked: true})
+	if !menu.WizardNameFocused() {
+		t.Fatal("expected wizard name field click to focus text entry")
+	}
+}
+
+// TestDisabledStartDoesNothing verifies Start is visible but inert.
+func TestDisabledStartDoesNothing(t *testing.T) {
+	menu, err := New(960, 540)
+	if err != nil {
+		t.Fatal(err)
+	}
+	menu.SetScreenForTest(ScreenNewGame)
+
+	if action := menu.Update(Input{CursorX: 620, CursorY: 412, Clicked: true}); action != ActionNone {
+		t.Fatalf("Update(start click) = %v, want %v", action, ActionNone)
+	}
+	if menu.Screen() != ScreenNewGame {
+		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenNewGame)
 	}
 }

@@ -13,7 +13,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 ## Codemap
 
 - `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, quit termination handling, fixed logical layout, and process startup.
-- `internal/menu/` owns menu screen state, menu rendering, button hit testing, disabled-target handling, action selection, and placeholder menu screens.
+- `internal/menu/` owns menu screen state, menu rendering, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
 - `internal/game/` may later own top-level game state and transitions between menu, exploration, base-building, and defense scenes.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
@@ -30,12 +30,13 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 1. A contributor runs `go run ./cmd/td` from the repository root.
 2. `cmd/td` configures an Ebitengine window and starts the game loop.
 3. Ebitengine calls `Update` for input and state changes, `Draw` for rendering, and `Layout` for logical screen sizing.
-4. `cmd/td` forwards pointer state to `internal/menu`.
+4. `cmd/td` forwards pointer and keyboard input state to `internal/menu`.
 5. The menu package renders `New`, disabled `Load`, `Settings`, and `Quit`.
-6. When the user activates `New`, the menu switches to a placeholder New Game screen with a `Back` button.
+6. When the user activates `New`, the menu switches to a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button.
 7. When the user activates `Settings`, the menu switches to a placeholder Settings screen with a `Back` button.
-8. When the user activates `Back`, the menu returns to the main menu.
-9. When the user activates `Quit`, the menu reports a quit action and `cmd/td` returns Ebitengine's termination signal so the desktop app closes cleanly.
+8. When the user types on the New Game screen, the focused Wizard name field updates; Backspace removes the last typed character.
+9. When the user activates `Cancel` on New Game or `Back` on Settings, the menu returns to the main menu.
+10. When the user activates `Quit`, the menu reports a quit action and `cmd/td` returns Ebitengine's termination signal so the desktop app closes cleanly.
 
 ### Future Gameplay Flow
 
@@ -51,7 +52,7 @@ This future flow is roadmap intent, not current behavior.
 
 - Keep Ebitengine process startup in `cmd/td/`.
 - Keep reusable game logic in `internal/` packages when it outgrows the entry point.
-- Keep pure state transitions and hit testing testable without opening a graphics window.
+- Keep pure state transitions, hit testing, and simple menu text input testable without opening a graphics window.
 - Keep the current menu screen switching explicit inside `internal/menu/` until there are enough real non-menu screens to justify a shared scene abstraction.
 - Do not let rendering helpers own gameplay rules.
 - Do not introduce save, campaign, networking, or distribution architecture during the first menu slice.

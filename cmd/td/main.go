@@ -46,8 +46,14 @@ func newApp() (*app, error) {
 // Update handles pointer input and returns a clean termination signal on quit.
 func (a *app) Update() error {
 	cursorX, cursorY := ebiten.CursorPosition()
-	clicked := inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft)
-	if action := a.mainMenu.Update(cursorX, cursorY, clicked); action == menu.ActionQuit {
+	input := menu.Input{
+		CursorX:   cursorX,
+		CursorY:   cursorY,
+		Clicked:   inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft),
+		Typed:     ebiten.AppendInputChars(nil),
+		Backspace: inpututil.IsKeyJustPressed(ebiten.KeyBackspace),
+	}
+	if action := a.mainMenu.Update(input); action == menu.ActionQuit {
 		return ebiten.Termination
 	}
 	return nil

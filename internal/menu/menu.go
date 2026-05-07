@@ -3,6 +3,8 @@ package menu
 import (
 	"bytes"
 	"image/color"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -14,9 +16,13 @@ import (
 type Action int
 
 const (
+	wizardNameMaxRunes = 16
+)
+
+const (
 	// ActionNone means no menu action was selected.
 	ActionNone Action = iota
-	// ActionNew means the app should show the new-game placeholder.
+	// ActionNew means the app should show the new-game configuration screen.
 	ActionNew
 	// ActionSettings means the app should show the settings placeholder.
 	ActionSettings
@@ -43,11 +49,20 @@ type Screen int
 const (
 	// ScreenMain is the top-level main menu.
 	ScreenMain Screen = iota
-	// ScreenNewGame is the placeholder reached from New.
+	// ScreenNewGame is the configuration screen reached from New.
 	ScreenNewGame
 	// ScreenSettings is the placeholder reached from Settings.
 	ScreenSettings
 )
+
+// Input describes one frame of menu input collected by the executable.
+type Input struct {
+	CursorX   int
+	CursorY   int
+	Clicked   bool
+	Typed     []rune
+	Backspace bool
+}
 
 var (
 	backgroundColor = color.RGBA{R: 18, G: 19, B: 17, A: 255}
@@ -63,15 +78,18 @@ var (
 
 // Menu owns the menu screen state, input routing, and rendering.
 type Menu struct {
-	width       int
-	height      int
-	screen      Screen
-	mainButtons []Button
-	backButton  Button
-	hoverAction Action
-	titleFace   *text.GoTextFace
-	bodyFace    *text.GoTextFace
-	buttonFace  *text.GoTextFace
+	width              int
+	height             int
+	screen             Screen
+	mainButtons        []Button
+	settingsBackButton Button
+	newGameButtons     []Button
+	hoverAction        Action
+	wizardName         string
+	wizardNameFocused  bool
+	titleFace          *text.GoTextFace
+	bodyFace           *text.GoTextFace
+	buttonFace         *text.GoTextFace
 }
 
 // New creates the menu state and font faces.
@@ -90,13 +108,17 @@ func New(width, height int) (*Menu, error) {
 			{Label: "Settings", X: width/2 - 110, Y: 360, W: 220, H: 44, Action: ActionSettings},
 			{Label: "Quit", X: width/2 - 110, Y: 414, W: 220, H: 44, Action: ActionQuit},
 		},
-		backButton: Button{
+		settingsBackButton: Button{
 			Label:  "Back",
 			X:      width/2 - 110,
 			Y:      384,
 			W:      220,
 			H:      54,
 			Action: ActionBack,
+		},
+		newGameButtons: []Button{
+			{Label: "Cancel", X: width/2 - 230, Y: 386, W: 180, H: 52, Action: ActionBack},
+			{Label: "Start", X: width/2 + 50, Y: 386, W: 180, H: 52, Disabled: true},
 		},
 		titleFace: &text.GoTextFace{
 			Source: source,
@@ -132,13 +154,16 @@ func ActionAt(buttons []Button, x, y int) Action {
 }
 
 // Update applies pointer state to the menu and returns the selected action.
-func (m *Menu) Update(cursorX, cursorY int, clicked bool) Action {
-	m.hoverAction = ActionAt(m.activeButtons(), cursorX, cursorY)
-	if !clicked {
+func (m *Menu) Update(input Input) Action {
+	m.hoverAction = ActionAt(m.activeButtons(), input.CursorX, input.CursorY)
+	m.updateWizardName(input)
+
+	if !input.Clicked {
 		return ActionNone
 	}
 
-	action := ActionAt(m.activeButtons(), cursorX, cursorY)
+	m.updateWizardNameFocus(input.CursorX, input.CursorY)
+	action := ActionAt(m.activeButtons(), input.CursorX, input.CursorY)
 	m.handleAction(action)
 	return action
 }
@@ -151,7 +176,18 @@ func (m *Menu) Screen() Screen {
 // SetScreenForTest sets the current menu screen for screenshot capture and tests.
 func (m *Menu) SetScreenForTest(screen Screen) {
 	m.screen = screen
+	m.wizardNameFocused = screen == ScreenNewGame
 	m.hoverAction = ActionNone
+}
+
+// WizardName returns the current new-game Wizard name.
+func (m *Menu) WizardName() string {
+	return m.wizardName
+}
+
+// WizardNameFocused reports whether the Wizard name field is active.
+func (m *Menu) WizardNameFocused() bool {
+	return m.wizardNameFocused
 }
 
 // Draw renders the current menu screen.
@@ -160,7 +196,7 @@ func (m *Menu) Draw(screen *ebiten.Image) {
 	m.drawBackdrop(screen)
 	switch m.screen {
 	case ScreenNewGame:
-		m.drawPlaceholderPanel(screen, "New Game", "The first expedition is not prepared yet.")
+		m.drawNewGamePanel(screen)
 		m.drawButtons(screen, m.activeButtons())
 	case ScreenSettings:
 		m.drawSettingsPanel(screen)
@@ -176,21 +212,74 @@ func (m *Menu) handleAction(action Action) {
 	switch action {
 	case ActionNew:
 		m.screen = ScreenNewGame
+		m.wizardNameFocused = true
 	case ActionSettings:
 		m.screen = ScreenSettings
+		m.wizardNameFocused = false
 	case ActionBack:
 		m.screen = ScreenMain
+		m.wizardNameFocused = false
 	}
 }
 
 // activeButtons returns the buttons available on the current screen.
 func (m *Menu) activeButtons() []Button {
 	switch m.screen {
-	case ScreenNewGame, ScreenSettings:
-		return []Button{m.backButton}
+	case ScreenNewGame:
+		return m.newGameButtons
+	case ScreenSettings:
+		return []Button{m.settingsBackButton}
 	default:
 		return m.mainButtons
 	}
+}
+
+// updateWizardName applies text edits while the new-game name field is focused.
+func (m *Menu) updateWizardName(input Input) {
+	if m.screen != ScreenNewGame || !m.wizardNameFocused {
+		return
+	}
+
+	if input.Backspace {
+		m.wizardName = removeLastRune(m.wizardName)
+	}
+	for _, value := range input.Typed {
+		if !unicode.IsPrint(value) {
+			continue
+		}
+		if utf8.RuneCountInString(m.wizardName) >= wizardNameMaxRunes {
+			return
+		}
+		m.wizardName += string(value)
+	}
+}
+
+// updateWizardNameFocus handles pointer focus for the new-game name field.
+func (m *Menu) updateWizardNameFocus(cursorX, cursorY int) {
+	if m.screen != ScreenNewGame {
+		return
+	}
+	m.wizardNameFocused = m.wizardNameFieldContains(cursorX, cursorY)
+}
+
+// removeLastRune returns value without its final rune.
+func removeLastRune(value string) string {
+	if value == "" {
+		return ""
+	}
+	_, size := utf8.DecodeLastRuneInString(value)
+	return value[:len(value)-size]
+}
+
+// wizardNameFieldContains reports whether a point is inside the name field.
+func (m *Menu) wizardNameFieldContains(x, y int) bool {
+	fieldX, fieldY, fieldW, fieldH := m.wizardNameFieldBounds()
+	return x >= fieldX && x < fieldX+fieldW && y >= fieldY && y < fieldY+fieldH
+}
+
+// wizardNameFieldBounds returns the New Game Wizard name field rectangle.
+func (m *Menu) wizardNameFieldBounds() (int, int, int, int) {
+	return m.width/2 - 220, 282, 440, 54
 }
 
 // drawBackdrop paints simple fantasy accents behind the menu.
@@ -237,12 +326,12 @@ func (m *Menu) drawButtons(screen *ebiten.Image, buttons []Button) {
 
 		vector.FillRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), fill, false)
 		vector.StrokeRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), 3, edge, false)
-		m.drawCenteredText(screen, button.Label, m.buttonFace, float64(button.Y+9), labelColor)
+		m.drawCenteredButtonText(screen, button, labelColor)
 	}
 }
 
-// drawPlaceholderPanel renders a temporary screen reached from the main menu.
-func (m *Menu) drawPlaceholderPanel(screen *ebiten.Image, title, message string) {
+// drawNewGamePanel renders the new-game configuration screen.
+func (m *Menu) drawNewGamePanel(screen *ebiten.Image) {
 	panelX := float32(180)
 	panelY := float32(128)
 	panelW := float32(600)
@@ -252,8 +341,9 @@ func (m *Menu) drawPlaceholderPanel(screen *ebiten.Image, title, message string)
 	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
 	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
 
-	m.drawCenteredText(screen, title, m.titleFace, 174, textColor)
-	m.drawCenteredText(screen, message, m.bodyFace, 286, mutedTextColor)
+	m.drawCenteredText(screen, "New Game", m.titleFace, 158, textColor)
+	m.drawText(screen, "Wizard Name", m.bodyFace, float64(m.width/2-220), 248, mutedTextColor)
+	m.drawWizardNameField(screen)
 }
 
 // drawSettingsPanel renders the temporary settings screen.
@@ -270,11 +360,49 @@ func (m *Menu) drawSettingsPanel(screen *ebiten.Image) {
 	m.drawCenteredText(screen, "Settings", m.titleFace, 214, textColor)
 }
 
+// drawWizardNameField renders the editable Wizard name field.
+func (m *Menu) drawWizardNameField(screen *ebiten.Image) {
+	fieldX, fieldY, fieldW, fieldH := m.wizardNameFieldBounds()
+	edge := panelEdgeColor
+	if m.wizardNameFocused {
+		edge = textColor
+	}
+
+	vector.FillRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), color.RGBA{R: 31, G: 36, B: 32, A: 255}, false)
+	vector.StrokeRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), 3, edge, false)
+
+	value := m.wizardName
+	labelColor := textColor
+	if value == "" {
+		value = "Enter name"
+		labelColor = mutedTextColor
+	}
+	m.drawText(screen, value, m.buttonFace, float64(fieldX+18), float64(fieldY+11), labelColor)
+
+	if m.wizardNameFocused {
+		textWidth, _ := text.Measure(m.wizardName, m.buttonFace, m.buttonFace.Size)
+		caretX := float32(fieldX + 19 + int(textWidth))
+		vector.StrokeLine(screen, caretX, float32(fieldY+12), caretX, float32(fieldY+42), 2, textColor, false)
+	}
+}
+
 // drawCenteredText draws one line centered horizontally at the given y coordinate.
 func (m *Menu) drawCenteredText(screen *ebiten.Image, value string, face *text.GoTextFace, y float64, clr color.Color) {
 	width, _ := text.Measure(value, face, face.Size)
+	m.drawText(screen, value, face, (float64(m.width)-width)/2, y, clr)
+}
+
+// drawCenteredButtonText draws a button label centered inside its button bounds.
+func (m *Menu) drawCenteredButtonText(screen *ebiten.Image, button Button, clr color.Color) {
+	width, _ := text.Measure(button.Label, m.buttonFace, m.buttonFace.Size)
+	x := float64(button.X) + (float64(button.W)-width)/2
+	m.drawText(screen, button.Label, m.buttonFace, x, float64(button.Y+9), clr)
+}
+
+// drawText draws one line at the given coordinates.
+func (m *Menu) drawText(screen *ebiten.Image, value string, face *text.GoTextFace, x, y float64, clr color.Color) {
 	options := &text.DrawOptions{}
-	options.GeoM.Translate((float64(m.width)-width)/2, y)
+	options.GeoM.Translate(x, y)
 	options.ColorScale.ScaleWithColor(clr)
 	text.Draw(screen, value, face, options)
 }

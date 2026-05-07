@@ -35,12 +35,12 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "01-expanded-main-menu", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "03-new-game-configuration", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
-			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-placeholder.png")},
+			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{screen: menu.ScreenSettings, path: filepath.Join(basePath, "settings-placeholder.png")},
 		},
 	}

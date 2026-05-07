@@ -6,7 +6,7 @@
 
 `td` is planned as a PC tower-defense game prototype for a single local player. The intended game blends exploration, base-building, resource gathering, and conventional tower-defense encounters in a medieval wizardry fantasy setting.
 
-The current repository ships a small playable shell: a local Go/Ebitengine desktop app that opens a main menu, can navigate to placeholder New Game and Settings screens, shows Load as disabled, and can quit cleanly. It does not yet include tower-defense gameplay, exploration, base-building, resources, saves, real settings, campaign structure, art assets, release packaging, or CI.
+The current repository ships a small playable shell: a local Go/Ebitengine desktop app that opens a main menu, can navigate to a New Game configuration screen and a placeholder Settings screen, shows Load and New Game Start as disabled, accepts a Wizard name for future new games, and can quit cleanly. It does not yet include tower-defense gameplay, exploration, base-building, resources, saves, real settings, campaign structure, art assets, release packaging, or CI.
 
 ## Users and Jobs To Be Done
 
@@ -26,11 +26,11 @@ Future players are expected to want a strategy game where they explore, build a 
 
 ### Planning Workflow
 
-`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. `plans/00-initial-ebitengine-menu.md` initialized the Go module and Ebitengine app. `plans/01-expanded-main-menu.md` expands the main menu flow.
+`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. `plans/00-initial-ebitengine-menu.md` initialized the Go module and Ebitengine app. `plans/01-expanded-main-menu.md` expanded the main menu flow. `plans/03-new-game-configuration.md` adds the Wizard name configuration screen.
 
 ### Runtime Shell
 
-`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, pure menu behavior under `internal/menu/`, and Go tests for menu hit testing, disabled menu targets, and action selection.
+`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, pure menu behavior under `internal/menu/`, and Go tests for menu hit testing, disabled menu targets, action selection, screen routing, and Wizard name input behavior.
 
 ### Missing Gameplay And Operations
 
@@ -44,14 +44,15 @@ A contributor opens the repository, reads the root control documents, and sees t
 
 ### Main Menu Workflow
 
-A contributor runs `go run ./cmd/td` and sees a desktop window titled `td` with a medieval wizardry main menu. The menu offers `New`, `Load`, `Settings`, and `Quit`. Clicking `New` opens a placeholder New Game screen with a `Back` button. Clicking `Settings` opens a placeholder Settings screen with a `Back` button. Clicking either `Back` button returns to the main menu. `Load` is visibly disabled and does nothing because saving and loading do not exist yet. Clicking `Quit` closes the app cleanly.
+A contributor runs `go run ./cmd/td` and sees a desktop window titled `td` with a medieval wizardry main menu. The menu offers `New`, `Load`, `Settings`, and `Quit`. Clicking `New` opens a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button. Typing edits the Wizard name and Backspace removes the last typed character. Clicking `Cancel` returns to the main menu. Clicking `Settings` opens a placeholder Settings screen with a `Back` button. Clicking `Back` returns to the main menu. `Load` is visibly disabled and does nothing because saving and loading do not exist yet. Clicking `Quit` closes the app cleanly.
 
 ## Product Constraints and Known Limits
 
 - The current target is a local prototype only.
 - Distribution, release packaging, CI, license selection, and store targets are deferred.
-- The current playable shell intentionally includes only a small menu flow and quit behavior.
+- The current playable shell intentionally includes only a small menu flow, Wizard name entry for future new games, and quit behavior.
 - Saving the game and campaign structure are explicit non-goals for the first phase.
+- Starting a new game is not implemented; the New Game screen shows `Start` as disabled.
 - Settings are represented only by a placeholder screen; no configurable options exist yet.
 - Exploration, base-building, resource gathering, and tower-defense gameplay are intended but not implemented.
 
