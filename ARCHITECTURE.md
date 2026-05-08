@@ -2,7 +2,7 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository contains an early runtime shell: a Go module, a small Ebitengine executable, and a menu package that owns the current menu flow.
+The repository contains an early runtime shell: a Go module, a small Ebitengine executable, a menu package that owns the current menu flow, and a game package that owns the first logical game state.
 
 ## System Overview
 
@@ -12,9 +12,9 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 
 ## Codemap
 
-- `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, quit termination handling, pixel-sized Ebitengine layout, and process startup.
+- `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, pixel-sized Ebitengine layout, and process startup.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
-- `internal/game/` may later own top-level game state and transitions between menu, exploration, base-building, and defense scenes.
+- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, and placeholder game rendering. It may later grow into exploration, base-building, and defense scene state when those systems exist.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
 - `plans/` stores ordered ExecPlans. `plans/00-initial-ebitengine-menu.md` is the first implementation plan.
@@ -33,10 +33,21 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 4. `cmd/td` forwards pointer and keyboard input state to `internal/menu`.
 5. The menu package renders `New`, disabled `Load`, `Settings`, and `Quit`.
 6. When the user activates `New`, the menu switches to a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button.
-7. When the user activates `Settings`, the menu switches to a placeholder Settings screen with a `Back` button.
-8. When the user types on the New Game screen, the focused Wizard name field updates; Backspace removes the last typed character.
-9. When the user activates `Cancel` on New Game or `Back` on Settings, the menu returns to the main menu.
-10. When the user activates `Quit`, the menu reports a quit action and `cmd/td` returns Ebitengine's termination signal so the desktop app closes cleanly.
+7. When the user types on the New Game screen, the focused Wizard name field updates up to 32 characters; Backspace removes the last typed character.
+8. When the Wizard name is non-empty, the New Game `Start` button becomes active.
+9. When the user activates `Start`, `cmd/td` constructs `internal/game` state with the Wizard name and switches from menu mode to game mode.
+10. When the user activates `Settings`, the menu switches to a placeholder Settings screen with a `Back` button.
+11. When the user activates `Cancel` on New Game or `Back` on Settings, the menu returns to the main menu.
+12. When the user activates `Quit`, the menu reports a quit action and `cmd/td` returns Ebitengine's termination signal so the desktop app closes cleanly.
+
+### Current Game Flow
+
+1. A contributor starts a game from the New Game screen after entering a Wizard name.
+2. `cmd/td` routes Ebitengine updates and drawing to `internal/game`.
+3. The game package renders a placeholder field, the Wizard name, and a top-right logical update counter.
+4. While unpaused, each Ebitengine update advances the logical update counter by one.
+5. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
+6. While paused, the game renders a `PAUSED` label and does not increment the logical update counter.
 
 ### Future Gameplay Flow
 
@@ -51,10 +62,11 @@ This future flow is roadmap intent, not current behavior.
 ## Architectural Invariants
 
 - Keep Ebitengine process startup in `cmd/td/`.
+- Keep app-mode routing in `cmd/td/`; reusable game state and rules belong in `internal/game`.
 - Keep the current display policy as a pixel-sized drawable layout: the initial window is 1920x1080, resizes update menu geometry, and text remains raw-pixel-sized rather than stretched by framebuffer scaling.
 - Keep reusable game logic in `internal/` packages when it outgrows the entry point.
 - Keep pure state transitions, hit testing, and simple menu text input testable without opening a graphics window.
-- Keep the current menu screen switching explicit inside `internal/menu/` until there are enough real non-menu screens to justify a shared scene abstraction.
+- Keep the current menu and game transition explicit until there are enough real non-menu screens to justify a shared scene abstraction.
 - Do not let rendering helpers own gameplay rules.
 - Do not introduce save, campaign, networking, or distribution architecture during the first menu slice.
 - Keep `.codex/config.toml` limited to agent configuration.

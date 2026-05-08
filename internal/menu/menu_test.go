@@ -1,6 +1,11 @@
 package menu
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
+)
 
 const (
 	testWidth  = 1920
@@ -32,6 +37,7 @@ func TestActionAtReturnsMatchingButtonAction(t *testing.T) {
 		{Label: "Settings", X: 10, Y: 70, W: 100, H: 40, Action: ActionSettings},
 		{Label: "Back", X: 10, Y: 120, W: 100, H: 40, Action: ActionBack},
 		{Label: "Quit", X: 10, Y: 170, W: 100, H: 40, Action: ActionQuit},
+		{Label: "Start", X: 10, Y: 220, W: 100, H: 40, Action: ActionStart},
 	}
 
 	tests := []struct {
@@ -44,6 +50,7 @@ func TestActionAtReturnsMatchingButtonAction(t *testing.T) {
 		{name: "settings", x: 40, y: 80, want: ActionSettings},
 		{name: "back", x: 40, y: 130, want: ActionBack},
 		{name: "quit", x: 40, y: 180, want: ActionQuit},
+		{name: "start", x: 40, y: 230, want: ActionStart},
 	}
 
 	for _, test := range tests {
@@ -156,9 +163,23 @@ func TestWizardNameInputCapsLength(t *testing.T) {
 	}
 	menu.SetScreenForTest(ScreenNewGame)
 
-	menu.Update(Input{Typed: []rune("SixteenRuneNamesAndMore")})
+	menu.Update(Input{Typed: []rune(strings.Repeat("a", wizardNameMaxRunes+4))})
 	if got := len([]rune(menu.WizardName())); got != wizardNameMaxRunes {
 		t.Fatalf("wizard name length = %d, want %d", got, wizardNameMaxRunes)
+	}
+}
+
+// TestWizardNameMaxLengthFitsField verifies the field can display 32 runes.
+func TestWizardNameMaxLengthFitsField(t *testing.T) {
+	menu, err := New(testWidth, testHeight)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fieldX, _, fieldW, _ := menu.wizardNameFieldBounds()
+	width, _ := text.Measure(strings.Repeat("W", wizardNameMaxRunes), menu.nameFace, menu.nameFace.Size)
+	if int(width) > fieldW-36 {
+		t.Fatalf("max name width = %d, want at most %d inside field at x %d", int(width), fieldW-36, fieldX)
 	}
 }
 
@@ -196,8 +217,8 @@ func TestMenuResizeRecentersButtonTargets(t *testing.T) {
 	}
 }
 
-// TestDisabledStartDoesNothing verifies Start is visible but inert.
-func TestDisabledStartDoesNothing(t *testing.T) {
+// TestStartIsDisabledWithoutWizardName verifies Start is inert before name entry.
+func TestStartIsDisabledWithoutWizardName(t *testing.T) {
 	menu, err := New(testWidth, testHeight)
 	if err != nil {
 		t.Fatal(err)
@@ -207,6 +228,24 @@ func TestDisabledStartDoesNothing(t *testing.T) {
 	startButton := menu.disabledButtonWithLabel("Start")
 	if action := menu.Update(clickInput(startButton)); action != ActionNone {
 		t.Fatalf("Update(start click) = %v, want %v", action, ActionNone)
+	}
+	if menu.Screen() != ScreenNewGame {
+		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenNewGame)
+	}
+}
+
+// TestStartBecomesActiveWithWizardName verifies a named Wizard can start.
+func TestStartBecomesActiveWithWizardName(t *testing.T) {
+	menu, err := New(testWidth, testHeight)
+	if err != nil {
+		t.Fatal(err)
+	}
+	menu.SetScreenForTest(ScreenNewGame)
+
+	menu.Update(Input{Typed: []rune("Merlin")})
+	startButton := menu.buttonForAction(ActionStart)
+	if action := menu.Update(clickInput(startButton)); action != ActionStart {
+		t.Fatalf("Update(start click) = %v, want %v", action, ActionStart)
 	}
 	if menu.Screen() != ScreenNewGame {
 		t.Fatalf("screen = %v, want %v", menu.Screen(), ScreenNewGame)

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"td/internal/game"
 	"td/internal/menu"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -20,8 +21,31 @@ type screenshotApp struct {
 }
 
 type screenshotTarget struct {
-	screen menu.Screen
-	path   string
+	screen     menu.Screen
+	wizardName string
+	paused     bool
+	path       string
+}
+
+// TestStartGameSwitchesToGameMode verifies app-level game startup.
+func TestStartGameSwitchesToGameMode(t *testing.T) {
+	app, err := newApp()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := app.startGame("Merlin"); err != nil {
+		t.Fatal(err)
+	}
+	if app.mode != appModeGame {
+		t.Fatalf("mode = %v, want %v", app.mode, appModeGame)
+	}
+	if app.gameState == nil {
+		t.Fatal("expected game state after starting")
+	}
+	if app.gameState.WizardName() != "Merlin" {
+		t.Fatalf("wizard name = %q, want %q", app.gameState.WizardName(), "Merlin")
+	}
 }
 
 // TestCaptureMainMenuScreenshot writes visual evidence when explicitly enabled.
@@ -35,13 +59,14 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "04-resolution-and-pixel-text-scaling", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "05-main-game-update-loop", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
-			{screen: menu.ScreenSettings, path: filepath.Join(basePath, "settings-placeholder.png")},
+			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
+			{wizardName: "Merlin", paused: true, path: filepath.Join(basePath, "paused-game.png")},
 		},
 	}
 
@@ -60,7 +85,21 @@ func (a *screenshotApp) Update() error {
 	if a.index >= len(a.targets) {
 		return ebiten.Termination
 	}
-	a.app.mainMenu.SetScreenForTest(a.targets[a.index].screen)
+	target := a.targets[a.index]
+	if target.wizardName != "" {
+		if err := a.app.startGame(target.wizardName); err != nil {
+			return err
+		}
+		a.app.gameState.Update(game.Input{})
+		if target.paused {
+			a.app.gameState.Update(game.Input{TogglePause: true})
+		}
+		return nil
+	}
+
+	a.app.mode = appModeMenu
+	a.app.gameState = nil
+	a.app.mainMenu.SetScreenForTest(target.screen)
 	return nil
 }
 

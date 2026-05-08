@@ -16,13 +16,13 @@ import (
 type Action int
 
 const (
-	wizardNameMaxRunes = 16
+	wizardNameMaxRunes = 32
 )
 
 const (
 	mainPanelWidth       = 520
 	mainPanelHeight      = 398
-	screenPanelWidth     = 600
+	screenPanelWidth     = 840
 	screenPanelHeight    = 340
 	menuButtonWidth      = 220
 	menuButtonHeight     = 44
@@ -31,7 +31,7 @@ const (
 	screenButtonHeight   = 52
 	screenButtonGap      = 100
 	settingsButtonHeight = 54
-	nameFieldWidth       = 440
+	nameFieldWidth       = 680
 	nameFieldHeight      = 54
 )
 
@@ -46,6 +46,8 @@ const (
 	ActionBack
 	// ActionQuit means the app should terminate cleanly.
 	ActionQuit
+	// ActionStart means the app should leave the menu and begin the game.
+	ActionStart
 )
 
 // Button describes a rectangular menu target and the action it selects.
@@ -106,6 +108,7 @@ type Menu struct {
 	titleFace          *text.GoTextFace
 	bodyFace           *text.GoTextFace
 	buttonFace         *text.GoTextFace
+	nameFace           *text.GoTextFace
 }
 
 // New creates the menu state and font faces.
@@ -129,6 +132,10 @@ func New(width, height int) (*Menu, error) {
 		buttonFace: &text.GoTextFace{
 			Source: source,
 			Size:   30,
+		},
+		nameFace: &text.GoTextFace{
+			Source: source,
+			Size:   20,
 		},
 	}
 	menu.layoutButtons()
@@ -156,7 +163,9 @@ func ActionAt(buttons []Button, x, y int) Action {
 // Update applies pointer state to the menu and returns the selected action.
 func (m *Menu) Update(input Input) Action {
 	m.hoverAction = ActionAt(m.activeButtons(), input.CursorX, input.CursorY)
-	m.updateWizardName(input)
+	if m.updateWizardName(input) {
+		m.layoutButtons()
+	}
 
 	if !input.Clicked {
 		return ActionNone
@@ -273,28 +282,33 @@ func (m *Menu) layoutButtons() {
 	totalButtonWidth := 2*screenButtonWidth + screenButtonGap
 	m.newGameButtons = []Button{
 		{Label: "Cancel", X: centerX - totalButtonWidth/2, Y: screenButtonY, W: screenButtonWidth, H: screenButtonHeight, Action: ActionBack},
-		{Label: "Start", X: centerX - totalButtonWidth/2 + screenButtonWidth + screenButtonGap, Y: screenButtonY, W: screenButtonWidth, H: screenButtonHeight, Disabled: true},
+		{Label: "Start", X: centerX - totalButtonWidth/2 + screenButtonWidth + screenButtonGap, Y: screenButtonY, W: screenButtonWidth, H: screenButtonHeight, Action: ActionStart, Disabled: m.wizardName == ""},
 	}
 }
 
-// updateWizardName applies text edits while the new-game name field is focused.
-func (m *Menu) updateWizardName(input Input) {
+// updateWizardName applies text edits and reports whether the name changed.
+func (m *Menu) updateWizardName(input Input) bool {
 	if m.screen != ScreenNewGame || !m.wizardNameFocused {
-		return
+		return false
 	}
 
+	changed := false
 	if input.Backspace {
-		m.wizardName = removeLastRune(m.wizardName)
+		next := removeLastRune(m.wizardName)
+		changed = next != m.wizardName
+		m.wizardName = next
 	}
 	for _, value := range input.Typed {
 		if !unicode.IsPrint(value) {
 			continue
 		}
 		if utf8.RuneCountInString(m.wizardName) >= wizardNameMaxRunes {
-			return
+			return changed
 		}
 		m.wizardName += string(value)
+		changed = true
 	}
+	return changed
 }
 
 // updateWizardNameFocus handles pointer focus for the new-game name field.
@@ -430,10 +444,10 @@ func (m *Menu) drawWizardNameField(screen *ebiten.Image) {
 		value = "Enter name"
 		labelColor = mutedTextColor
 	}
-	m.drawText(screen, value, m.buttonFace, float64(fieldX+18), float64(fieldY+11), labelColor)
+	m.drawText(screen, value, m.nameFace, float64(fieldX+18), float64(fieldY+15), labelColor)
 
 	if m.wizardNameFocused {
-		textWidth, _ := text.Measure(m.wizardName, m.buttonFace, m.buttonFace.Size)
+		textWidth, _ := text.Measure(m.wizardName, m.nameFace, m.nameFace.Size)
 		caretX := float32(fieldX + 19 + int(textWidth))
 		vector.StrokeLine(screen, caretX, float32(fieldY+12), caretX, float32(fieldY+42), 2, textColor, false)
 	}

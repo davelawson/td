@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 
+	"td/internal/game"
 	"td/internal/menu"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -16,8 +17,19 @@ const (
 )
 
 type app struct {
-	mainMenu *menu.Menu
+	mode      appMode
+	width     int
+	height    int
+	mainMenu  *menu.Menu
+	gameState *game.State
 }
+
+type appMode int
+
+const (
+	appModeMenu appMode = iota
+	appModeGame
+)
 
 // main starts the Ebitengine desktop application.
 func main() {
@@ -40,11 +52,26 @@ func newApp() (*app, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &app{mainMenu: mainMenu}, nil
+	return &app{
+		mode:     appModeMenu,
+		width:    defaultWindowWidth,
+		height:   defaultWindowHeight,
+		mainMenu: mainMenu,
+	}, nil
 }
 
-// Update handles pointer input and returns a clean termination signal on quit.
+// Update routes Ebitengine input to the active app mode.
 func (a *app) Update() error {
+	switch a.mode {
+	case appModeGame:
+		return a.updateGame()
+	default:
+		return a.updateMenu()
+	}
+}
+
+// updateMenu handles menu input and mode transitions.
+func (a *app) updateMenu() error {
 	cursorX, cursorY := ebiten.CursorPosition()
 	input := menu.Input{
 		CursorX:   cursorX,
@@ -53,15 +80,31 @@ func (a *app) Update() error {
 		Typed:     ebiten.AppendInputChars(nil),
 		Backspace: inpututil.IsKeyJustPressed(ebiten.KeyBackspace),
 	}
-	if action := a.mainMenu.Update(input); action == menu.ActionQuit {
+	switch action := a.mainMenu.Update(input); action {
+	case menu.ActionQuit:
 		return ebiten.Termination
+	case menu.ActionStart:
+		return a.startGame(a.mainMenu.WizardName())
 	}
+	return nil
+}
+
+// updateGame handles in-game input and logical updates.
+func (a *app) updateGame() error {
+	a.gameState.Update(game.Input{
+		TogglePause: inpututil.IsKeyJustPressed(ebiten.KeySpace),
+	})
 	return nil
 }
 
 // Draw renders the current game screen.
 func (a *app) Draw(screen *ebiten.Image) {
-	a.mainMenu.Draw(screen)
+	switch a.mode {
+	case appModeGame:
+		a.gameState.Draw(screen)
+	default:
+		a.mainMenu.Draw(screen)
+	}
 }
 
 // Layout returns a pixel-sized drawable layout for the current window.
@@ -70,6 +113,24 @@ func (a *app) Layout(outsideWidth, outsideHeight int) (int, int) {
 		outsideWidth = defaultWindowWidth
 		outsideHeight = defaultWindowHeight
 	}
-	a.mainMenu.Resize(outsideWidth, outsideHeight)
+	a.width = outsideWidth
+	a.height = outsideHeight
+	if a.mainMenu != nil {
+		a.mainMenu.Resize(outsideWidth, outsideHeight)
+	}
+	if a.gameState != nil {
+		a.gameState.Resize(outsideWidth, outsideHeight)
+	}
 	return outsideWidth, outsideHeight
+}
+
+// startGame creates the first game state and closes the menu.
+func (a *app) startGame(wizardName string) error {
+	gameState, err := game.New(wizardName, a.width, a.height)
+	if err != nil {
+		return err
+	}
+	a.mode = appModeGame
+	a.gameState = gameState
+	return nil
 }
