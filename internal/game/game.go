@@ -16,17 +16,27 @@ import (
 // Input describes one frame of game input collected by the executable.
 type Input struct {
 	TogglePause bool
+	ToggleMenu  bool
+	CursorX     int
+	CursorY     int
+	Clicked     bool
 }
 
 // State owns the current game state and logical update rules.
 type State struct {
-	wizardName string
-	width      int
-	height     int
-	updates    int
-	paused     bool
-	titleFace  *text.GoTextFace
-	bodyFace   *text.GoTextFace
+	wizardName           string
+	width                int
+	height               int
+	updates              int
+	paused               bool
+	pausedBeforeMenu     bool
+	ingameMenuOpen       bool
+	ingameMenuButtons    []ingameMenuButton
+	ingameMenuHover      int
+	titleFace            *text.GoTextFace
+	bodyFace             *text.GoTextFace
+	ingameMenuTitleFace  *text.GoTextFace
+	ingameMenuButtonFace *text.GoTextFace
 }
 
 var (
@@ -60,7 +70,16 @@ func New(wizardName string, width, height int) (*State, error) {
 			Source: source,
 			Size:   24,
 		},
+		ingameMenuTitleFace: &text.GoTextFace{
+			Source: source,
+			Size:   46,
+		},
+		ingameMenuButtonFace: &text.GoTextFace{
+			Source: source,
+			Size:   28,
+		},
 	}
+	state.layoutIngameMenu()
 	return state, nil
 }
 
@@ -71,18 +90,27 @@ func (s *State) Resize(width, height int) {
 	}
 	s.width = width
 	s.height = height
+	s.layoutIngameMenu()
 }
 
 // Update applies game input and advances one logical update when unpaused.
-func (s *State) Update(input Input) {
+func (s *State) Update(input Input) Action {
+	if s.ingameMenuOpen {
+		return s.updateIngameMenu(input)
+	}
+	if input.ToggleMenu {
+		s.openIngameMenu()
+		return ActionNone
+	}
 	if input.TogglePause {
 		s.paused = !s.paused
-		return
+		return ActionNone
 	}
 	if s.paused {
-		return
+		return ActionNone
 	}
 	s.updates++
+	return ActionNone
 }
 
 // Draw renders the current game screen.
@@ -91,6 +119,7 @@ func (s *State) Draw(screen *ebiten.Image) {
 	s.drawPrototypeField(screen)
 	s.drawWizardName(screen)
 	s.drawCounter(screen)
+	s.drawIngameMenu(screen)
 }
 
 // Updates returns the number of logical game updates processed.
@@ -101,6 +130,11 @@ func (s *State) Updates() int {
 // Paused reports whether logical updates are currently paused.
 func (s *State) Paused() bool {
 	return s.paused
+}
+
+// IngameMenuOpen reports whether the in-game overlay menu is visible.
+func (s *State) IngameMenuOpen() bool {
+	return s.ingameMenuOpen
 }
 
 // WizardName returns the Wizard name used to start the game.

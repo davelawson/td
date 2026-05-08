@@ -210,6 +210,13 @@ func (m *Menu) SetScreenForTest(screen Screen) {
 	m.hoverAction = ActionNone
 }
 
+// ResetToMain returns the menu to its top-level screen.
+func (m *Menu) ResetToMain() {
+	m.screen = ScreenMain
+	m.wizardNameFocused = false
+	m.hoverAction = ActionNone
+}
+
 // WizardName returns the current new-game Wizard name.
 func (m *Menu) WizardName() string {
 	return m.wizardName

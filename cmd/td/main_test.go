@@ -24,6 +24,7 @@ type screenshotTarget struct {
 	screen     menu.Screen
 	wizardName string
 	paused     bool
+	ingameMenu bool
 	path       string
 }
 
@@ -48,6 +49,32 @@ func TestStartGameSwitchesToGameMode(t *testing.T) {
 	}
 }
 
+// TestSurrenderReturnsToMainMenu verifies app-level surrender routing.
+func TestSurrenderReturnsToMainMenu(t *testing.T) {
+	app, err := newApp()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := app.startGame("Merlin"); err != nil {
+		t.Fatal(err)
+	}
+
+	app.gameState.Update(game.Input{ToggleMenu: true})
+	if action := app.gameState.Update(gameClickInput(app.gameState, 1)); action != game.ActionSurrender {
+		t.Fatalf("Update(surrender click) = %v, want %v", action, game.ActionSurrender)
+	}
+	app.returnToMainMenu()
+	if app.mode != appModeMenu {
+		t.Fatalf("mode = %v, want %v", app.mode, appModeMenu)
+	}
+	if app.gameState != nil {
+		t.Fatal("expected surrender to clear game state")
+	}
+	if app.mainMenu.Screen() != menu.ScreenMain {
+		t.Fatalf("screen = %v, want %v", app.mainMenu.Screen(), menu.ScreenMain)
+	}
+}
+
 // TestCaptureMainMenuScreenshot writes visual evidence when explicitly enabled.
 func TestCaptureMainMenuScreenshot(t *testing.T) {
 	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
@@ -59,7 +86,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "05-main-game-update-loop", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "06-ingame-menu-overlay", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -67,6 +94,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
 			{wizardName: "Merlin", paused: true, path: filepath.Join(basePath, "paused-game.png")},
+			{wizardName: "Merlin", ingameMenu: true, path: filepath.Join(basePath, "ingame-menu.png")},
 		},
 	}
 
@@ -93,6 +121,9 @@ func (a *screenshotApp) Update() error {
 		a.app.gameState.Update(game.Input{})
 		if target.paused {
 			a.app.gameState.Update(game.Input{TogglePause: true})
+		}
+		if target.ingameMenu {
+			a.app.gameState.Update(game.Input{ToggleMenu: true})
 		}
 		return nil
 	}
@@ -127,4 +158,24 @@ func (a *screenshotApp) Draw(screen *ebiten.Image) {
 		panic(err)
 	}
 	a.index++
+}
+
+// gameClickInput returns a click at the center of a known in-game menu button.
+func gameClickInput(state *game.State, buttonIndex int) game.Input {
+	switch buttonIndex {
+	case 0:
+		return game.Input{CursorX: stateCenterX(state), CursorY: stateCenterY(state), Clicked: true}
+	default:
+		return game.Input{CursorX: stateCenterX(state), CursorY: stateCenterY(state) + 68, Clicked: true}
+	}
+}
+
+// stateCenterX returns the test window horizontal center.
+func stateCenterX(_ *game.State) int {
+	return defaultWindowWidth / 2
+}
+
+// stateCenterY returns the top in-game button vertical center.
+func stateCenterY(_ *game.State) int {
+	return defaultWindowHeight/2 + 8
 }

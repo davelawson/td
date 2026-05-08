@@ -91,9 +91,17 @@ func (a *app) updateMenu() error {
 
 // updateGame handles in-game input and logical updates.
 func (a *app) updateGame() error {
-	a.gameState.Update(game.Input{
+	cursorX, cursorY := ebiten.CursorPosition()
+	switch action := a.gameState.Update(game.Input{
 		TogglePause: inpututil.IsKeyJustPressed(ebiten.KeySpace),
-	})
+		ToggleMenu:  inpututil.IsKeyJustPressed(ebiten.KeyEscape),
+		CursorX:     cursorX,
+		CursorY:     cursorY,
+		Clicked:     inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft),
+	}); action {
+	case game.ActionSurrender:
+		a.returnToMainMenu()
+	}
 	return nil
 }
 
@@ -133,4 +141,11 @@ func (a *app) startGame(wizardName string) error {
 	a.mode = appModeGame
 	a.gameState = gameState
 	return nil
+}
+
+// returnToMainMenu leaves the active game and shows the top-level menu.
+func (a *app) returnToMainMenu() {
+	a.mode = appModeMenu
+	a.gameState = nil
+	a.mainMenu.ResetToMain()
 }

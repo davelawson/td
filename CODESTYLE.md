@@ -2,7 +2,7 @@
 
 `CODESTYLE.md` is the durable source of truth for source formatting, naming, documentation style, commenting standards, and file-size expectations in `td`.
 
-The project does not yet contain runtime code. The first implementation plan will introduce Go code for a local Ebitengine prototype.
+The project contains Go runtime code for a local Ebitengine prototype.
 
 ## Scope
 

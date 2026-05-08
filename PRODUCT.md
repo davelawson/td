@@ -6,7 +6,7 @@
 
 `td` is planned as a PC tower-defense game prototype for a single local player. The intended game blends exploration, base-building, resource gathering, and conventional tower-defense encounters in a medieval wizardry fantasy setting.
 
-The current repository ships a small playable shell: a local Go/Ebitengine desktop app that opens a 1920x1080 main menu, can navigate to a New Game configuration screen and a placeholder Settings screen, accepts a Wizard name up to 32 characters, starts a first game screen after a name is entered, tracks logical game updates in a top-right counter, toggles pause with SPACE, and can quit cleanly from the main menu. Its resizable window uses a pixel-sized drawable layout so text does not stretch when the window is enlarged. It does not yet include tower-defense combat, exploration, base-building, resources, saves, real settings, campaign structure, art assets, release packaging, or CI.
+The current repository ships a small playable shell: a local Go/Ebitengine desktop app that opens a 1920x1080 main menu, can navigate to a New Game configuration screen and a placeholder Settings screen, accepts a Wizard name up to 32 characters, starts a first game screen after a name is entered, tracks logical game updates in a top-right counter, toggles pause with SPACE, opens an in-game overlay menu with ESC, and can quit cleanly from the main menu. Its resizable window uses a pixel-sized drawable layout so text does not stretch when the window is enlarged. It does not yet include tower-defense combat, exploration, base-building, resources, saves, real settings, campaign structure, art assets, release packaging, or CI.
 
 ## Users and Jobs To Be Done
 
@@ -26,11 +26,11 @@ Future players are expected to want a strategy game where they explore, build a 
 
 ### Planning Workflow
 
-`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. `plans/00-initial-ebitengine-menu.md` initialized the Go module and Ebitengine app. `plans/01-expanded-main-menu.md` expanded the main menu flow. `plans/03-new-game-configuration.md` adds the Wizard name configuration screen. `plans/04-resolution-and-pixel-text-scaling.md` sets the 1920x1080 default window and current resize policy. `plans/05-main-game-update-loop.md` adds the first game state, update counter, and pause behavior.
+`Core`: Substantial work must use an ordered ExecPlan under `plans/`, following `PLANS.md`. `plans/00-initial-ebitengine-menu.md` initialized the Go module and Ebitengine app. `plans/01-expanded-main-menu.md` expanded the main menu flow. `plans/03-new-game-configuration.md` adds the Wizard name configuration screen. `plans/04-resolution-and-pixel-text-scaling.md` sets the 1920x1080 default window and current resize policy. `plans/05-main-game-update-loop.md` adds the first game state, update counter, and pause behavior. `plans/06-ingame-menu-overlay.md` adds the ESC in-game overlay menu.
 
 ### Runtime Shell
 
-`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, pure menu behavior under `internal/menu/`, pure game-update behavior under `internal/game/`, and Go tests for menu hit testing, disabled menu targets, action selection, screen routing, Wizard name input behavior, app mode startup, game update counting, and pause behavior.
+`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, pure menu behavior under `internal/menu/`, pure game-update behavior under `internal/game/`, and Go tests for menu hit testing, disabled menu targets, action selection, screen routing, Wizard name input behavior, app mode startup, game update counting, pause behavior, and in-game menu behavior.
 
 ### Missing Gameplay And Operations
 
@@ -44,13 +44,13 @@ A contributor opens the repository, reads the root control documents, and sees t
 
 ### Main Menu Workflow
 
-A contributor runs `go run ./cmd/td` and sees a 1920x1080 desktop window titled `td` with a medieval wizardry main menu. Resizing the window recenters the menu in the current drawable area while text keeps its raw pixel size. The menu offers `New`, `Load`, `Settings`, and `Quit`. Clicking `New` opens a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button. Typing edits the Wizard name up to 32 characters and Backspace removes the last typed character. Once the name is non-empty, `Start` becomes active. Clicking `Start` closes the menu and opens the first game screen. The game screen shows the Wizard name, a placeholder field, and a top-right logical update counter. Pressing SPACE toggles pause; while paused, a `PAUSED` label appears and the logical update counter stops advancing. Clicking `Cancel` on the New Game screen returns to the main menu. Clicking `Settings` opens a placeholder Settings screen with a `Back` button. Clicking `Back` returns to the main menu. `Load` is visibly disabled and does nothing because saving and loading do not exist yet. Clicking `Quit` closes the app cleanly from the main menu.
+A contributor runs `go run ./cmd/td` and sees a 1920x1080 desktop window titled `td` with a medieval wizardry main menu. Resizing the window recenters the menu in the current drawable area while text keeps its raw pixel size. The menu offers `New`, `Load`, `Settings`, and `Quit`. Clicking `New` opens a New Game configuration screen with a focused Wizard name field, disabled `Start` button, and active `Cancel` button. Typing edits the Wizard name up to 32 characters and Backspace removes the last typed character. Once the name is non-empty, `Start` becomes active. Clicking `Start` closes the menu and opens the first game screen. The game screen shows the Wizard name, a placeholder field, and a top-right logical update counter. Pressing SPACE toggles pause; while paused, a `PAUSED` label appears and the logical update counter stops advancing. Pressing ESC in the game opens a centered in-game menu over the still-visible game view, darkens the rest of the scene by about 50%, pauses the game, and offers `Resume` and `Surrender`. Pressing ESC again or clicking `Resume` closes the overlay and restores the previous pause state. Clicking `Surrender` leaves the game and returns to the main menu. Clicking `Cancel` on the New Game screen returns to the main menu. Clicking `Settings` opens a placeholder Settings screen with a `Back` button. Clicking `Back` returns to the main menu. `Load` is visibly disabled and does nothing because saving and loading do not exist yet. Clicking `Quit` closes the app cleanly from the main menu.
 
 ## Product Constraints and Known Limits
 
 - The current target is a local prototype only.
 - Distribution, release packaging, CI, license selection, and store targets are deferred.
-- The current playable shell intentionally includes only a small menu flow, Wizard name entry, a first game screen, a logical update counter, pause behavior, and quit behavior.
+- The current playable shell intentionally includes only a small menu flow, Wizard name entry, a first game screen, a logical update counter, pause behavior, an in-game overlay menu, surrender-to-menu behavior, and quit behavior.
 - Saving the game and campaign structure are explicit non-goals for the first phase.
 - Starting a new game only opens the first placeholder game state; exploration, base-building, resources, and combat are not implemented.
 - Settings are represented only by a placeholder screen; no configurable options exist yet.

@@ -2,7 +2,7 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository contains an early runtime shell: a Go module, a small Ebitengine executable, a menu package that owns the current menu flow, and a game package that owns the first logical game state.
+The repository contains an early runtime shell: a Go module, a small Ebitengine executable, a menu package that owns the current menu flow, and a game package that owns the first logical game state and in-game overlay menu.
 
 ## System Overview
 
@@ -12,9 +12,9 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 
 ## Codemap
 
-- `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, pixel-sized Ebitengine layout, and process startup.
+- `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, surrender-to-menu handling, pixel-sized Ebitengine layout, and process startup.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
-- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, and placeholder game rendering. It may later grow into exploration, base-building, and defense scene state when those systems exist.
+- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, in-game overlay menu behavior, and placeholder game rendering. It may later grow into exploration, base-building, and defense scene state when those systems exist.
 - `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
@@ -49,6 +49,10 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 4. While unpaused, each Ebitengine update advances the logical update counter by one.
 5. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
 6. While paused, the game renders a `PAUSED` label and does not increment the logical update counter.
+7. When the user presses ESC, `cmd/td` passes overlay-menu input to `internal/game`.
+8. The game package opens a centered in-game menu, pauses the game, draws it over the still-visible game scene, and darkens the rest of the scene by about 50%.
+9. When the user presses ESC again or clicks `Resume`, the game package closes the overlay and restores the pause state from before the overlay opened.
+10. When the user clicks `Surrender`, `internal/game` returns a surrender action to `cmd/td`, and `cmd/td` discards the active game state and returns to the top-level main menu.
 
 ### Future Gameplay Flow
 
@@ -66,6 +70,7 @@ This future flow is roadmap intent, not current behavior.
 - Keep app-mode routing in `cmd/td/`; reusable game state and rules belong in `internal/game`.
 - Keep the current display policy as a pixel-sized drawable layout: the initial window is 1920x1080, resizes update menu geometry, and text remains raw-pixel-sized rather than stretched by framebuffer scaling.
 - Keep reusable game logic in `internal/` packages when it outgrows the entry point.
+- Keep in-game overlay behavior inside `internal/game` while it is tightly coupled to game pause state and game rendering.
 - Keep pure state transitions, hit testing, and simple menu text input testable without opening a graphics window.
 - Keep the current menu and game transition explicit until there are enough real non-menu screens to justify a shared scene abstraction.
 - Do not let rendering helpers own gameplay rules.
