@@ -64,6 +64,7 @@ The current phase is not trying to build campaign progression, save/load, multip
 
 - `README.md` explains repository status, commands, and layout.
 - `ROADMAP.md` explains intended future direction.
+- `GAME.md` records intended game design decisions and open gameplay questions, including planned behavior that may not exist yet.
 - `DESIGN.md` captures the fantasy design direction and UI review expectations.
 - `CODESTYLE.md` defines source conventions and file-size expectations.
 - `ARCHITECTURE.md` explains intended code structure and boundaries.

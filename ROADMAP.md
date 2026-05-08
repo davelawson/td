@@ -51,6 +51,7 @@ The current roadmap window does not prioritize saving games, campaign progressio
 ## Relationship To Other Control Documents
 
 - `PRODUCT.md` describes current product truth.
+- `GAME.md` records intended game design decisions and open gameplay questions.
 - `README.md` explains onboarding, status, commands, and layout.
 - `DESIGN.md` captures the intended fantasy visual language.
 - `ARCHITECTURE.md` describes intended code structure and boundaries.
@@ -58,7 +59,7 @@ The current roadmap window does not prioritize saving games, campaign progressio
 - `PLANS.md` describes how substantial work is planned.
 - `AGENTS.md` describes repository-specific coding-agent behavior.
 
-`ROADMAP.md` may describe capabilities that do not exist yet. `PRODUCT.md` should only describe current reality.
+`ROADMAP.md` may describe capabilities that do not exist yet. `GAME.md` should hold intended gameplay design details and decisions. `PRODUCT.md` should only describe current reality.
 
 ## Open Questions
 

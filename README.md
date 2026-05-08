@@ -30,6 +30,7 @@ Use these commands from the repository root:
 - `CODESTYLE.md` defines Go-oriented source conventions, commenting requirements, and file-size expectations.
 - `cmd/td/` contains the Ebitengine executable entry point.
 - `DESIGN.md` records the medieval wizardry design direction and UI review expectations.
+- `GAME.md` records intended game design decisions and open gameplay questions regardless of implementation state.
 - `go.mod` and `go.sum` define the Go module and runtime dependencies.
 - `internal/game/` contains testable game state and logical update behavior.
 - `internal/menu/` contains testable menu hit-testing, action-selection, screen-routing, and Wizard name input behavior.

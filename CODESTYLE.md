@@ -50,6 +50,7 @@ Keep durable truth in the file that owns it:
 
 - `PRODUCT.md` describes current product capabilities, workflows, constraints, and user-visible limits.
 - `ROADMAP.md` describes durable future direction, intended audience, planned capabilities, priorities, and non-priorities.
+- `GAME.md` describes intended game design decisions, player fantasy, gameplay pillars, planned systems, and open game-design questions.
 - `DESIGN.md` describes semantic visual direction and UI review expectations.
 - `README.md` describes onboarding, commands, repository layout, and user-facing project context.
 - `PLANS.md` describes how ExecPlans must be written and maintained.
