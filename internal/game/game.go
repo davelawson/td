@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"image/color"
 
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -28,12 +30,15 @@ type State struct {
 }
 
 var (
-	backgroundColor = color.RGBA{R: 16, G: 20, B: 17, A: 255}
-	fieldColor      = color.RGBA{R: 35, G: 48, B: 39, A: 255}
-	fieldEdgeColor  = color.RGBA{R: 122, G: 105, B: 61, A: 255}
-	textColor       = color.RGBA{R: 238, G: 224, B: 188, A: 255}
-	mutedTextColor  = color.RGBA{R: 184, G: 172, B: 139, A: 255}
-	pauseColor      = color.RGBA{R: 150, G: 124, B: 49, A: 255}
+	backgroundColor  = ui.CharcoalBlack
+	fieldColor       = ui.PineGreen
+	fieldEdgeColor   = ui.Bronze
+	textColor        = ui.Parchment
+	mutedTextColor   = ui.MutedParchment
+	pauseColor       = ui.LightBronze
+	fieldAccentColor = ui.Purple
+	pathColor        = ui.OliveBrown
+	clearingColor    = ui.MossGreen
 )
 
 // New creates the initial game state for a Wizard name.
@@ -112,11 +117,11 @@ func (s *State) drawPrototypeField(screen *ebiten.Image) {
 
 	vector.FillRect(screen, fieldX, fieldY, fieldW, fieldH, fieldColor, false)
 	vector.StrokeRect(screen, fieldX, fieldY, fieldW, fieldH, 4, fieldEdgeColor, false)
-	vector.StrokeRect(screen, fieldX+18, fieldY+18, fieldW-36, fieldH-36, 1.5, color.RGBA{R: 98, G: 90, B: 145, A: 255}, false)
+	vector.StrokeRect(screen, fieldX+18, fieldY+18, fieldW-36, fieldH-36, 1.5, fieldAccentColor, false)
 
 	pathY := fieldY + fieldH/2
-	vector.StrokeLine(screen, fieldX+70, pathY, fieldX+fieldW-70, pathY, 10, color.RGBA{R: 85, G: 77, B: 54, A: 255}, false)
-	vector.FillCircle(screen, fieldX+fieldW/2, pathY, 42, color.RGBA{R: 69, G: 75, B: 62, A: 255}, false)
+	vector.StrokeLine(screen, fieldX+70, pathY, fieldX+fieldW-70, pathY, 10, pathColor, false)
+	vector.FillCircle(screen, fieldX+fieldW/2, pathY, 42, clearingColor, false)
 	vector.StrokeCircle(screen, fieldX+fieldW/2, pathY, 42, 3, fieldEdgeColor, false)
 }
 

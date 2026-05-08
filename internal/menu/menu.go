@@ -6,6 +6,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -83,15 +85,20 @@ type Input struct {
 }
 
 var (
-	backgroundColor = color.RGBA{R: 18, G: 19, B: 17, A: 255}
-	panelColor      = color.RGBA{R: 45, G: 58, B: 49, A: 255}
-	panelEdgeColor  = color.RGBA{R: 134, G: 114, B: 65, A: 255}
-	textColor       = color.RGBA{R: 238, G: 224, B: 188, A: 255}
-	mutedTextColor  = color.RGBA{R: 184, G: 172, B: 139, A: 255}
-	hoverColor      = color.RGBA{R: 150, G: 124, B: 49, A: 255}
-	buttonColor     = color.RGBA{R: 74, G: 83, B: 68, A: 255}
-	disabledColor   = color.RGBA{R: 51, G: 57, B: 51, A: 255}
-	accentColor     = color.RGBA{R: 98, G: 90, B: 145, A: 255}
+	backgroundColor         = ui.CharcoalBlack
+	backdropBandColor       = ui.DarkCharcoalGreen
+	panelColor              = ui.PineGreen
+	panelEdgeColor          = ui.Bronze
+	textColor               = ui.Parchment
+	mutedTextColor          = ui.MutedParchment
+	hoverColor              = ui.LightBronze
+	buttonColor             = ui.MossGreen
+	disabledColor           = ui.DarkMossGreen
+	disabledButtonEdgeColor = ui.MossGreen
+	accentColor             = ui.Purple
+	transparentAccentColor  = ui.TransparentPurple
+	transparentEdgeColor    = ui.TransparentBronze
+	nameFieldColor          = ui.DarkCharcoalGreen
 )
 
 // Menu owns the menu screen state, input routing, and rendering.
@@ -341,13 +348,13 @@ func (m *Menu) wizardNameFieldBounds() (int, int, int, int) {
 
 // drawBackdrop paints simple fantasy accents behind the menu.
 func (m *Menu) drawBackdrop(screen *ebiten.Image) {
-	vector.FillRect(screen, 0, 0, float32(m.width), 82, color.RGBA{R: 26, G: 32, B: 28, A: 255}, false)
-	vector.FillRect(screen, 0, float32(m.height-82), float32(m.width), 82, color.RGBA{R: 26, G: 31, B: 27, A: 255}, false)
+	vector.FillRect(screen, 0, 0, float32(m.width), 82, backdropBandColor, false)
+	vector.FillRect(screen, 0, float32(m.height-82), float32(m.width), 82, backdropBandColor, false)
 
 	for i := 0; i < 6; i++ {
 		x := float32(m.width/2 - 395 + i*145)
-		vector.StrokeRect(screen, x, 102, 46, 46, 2, color.RGBA{R: 65, G: 60, B: 94, A: 130}, true)
-		vector.StrokeRect(screen, x+9, 111, 28, 28, 2, color.RGBA{R: 111, G: 96, B: 58, A: 115}, true)
+		vector.StrokeRect(screen, x, 102, 46, 46, 2, transparentAccentColor, true)
+		vector.StrokeRect(screen, x+9, 111, 28, 28, 2, transparentEdgeColor, true)
 	}
 }
 
@@ -384,7 +391,7 @@ func (m *Menu) drawButtons(screen *ebiten.Image, buttons []Button) {
 		labelColor := textColor
 		if button.Disabled {
 			fill = disabledColor
-			edge = color.RGBA{R: 83, G: 84, B: 73, A: 255}
+			edge = disabledButtonEdgeColor
 			labelColor = mutedTextColor
 		} else if m.hoverAction != ActionNone && m.hoverAction == button.Action {
 			fill = hoverColor
@@ -435,7 +442,7 @@ func (m *Menu) drawWizardNameField(screen *ebiten.Image) {
 		edge = textColor
 	}
 
-	vector.FillRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), color.RGBA{R: 31, G: 36, B: 32, A: 255}, false)
+	vector.FillRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), nameFieldColor, false)
 	vector.StrokeRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), 3, edge, false)
 
 	value := m.wizardName

@@ -15,6 +15,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 - `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, pixel-sized Ebitengine layout, and process startup.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
 - `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, and placeholder game rendering. It may later grow into exploration, base-building, and defense scene state when those systems exist.
+- `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
 - `plans/` stores ordered ExecPlans. `plans/00-initial-ebitengine-menu.md` is the first implementation plan.
