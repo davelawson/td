@@ -14,7 +14,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 
 - `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, surrender-to-menu handling, pixel-sized Ebitengine layout, and process startup.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
-- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, in-game overlay menu behavior, and placeholder game rendering. It may later grow into exploration, base-building, and defense scene state when those systems exist.
+- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, prototype top-bar status display, in-game overlay menu behavior, and placeholder game rendering. It may later grow into exploration, base-building, and defense scene state when those systems exist.
 - `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
@@ -45,7 +45,7 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 
 1. A contributor starts a game from the New Game screen after entering a Wizard name.
 2. `cmd/td` routes Ebitengine updates and drawing to `internal/game`.
-3. The game package renders a placeholder field, the Wizard name, and a top-right logical update counter.
+3. The game package renders a placeholder field, the Wizard name, a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, and a debug logical update counter.
 4. While unpaused, each Ebitengine update advances the logical update counter by one.
 5. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
 6. While paused, the game renders a `PAUSED` label and does not increment the logical update counter.

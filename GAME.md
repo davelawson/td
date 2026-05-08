@@ -107,6 +107,8 @@ The initial resources are:
 
 Open decisions include whether resources are gathered manually or passively, whether resources persist across encounters, whether additional resources are needed, and how resource nodes are discovered or depleted.
 
+The in-game top bar should show the current Wood, Stone, and Metal counts once the economy exists. Prototype HUD values may be fixed until resource gathering and spending systems are implemented.
+
 ### Base-Building
 
 Base-building should let the player shape a defensible Domain around the Sanctum. Placement should matter spatially, and construction should feel connected to the wizardry theme.
@@ -120,6 +122,8 @@ Open decisions include what counts as buildable terrain, whether structures bloc
 The Sanctum is the wizard's home and private laboratory. It is the tower at the center of the Domain and the structure the wizard must protect during Raids.
 
 The Sanctum is protected by an arcane barrier. This barrier has a number of charges. Every time an enemy attempts to breach the Sanctum, the barrier expends one charge, if any charges remain, and atomizes that enemy. If an enemy attempts to breach the Sanctum when the barrier has no charges remaining, the Sanctum is breached.
+
+The player-facing HUD label for remaining barrier charges is `Barricade`, representing the Sanctum's protective barricade charges.
 
 Open decisions include how many charges the barrier has, whether charges can be restored or increased, whether different enemies interact with the barrier differently, and what happens after the Sanctum is breached.
 
@@ -141,6 +145,8 @@ The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's 
 
 Open decisions include enemy spawn rules, enemy path selection, whether a Raid can include multiple waves, how Raid difficulty scales with Domain expansion, and what happens when the Sanctum is breached.
 
+During a Raid, the in-game top bar should show how many enemies remain in the current assault. This can be formatted before enemy simulation exists, but real values should come from the Raid system once it is implemented.
+
 ### Tower Types
 
 Tower types define the defensive structures the wizard can build in the Domain.
@@ -158,6 +164,8 @@ A Chapter is composed of a series of Days. Every Day begins with a calm phase an
 Once the wizard's Domain has expanded to include the Plot containing the Rival's Lair, the next Raid is the final Raid. If that Raid is overcome, the Chapter has been completed successfully.
 
 Open decisions include how the Rival's Lair is revealed, what the wizard can do during the calm phase, whether time can be paused or accelerated, and what happens when the Sanctum is breached.
+
+The in-game top bar should always show the current Chapter name and Day number. During calm phases it should also show the time remaining before the next Raid.
 
 ### Progression
 
@@ -256,6 +264,10 @@ Record game design decisions here when they become durable enough to guide imple
 
 - Decision: Require Plot exploration to be adjacent to the current Domain and make exploration expand the defended path rather than start encounters directly.
   Rationale: This makes exploration a spatial commitment: the wizard gains buildable area, but the Domain can expose a longer route that must be defended during Raids.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Use the in-game top bar for Chapter, Day, resources, phase status, and Sanctum barricade charges.
+  Rationale: These values are the minimum persistent status a player needs while preparing for and surviving Raids, and fixed prototype values can make the display observable before the underlying gameplay systems exist.
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Define Raids as the Rival's end-of-Day assaults on the wizard's Domain.

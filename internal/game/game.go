@@ -30,8 +30,16 @@ type State struct {
 	updates    int
 	paused     bool
 	menu       ingameMenu
+	phase      phase
+	chapter    string
+	day        int
+	calmTime   int
+	raidCount  int
+	barricade  int
+	resources  resourceCounts
 	titleFace  *text.GoTextFace
 	bodyFace   *text.GoTextFace
+	hudFace    *text.GoTextFace
 }
 
 var (
@@ -65,6 +73,10 @@ func New(wizardName string, width, height int) (*State, error) {
 			Source: source,
 			Size:   24,
 		},
+		hudFace: &text.GoTextFace{
+			Source: source,
+			Size:   22,
+		},
 		menu: ingameMenu{
 			titleFace: &text.GoTextFace{
 				Source: source,
@@ -76,6 +88,7 @@ func New(wizardName string, width, height int) (*State, error) {
 			},
 		},
 	}
+	state.setPrototypeGameStatus()
 	state.layoutIngameMenu()
 	return state, nil
 }
@@ -114,6 +127,7 @@ func (s *State) Update(input Input) Action {
 func (s *State) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	s.drawPrototypeField(screen)
+	s.drawTopBar(screen)
 	s.drawWizardName(screen)
 	s.drawCounter(screen)
 	s.drawIngameMenu(screen)
@@ -159,8 +173,8 @@ func (s *State) drawPrototypeField(screen *ebiten.Image) {
 // drawWizardName renders the active Wizard name.
 func (s *State) drawWizardName(screen *ebiten.Image) {
 	value := fmt.Sprintf("Wizard %s", s.wizardName)
-	s.drawText(screen, value, s.titleFace, 56, 50, textColor)
-	s.drawText(screen, "The first defenses are waiting for orders.", s.bodyFace, 56, 94, mutedTextColor)
+	s.drawText(screen, value, s.titleFace, 56, 112, textColor)
+	s.drawText(screen, "The first defenses are waiting for orders.", s.bodyFace, 56, 156, mutedTextColor)
 }
 
 // drawCounter renders update and pause status in the top-right corner.
@@ -168,11 +182,11 @@ func (s *State) drawCounter(screen *ebiten.Image) {
 	value := fmt.Sprintf("Updates: %d", s.updates)
 	width, _ := text.Measure(value, s.bodyFace, s.bodyFace.Size)
 	x := float64(s.width) - width - 48
-	s.drawText(screen, value, s.bodyFace, x, 44, textColor)
+	s.drawText(screen, value, s.bodyFace, x, float64(s.height)-58, mutedTextColor)
 
 	if s.paused {
 		pauseWidth, _ := text.Measure("PAUSED", s.bodyFace, s.bodyFace.Size)
-		s.drawText(screen, "PAUSED", s.bodyFace, float64(s.width)-pauseWidth-48, 78, pauseColor)
+		s.drawText(screen, "PAUSED", s.bodyFace, float64(s.width)-pauseWidth-48, float64(s.height)-94, pauseColor)
 	}
 }
 

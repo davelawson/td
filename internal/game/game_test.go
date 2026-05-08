@@ -22,6 +22,44 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.Paused() {
 		t.Fatal("expected new state to start unpaused")
 	}
+	if state.phase != phaseCalm {
+		t.Fatalf("phase = %v, want %v", state.phase, phaseCalm)
+	}
+	if state.resources.wood != 80 || state.resources.stone != 45 || state.resources.metal != 12 {
+		t.Fatalf("resources = %+v, want wood 80 stone 45 metal 12", state.resources)
+	}
+}
+
+// TestStateFormatsCalmTopBar verifies initial top-bar text.
+func TestStateFormatsCalmTopBar(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if value := state.chapterDayText(); value != "Chapter I: The Ashen Copse | Day 1" {
+		t.Fatalf("chapterDayText = %q", value)
+	}
+	if value := state.phaseText(); value != "Raid in 02:00" {
+		t.Fatalf("phaseText = %q", value)
+	}
+	if value := state.resourcesAndBarricadeText(); value != "Wood 80  Stone 45  Metal 12 | Barricade 3" {
+		t.Fatalf("resourcesAndBarricadeText = %q", value)
+	}
+}
+
+// TestStateFormatsRaidTopBar verifies raid-specific top-bar text.
+func TestStateFormatsRaidTopBar(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.phase = phaseRaid
+	state.raidCount = 7
+
+	if value := state.phaseText(); value != "Enemies remaining: 7" {
+		t.Fatalf("phaseText = %q", value)
+	}
 }
 
 // TestUpdateIncrementsWhenRunning verifies logical updates advance while unpaused.
