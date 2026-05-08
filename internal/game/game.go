@@ -24,19 +24,14 @@ type Input struct {
 
 // State owns the current game state and logical update rules.
 type State struct {
-	wizardName           string
-	width                int
-	height               int
-	updates              int
-	paused               bool
-	pausedBeforeMenu     bool
-	ingameMenuOpen       bool
-	ingameMenuButtons    []ingameMenuButton
-	ingameMenuHover      int
-	titleFace            *text.GoTextFace
-	bodyFace             *text.GoTextFace
-	ingameMenuTitleFace  *text.GoTextFace
-	ingameMenuButtonFace *text.GoTextFace
+	wizardName string
+	width      int
+	height     int
+	updates    int
+	paused     bool
+	menu       ingameMenu
+	titleFace  *text.GoTextFace
+	bodyFace   *text.GoTextFace
 }
 
 var (
@@ -70,13 +65,15 @@ func New(wizardName string, width, height int) (*State, error) {
 			Source: source,
 			Size:   24,
 		},
-		ingameMenuTitleFace: &text.GoTextFace{
-			Source: source,
-			Size:   46,
-		},
-		ingameMenuButtonFace: &text.GoTextFace{
-			Source: source,
-			Size:   28,
+		menu: ingameMenu{
+			titleFace: &text.GoTextFace{
+				Source: source,
+				Size:   46,
+			},
+			buttonFace: &text.GoTextFace{
+				Source: source,
+				Size:   28,
+			},
 		},
 	}
 	state.layoutIngameMenu()
@@ -95,7 +92,7 @@ func (s *State) Resize(width, height int) {
 
 // Update applies game input and advances one logical update when unpaused.
 func (s *State) Update(input Input) Action {
-	if s.ingameMenuOpen {
+	if s.menu.open {
 		return s.updateIngameMenu(input)
 	}
 	if input.ToggleMenu {
@@ -134,7 +131,7 @@ func (s *State) Paused() bool {
 
 // IngameMenuOpen reports whether the in-game overlay menu is visible.
 func (s *State) IngameMenuOpen() bool {
-	return s.ingameMenuOpen
+	return s.menu.open
 }
 
 // WizardName returns the Wizard name used to start the game.

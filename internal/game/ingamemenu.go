@@ -3,6 +3,8 @@ package game
 import (
 	"image/color"
 
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -26,21 +28,16 @@ const (
 	ActionSurrender
 )
 
-type ingameMenuButton struct {
-	label  string
-	x      int
-	y      int
-	w      int
-	h      int
-	action Action
+type ingameMenu struct {
+	pausedBeforeOpen bool
+	open             bool
+	buttons          []ui.Button[Action]
+	hover            int
+	titleFace        *text.GoTextFace
+	buttonFace       *text.GoTextFace
 }
 
 var overlayColor = color.RGBA{R: 0, G: 0, B: 0, A: 128}
-
-// contains reports whether the point is inside the in-game menu button bounds.
-func (b ingameMenuButton) contains(x, y int) bool {
-	return x >= b.x && x < b.x+b.w && y >= b.y && y < b.y+b.h
-}
 
 // layoutIngameMenu rebuilds overlay button rectangles from the drawable size.
 func (s *State) layoutIngameMenu() {
@@ -49,30 +46,30 @@ func (s *State) layoutIngameMenu() {
 	buttonX := panelX + ingameMenuPanelWidth/2 - ingameMenuButtonWidth/2
 	buttonY := panelY + 118
 
-	s.ingameMenuButtons = []ingameMenuButton{
-		{label: "Resume", x: buttonX, y: buttonY, w: ingameMenuButtonWidth, h: ingameMenuButtonH, action: ActionNone},
-		{label: "Surrender", x: buttonX, y: buttonY + ingameMenuButtonH + ingameMenuButtonGap, w: ingameMenuButtonWidth, h: ingameMenuButtonH, action: ActionSurrender},
+	s.menu.buttons = []ui.Button[Action]{
+		{Label: "Resume", X: buttonX, Y: buttonY, W: ingameMenuButtonWidth, H: ingameMenuButtonH, Action: ActionNone},
+		{Label: "Surrender", X: buttonX, Y: buttonY + ingameMenuButtonH + ingameMenuButtonGap, W: ingameMenuButtonWidth, H: ingameMenuButtonH, Action: ActionSurrender},
 	}
 }
 
 // openIngameMenu pauses the game and shows the overlay menu.
 func (s *State) openIngameMenu() {
-	s.pausedBeforeMenu = s.paused
+	s.menu.pausedBeforeOpen = s.paused
 	s.paused = true
-	s.ingameMenuOpen = true
-	s.ingameMenuHover = -1
+	s.menu.open = true
+	s.menu.hover = -1
 }
 
 // closeIngameMenu hides the overlay and restores the previous pause state.
 func (s *State) closeIngameMenu() {
-	s.ingameMenuOpen = false
-	s.ingameMenuHover = -1
-	s.paused = s.pausedBeforeMenu
+	s.menu.open = false
+	s.menu.hover = -1
+	s.paused = s.menu.pausedBeforeOpen
 }
 
 // updateIngameMenu applies overlay input and returns selected game actions.
 func (s *State) updateIngameMenu(input Input) Action {
-	s.ingameMenuHover = s.ingameMenuButtonIndexAt(input.CursorX, input.CursorY)
+	s.menu.hover = s.ingameMenuButtonIndexAt(input.CursorX, input.CursorY)
 
 	if input.ToggleMenu {
 		s.closeIngameMenu()
@@ -95,8 +92,8 @@ func (s *State) updateIngameMenu(input Input) Action {
 
 // ingameMenuButtonIndexAt returns the index for the first overlay button at a point.
 func (s *State) ingameMenuButtonIndexAt(x, y int) int {
-	for i, button := range s.ingameMenuButtons {
-		if button.contains(x, y) {
+	for i, button := range s.menu.buttons {
+		if button.Contains(x, y) {
 			return i
 		}
 	}
@@ -105,9 +102,9 @@ func (s *State) ingameMenuButtonIndexAt(x, y int) int {
 
 // ingameMenuActionAt returns the action for the first overlay button at a point.
 func (s *State) ingameMenuActionAt(x, y int) Action {
-	for _, button := range s.ingameMenuButtons {
-		if button.contains(x, y) {
-			return button.action
+	for _, button := range s.menu.buttons {
+		if button.Contains(x, y) {
+			return button.Action
 		}
 	}
 	return ActionNone
@@ -115,15 +112,15 @@ func (s *State) ingameMenuActionAt(x, y int) Action {
 
 // ingameMenuResumeContains reports whether the point is inside the Resume button.
 func (s *State) ingameMenuResumeContains(x, y int) bool {
-	if len(s.ingameMenuButtons) == 0 {
+	if len(s.menu.buttons) == 0 {
 		return false
 	}
-	return s.ingameMenuButtons[0].contains(x, y)
+	return s.menu.buttons[0].Contains(x, y)
 }
 
 // drawIngameMenu renders the overlay menu when it is open.
 func (s *State) drawIngameMenu(screen *ebiten.Image) {
-	if !s.ingameMenuOpen {
+	if !s.menu.open {
 		return
 	}
 
@@ -141,26 +138,26 @@ func (s *State) drawIngameMenuPanel(screen *ebiten.Image) {
 	vector.StrokeRect(screen, panelX, panelY, ingameMenuPanelWidth, ingameMenuPanelHeight, 4, fieldEdgeColor, false)
 	vector.StrokeRect(screen, panelX+12, panelY+12, ingameMenuPanelWidth-24, ingameMenuPanelHeight-24, 1.5, fieldAccentColor, false)
 
-	titleWidth, _ := text.Measure("Paused", s.ingameMenuTitleFace, s.ingameMenuTitleFace.Size)
+	titleWidth, _ := text.Measure("Paused", s.menu.titleFace, s.menu.titleFace.Size)
 	titleX := (float64(s.width) - titleWidth) / 2
-	s.drawText(screen, "Paused", s.ingameMenuTitleFace, titleX, float64(panelY)+42, textColor)
+	s.drawText(screen, "Paused", s.menu.titleFace, titleX, float64(panelY)+42, textColor)
 }
 
 // drawIngameMenuButtons renders overlay buttons with hover feedback.
 func (s *State) drawIngameMenuButtons(screen *ebiten.Image) {
-	for i, button := range s.ingameMenuButtons {
+	for i, button := range s.menu.buttons {
 		fill := clearingColor
 		edge := fieldEdgeColor
-		if s.ingameMenuHover == i {
+		if s.menu.hover == i {
 			fill = pauseColor
 			edge = textColor
 		}
 
-		vector.FillRect(screen, float32(button.x), float32(button.y), float32(button.w), float32(button.h), fill, false)
-		vector.StrokeRect(screen, float32(button.x), float32(button.y), float32(button.w), float32(button.h), 3, edge, false)
+		vector.FillRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), fill, false)
+		vector.StrokeRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), 3, edge, false)
 
-		labelWidth, _ := text.Measure(button.label, s.ingameMenuButtonFace, s.ingameMenuButtonFace.Size)
-		labelX := float64(button.x) + (float64(button.w)-labelWidth)/2
-		s.drawText(screen, button.label, s.ingameMenuButtonFace, labelX, float64(button.y+10), textColor)
+		labelWidth, _ := text.Measure(button.Label, s.menu.buttonFace, s.menu.buttonFace.Size)
+		labelX := float64(button.X) + (float64(button.W)-labelWidth)/2
+		s.drawText(screen, button.Label, s.menu.buttonFace, labelX, float64(button.Y+10), textColor)
 	}
 }

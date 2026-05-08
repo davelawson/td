@@ -2,9 +2,6 @@ package menu
 
 import (
 	"bytes"
-	"image/color"
-	"unicode"
-	"unicode/utf8"
 
 	"td/internal/ui"
 
@@ -18,10 +15,6 @@ import (
 type Action int
 
 const (
-	wizardNameMaxRunes = 32
-)
-
-const (
 	mainPanelWidth       = 520
 	mainPanelHeight      = 398
 	screenPanelWidth     = 840
@@ -29,12 +22,7 @@ const (
 	menuButtonWidth      = 220
 	menuButtonHeight     = 44
 	menuButtonGap        = 10
-	screenButtonWidth    = 180
-	screenButtonHeight   = 52
-	screenButtonGap      = 100
 	settingsButtonHeight = 54
-	nameFieldWidth       = 680
-	nameFieldHeight      = 54
 )
 
 const (
@@ -53,15 +41,7 @@ const (
 )
 
 // Button describes a rectangular menu target and the action it selects.
-type Button struct {
-	Label    string
-	X        int
-	Y        int
-	W        int
-	H        int
-	Action   Action
-	Disabled bool
-}
+type Button = ui.Button[Action]
 
 // Screen identifies the current menu-owned screen.
 type Screen int
@@ -147,11 +127,6 @@ func New(width, height int) (*Menu, error) {
 	}
 	menu.layoutButtons()
 	return menu, nil
-}
-
-// Contains reports whether the point is inside the button bounds.
-func (b Button) Contains(x, y int) bool {
-	return x >= b.X && x < b.X+b.W && y >= b.Y && y < b.Y+b.H
 }
 
 // ActionAt returns the first button action containing the point.
@@ -292,65 +267,7 @@ func (m *Menu) layoutButtons() {
 		H:      settingsButtonHeight,
 		Action: ActionBack,
 	}
-
-	totalButtonWidth := 2*screenButtonWidth + screenButtonGap
-	m.newGameButtons = []Button{
-		{Label: "Cancel", X: centerX - totalButtonWidth/2, Y: screenButtonY, W: screenButtonWidth, H: screenButtonHeight, Action: ActionBack},
-		{Label: "Start", X: centerX - totalButtonWidth/2 + screenButtonWidth + screenButtonGap, Y: screenButtonY, W: screenButtonWidth, H: screenButtonHeight, Action: ActionStart, Disabled: m.wizardName == ""},
-	}
-}
-
-// updateWizardName applies text edits and reports whether the name changed.
-func (m *Menu) updateWizardName(input Input) bool {
-	if m.screen != ScreenNewGame || !m.wizardNameFocused {
-		return false
-	}
-
-	changed := false
-	if input.Backspace {
-		next := removeLastRune(m.wizardName)
-		changed = next != m.wizardName
-		m.wizardName = next
-	}
-	for _, value := range input.Typed {
-		if !unicode.IsPrint(value) {
-			continue
-		}
-		if utf8.RuneCountInString(m.wizardName) >= wizardNameMaxRunes {
-			return changed
-		}
-		m.wizardName += string(value)
-		changed = true
-	}
-	return changed
-}
-
-// updateWizardNameFocus handles pointer focus for the new-game name field.
-func (m *Menu) updateWizardNameFocus(cursorX, cursorY int) {
-	if m.screen != ScreenNewGame {
-		return
-	}
-	m.wizardNameFocused = m.wizardNameFieldContains(cursorX, cursorY)
-}
-
-// removeLastRune returns value without its final rune.
-func removeLastRune(value string) string {
-	if value == "" {
-		return ""
-	}
-	_, size := utf8.DecodeLastRuneInString(value)
-	return value[:len(value)-size]
-}
-
-// wizardNameFieldContains reports whether a point is inside the name field.
-func (m *Menu) wizardNameFieldContains(x, y int) bool {
-	fieldX, fieldY, fieldW, fieldH := m.wizardNameFieldBounds()
-	return x >= fieldX && x < fieldX+fieldW && y >= fieldY && y < fieldY+fieldH
-}
-
-// wizardNameFieldBounds returns the New Game Wizard name field rectangle.
-func (m *Menu) wizardNameFieldBounds() (int, int, int, int) {
-	return m.width/2 - nameFieldWidth/2, m.screenPanelY() + 154, nameFieldWidth, nameFieldHeight
+	m.layoutStartButtons(screenButtonY)
 }
 
 // drawBackdrop paints simple fantasy accents behind the menu.
@@ -386,8 +303,8 @@ func (m *Menu) drawMenuPanel(screen *ebiten.Image) {
 	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
 	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
 
-	m.drawCenteredText(screen, "td", m.titleFace, float64(m.mainPanelY()+40), textColor)
-	m.drawCenteredText(screen, "Arcane defenses await their first command.", m.bodyFace, float64(m.mainPanelY()+132), mutedTextColor)
+	ui.DrawCenteredText(screen, m.width, "td", m.titleFace, float64(m.mainPanelY()+40), textColor)
+	ui.DrawCenteredText(screen, m.width, "Arcane defenses await their first command.", m.bodyFace, float64(m.mainPanelY()+132), mutedTextColor)
 }
 
 // drawButtons renders menu buttons with hover feedback.
@@ -407,24 +324,8 @@ func (m *Menu) drawButtons(screen *ebiten.Image, buttons []Button) {
 
 		vector.FillRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), fill, false)
 		vector.StrokeRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), 3, edge, false)
-		m.drawCenteredButtonText(screen, button, labelColor)
+		ui.DrawCenteredTextInRect(screen, button.Label, m.buttonFace, button.X, button.Y, button.W, 9, labelColor)
 	}
-}
-
-// drawNewGamePanel renders the new-game configuration screen.
-func (m *Menu) drawNewGamePanel(screen *ebiten.Image) {
-	panelX := float32(m.width/2 - screenPanelWidth/2)
-	panelY := float32(m.screenPanelY())
-	panelW := float32(screenPanelWidth)
-	panelH := float32(screenPanelHeight)
-
-	vector.FillRect(screen, panelX, panelY, panelW, panelH, panelColor, false)
-	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
-	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
-
-	m.drawCenteredText(screen, "New Game", m.titleFace, float64(m.screenPanelY()+30), textColor)
-	m.drawText(screen, "Wizard Name", m.bodyFace, float64(m.width/2-nameFieldWidth/2), float64(m.screenPanelY()+120), mutedTextColor)
-	m.drawWizardNameField(screen)
 }
 
 // drawSettingsPanel renders the temporary settings screen.
@@ -438,52 +339,5 @@ func (m *Menu) drawSettingsPanel(screen *ebiten.Image) {
 	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
 	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
 
-	m.drawCenteredText(screen, "Settings", m.titleFace, float64(m.screenPanelY()+86), textColor)
-}
-
-// drawWizardNameField renders the editable Wizard name field.
-func (m *Menu) drawWizardNameField(screen *ebiten.Image) {
-	fieldX, fieldY, fieldW, fieldH := m.wizardNameFieldBounds()
-	edge := panelEdgeColor
-	if m.wizardNameFocused {
-		edge = textColor
-	}
-
-	vector.FillRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), nameFieldColor, false)
-	vector.StrokeRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), 3, edge, false)
-
-	value := m.wizardName
-	labelColor := textColor
-	if value == "" {
-		value = "Enter name"
-		labelColor = mutedTextColor
-	}
-	m.drawText(screen, value, m.nameFace, float64(fieldX+18), float64(fieldY+15), labelColor)
-
-	if m.wizardNameFocused {
-		textWidth, _ := text.Measure(m.wizardName, m.nameFace, m.nameFace.Size)
-		caretX := float32(fieldX + 19 + int(textWidth))
-		vector.StrokeLine(screen, caretX, float32(fieldY+12), caretX, float32(fieldY+42), 2, textColor, false)
-	}
-}
-
-// drawCenteredText draws one line centered horizontally at the given y coordinate.
-func (m *Menu) drawCenteredText(screen *ebiten.Image, value string, face *text.GoTextFace, y float64, clr color.Color) {
-	width, _ := text.Measure(value, face, face.Size)
-	m.drawText(screen, value, face, (float64(m.width)-width)/2, y, clr)
-}
-
-// drawCenteredButtonText draws a button label centered inside its button bounds.
-func (m *Menu) drawCenteredButtonText(screen *ebiten.Image, button Button, clr color.Color) {
-	width, _ := text.Measure(button.Label, m.buttonFace, m.buttonFace.Size)
-	x := float64(button.X) + (float64(button.W)-width)/2
-	m.drawText(screen, button.Label, m.buttonFace, x, float64(button.Y+9), clr)
-}
-
-// drawText draws one line at the given coordinates.
-func (m *Menu) drawText(screen *ebiten.Image, value string, face *text.GoTextFace, x, y float64, clr color.Color) {
-	options := &text.DrawOptions{}
-	options.GeoM.Translate(x, y)
-	options.ColorScale.ScaleWithColor(clr)
-	text.Draw(screen, value, face, options)
+	ui.DrawCenteredText(screen, m.width, "Settings", m.titleFace, float64(m.screenPanelY()+86), textColor)
 }

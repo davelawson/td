@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"td/internal/ui"
+)
 
 // TestNewStateStartsRunning verifies initial game state.
 func TestNewStateStartsRunning(t *testing.T) {
@@ -112,7 +116,7 @@ func TestResumeRestoresRunningState(t *testing.T) {
 	}
 
 	state.Update(Input{ToggleMenu: true})
-	state.Update(clickInput(state.ingameMenuButtons[0]))
+	state.Update(clickInput(state.menu.buttons[0]))
 	if state.IngameMenuOpen() {
 		t.Fatal("expected Resume to close the in-game menu")
 	}
@@ -166,7 +170,7 @@ func TestSurrenderAction(t *testing.T) {
 	}
 
 	state.Update(Input{ToggleMenu: true})
-	if action := state.Update(clickInput(state.ingameMenuButtons[1])); action != ActionSurrender {
+	if action := state.Update(clickInput(state.menu.buttons[1])); action != ActionSurrender {
 		t.Fatalf("Update(surrender click) = %v, want %v", action, ActionSurrender)
 	}
 }
@@ -180,9 +184,9 @@ func TestIngameMenuResizeRecentersButtons(t *testing.T) {
 
 	state.Resize(2560, 1440)
 	state.Update(Input{ToggleMenu: true})
-	resumeButton := state.ingameMenuButtons[0]
-	if resumeButton.x+resumeButton.w/2 != 1280 {
-		t.Fatalf("resume center x = %d, want %d", resumeButton.x+resumeButton.w/2, 1280)
+	resumeButton := state.menu.buttons[0]
+	if resumeButton.X+resumeButton.W/2 != 1280 {
+		t.Fatalf("resume center x = %d, want %d", resumeButton.X+resumeButton.W/2, 1280)
 	}
 
 	state.Update(clickInput(resumeButton))
@@ -192,10 +196,10 @@ func TestIngameMenuResizeRecentersButtons(t *testing.T) {
 }
 
 // clickInput returns a click at the center of button.
-func clickInput(button ingameMenuButton) Input {
+func clickInput(button ui.Button[Action]) Input {
 	return Input{
-		CursorX: button.x + button.w/2,
-		CursorY: button.y + button.h/2,
+		CursorX: button.X + button.W/2,
+		CursorY: button.Y + button.H/2,
 		Clicked: true,
 	}
 }
