@@ -10,9 +10,21 @@ The game design is intentionally early. The current implementation is a runnable
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
+## Terminology
+
+Use these terms consistently when describing the intended game:
+
+- `Sanctum`: the tower at the center of the wizard's Domain.
+- `Domain`: the territory claimed by the wizard.
+- `Fable`: a playthrough of the game as a wizard wherein the wizard attempts to overcome their Nemesis. A Fable is composed of a series of Chapters.
+- `Chapter`: a section of a Fable wherein the wizard attempts to overcome a Rival.
+- `Nemesis`: a powerful antagonist to the wizard who influences an entire Fable and commands several of the wizard's Rivals.
+- `Rival`: a significant antagonist to the wizard who operates as an agent of the Nemesis.
+- `Raid`: an assault on the wizard's Domain by the Rival of the current Chapter.
+
 ## Player Fantasy
 
-The player is a wizard establishing and defending a vulnerable magical foothold in hostile fantasy territory. The intended experience is not only placing towers during an attack, but also preparing the conditions that make a defense possible: scouting the surroundings, gathering useful resources, shaping a base, and then watching those preparation choices matter when enemies arrive.
+The player is a wizard establishing and defending a vulnerable Sanctum within a hostile Domain. The intended experience is not only placing towers during an attack, but also preparing the conditions that make a defense possible: scouting the surroundings, gathering useful resources, shaping the Domain, and then watching those preparation choices matter when enemies arrive.
 
 The game should feel strategic, readable, and slightly arcane. The player should understand why they survived or failed, and should see a practical path to improve through better exploration, resource use, construction, and defense layout.
 
@@ -30,7 +42,7 @@ The mature game should revolve around a repeatable loop:
 
 1. Explore a local area to reveal space, threats, routes, and resources.
 2. Gather or claim resources that constrain what can be built or improved.
-3. Build and adjust a base with magical defenses.
+3. Build and adjust the Domain with magical defenses around the Sanctum.
 4. Defend against enemies in a tower-defense encounter.
 5. Recover from the result, learn what worked, and improve the next preparation phase.
 
@@ -42,25 +54,90 @@ The exact boundaries between exploration, building, and defense are not decided 
 
 Exploration should give the player information and access. It may reveal terrain, enemy routes, resource nodes, buildable areas, hazards, or future attack pressure.
 
-Open decisions include whether exploration uses direct player movement, camera-based inspection, tile reveal, or another interaction model.
+During the calm phase, the wizard can spend resources to explore another Plot adjacent to the current Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and defend along a longer path.
+
+Open decisions include whether exploration uses direct player movement, camera-based inspection, tile reveal, or another interaction model, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
+
+### Map
+
+The map is built on a grid. Each grid square is called a Tile. Tiles are grouped into 10x10 Chunks called Plots.
+
+Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
+
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum.
+
+The terrain types are:
+
+- `Grass`
+- `Forest`
+- `Mountain`
+- `Water`
+
+Open decisions include Tile dimensions in screen or world space, height scale, movement and build rules for each terrain type, feature exclusivity rules, road behavior, how Plots are generated or revealed, and where the starting road leads.
 
 ### Resources
 
 Resources should make preparation choices meaningful. They should constrain base-building and upgrades without becoming bookkeeping for its own sake.
 
-Open decisions include resource names, resource count, gathering method, whether resources are gathered manually or passively, and whether resources persist across encounters.
+The initial resources are:
+
+- `Wood`: gathered by cutting down trees.
+- `Stone`: gathered by quarrying rocks.
+- `Metal`: gathered by exploiting mines.
+
+Open decisions include whether resources are gathered manually or passively, whether resources persist across encounters, whether additional resources are needed, and how resource nodes are discovered or depleted.
 
 ### Base-Building
 
-Base-building should let the player shape a defensible magical settlement or stronghold. Placement should matter spatially, and construction should feel connected to the wizardry theme.
+Base-building should let the player shape a defensible Domain around the Sanctum. Placement should matter spatially, and construction should feel connected to the wizardry theme.
 
-Open decisions include whether maps are tile-based or freeform, what counts as buildable terrain, whether structures block paths, and how much rebuilding is allowed between attacks.
+Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
+
+Open decisions include what counts as buildable terrain, whether structures block paths, how much rebuilding is allowed between attacks, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
+
+### Sanctum
+
+The Sanctum is the wizard's home and private laboratory. It is the tower at the center of the Domain and the structure the wizard must protect during Raids.
+
+The Sanctum is protected by an arcane barrier. This barrier has a number of charges. Every time an enemy attempts to breach the Sanctum, the barrier expends one charge, if any charges remain, and atomizes that enemy. If an enemy attempts to breach the Sanctum when the barrier has no charges remaining, the Sanctum is breached.
+
+Open decisions include how many charges the barrier has, whether charges can be restored or increased, whether different enemies interact with the barrier differently, and what happens after the Sanctum is breached.
 
 ### Tower Defense
 
 Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first combat slice should favor simple fixed paths, placeholder enemies, placeholder towers, and testable targeting rules.
 
-Open decisions include tower archetypes, enemy families, wave structure, win and loss conditions, damage types, and upgrade rules.
+Open decisions include enemy families, wave structure, win and loss conditions, damage types, and upgrade rules.
+
+### Raids
+
+A Raid is the assault at the end of a Day. It is launched by the Rival of the current Chapter against the wizard's Domain.
+
+During a Raid, enemies attempt to reach and breach the Sanctum. The wizard's preparation during the preceding calm phase should matter: explored Plots, built structures, roads, terrain, and the length of the defended path all shape how the Raid plays out.
+
+A Raid ends when all enemies have been defeated or when the Sanctum has been breached. If an enemy attempts to breach the Sanctum while the arcane barrier has charges remaining, the barrier spends a charge and atomizes that enemy instead. If no barrier charges remain, the Sanctum is breached.
+
+The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's Domain has expanded to include the Plot containing the Rival's Lair, the next Raid is the final Raid. If the wizard overcomes that final Raid, the Rival is defeated and the Chapter is completed successfully.
+
+Open decisions include enemy spawn rules, enemy path selection, whether a Raid can include multiple waves, how Raid difficulty scales with Domain expansion, and what happens when the Sanctum is breached.
+
+### Tower Types
+
+Tower types define the defensive structures the wizard can build in the Domain.
+
+- `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. It costs only Wood to build. The Bow Tower is a general-purpose tower that deals moderate damage at moderate range.
+
+Open decisions include exact tower costs, ranges, damage values, firing rates, targeting behavior, upgrade paths, and what other tower types exist.
+
+### Chapters
+
+A Chapter is the wizard's attempt to defeat a Rival. It lasts as long as it takes for the wizard to expand the Domain to the Rival's Lair and overcome the final Raid that follows.
+
+A Chapter is composed of a series of Days. Every Day begins with a calm phase and ends with a Raid. The calm phase lasts for a set amount of time, giving the wizard a bounded window to explore, gather, build, repair, or otherwise prepare the Domain before the attack begins.
+
+Once the wizard's Domain has expanded to include the Plot containing the Rival's Lair, the next Raid is the final Raid. If that Raid is overcome, the Chapter has been completed successfully.
+
+Open decisions include how the Rival's Lair is revealed, what the wizard can do during the calm phase, whether time can be paused or accelerated, and what happens when the Sanctum is breached.
 
 ### Progression
 
@@ -79,14 +156,19 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 
 ## Open Game Design Questions
 
-- How should exploration transition into tower-defense encounters?
-- Should maps be tile-based, freeform, node-based, or something else?
-- What resources should exist, and how many are needed for interesting choices?
+- Which resources are spent to explore an adjacent Plot?
+- How do newly explored Plots connect to roads and enemy paths?
+- How is the Rival's Lair revealed or signaled to the player?
+- What movement, build, resource, and road rules apply to each terrain type?
+- Are Wood, Stone, and Metal enough for interesting choices, or are additional resources needed?
 - Does the wizard move as an on-map character, act through camera inspection, or both?
-- What makes the base vulnerable enough that defense layout matters?
-- What are the first tower and enemy archetypes?
+- How many arcane barrier charges does the Sanctum have, and can those charges be restored or increased?
+- How does the Domain expand, contract, or change over time?
+- What enemy archetypes, spawn rules, and pathing rules should Raids use first?
 - What are the first win and loss conditions?
 - Should the early prototype use separate phases or continuous real-time play?
+- How long is a calm phase, and can the player pause or accelerate it?
+- What happens when the Sanctum is breached during a Raid?
 - When should save/load or campaign structure become meaningful enough to design?
 
 ## Decision Log
@@ -97,3 +179,50 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: The project needs a place to accumulate gameplay decisions even before those systems exist in code.
   Date/Author: 2026-05-08 / Codex
 
+- Decision: Use `Sanctum` for the tower at the center of the wizard's Domain, and `Domain` for the territory claimed by the wizard.
+  Rationale: These terms give future design work stable names for the central defended structure and the player-claimed territory around it.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Use `Fable`, `Chapter`, `Nemesis`, `Rival`, and `Raid` for the game's playthrough and antagonist structure.
+  Rationale: These terms establish a hierarchy where a wizard's Fable is shaped by a Nemesis, each Chapter focuses on a Rival, and Raids are the Rival's assaults on the Domain.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Structure each Chapter as a series of Days, where each Day has a timed calm phase followed by a Raid.
+  Rationale: This creates a repeated preparation-and-assault cadence inside each Rival-focused Chapter while keeping exact timing, Raid counts, and breach consequences open for later design.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Protect the Sanctum with an arcane barrier that atomizes breaching enemies by spending charges.
+  Rationale: This gives the central tower a clear defensive rule and creates a concrete failure threshold when enemies reach it after the barrier is exhausted.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Use Wood, Stone, and Metal as the initial resources.
+  Rationale: These resources give base-building a simple physical economy tied to visible world objects: trees, rocks, and mines.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Use the Bow Tower as the first defined tower type.
+  Rationale: A wood-only, moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Build maps from grid Tiles grouped into 10x10 Plots.
+  Rationale: A tile grid gives exploration, building, resources, roads, terrain, and height a shared spatial model while Plots provide a larger grouping for generation, reveal, and Domain-scale reasoning.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Start each Fable with a one-Plot Domain containing the centered Sanctum and an outgoing road.
+  Rationale: This gives every playthrough a clear initial defended space and a road hook for future exploration, enemy routing, and Domain expansion.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Let the wizard spend resources during calm phases to explore new Plots and unlock building there.
+  Rationale: This connects resources, calm-phase planning, Domain expansion, and base-building into one concrete preparation loop.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Require Plot exploration to be adjacent to the current Domain and make exploration expand the defended path rather than start encounters directly.
+  Rationale: This makes exploration a spatial commitment: the wizard gains buildable area, but the Domain can expose a longer route that must be defended during Raids.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Define Raids as the Rival's end-of-Day assaults on the wizard's Domain.
+  Rationale: This gives the defense phase a dedicated design home and ties Raids to Chapters, Rivals, enemy pressure, the defended path, and Sanctum breach conditions.
+  Date/Author: 2026-05-08 / Codex
+
+- Decision: Let Chapters last until Domain expansion reaches the Rival's Lair, making the next Raid the final Raid.
+  Rationale: This ties Chapter completion to exploration and Domain expansion instead of a fixed day count, so the player controls when to provoke the decisive assault by reaching the Rival's territory.
+  Date/Author: 2026-05-08 / Codex
