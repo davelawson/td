@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -27,39 +26,46 @@ type resourceCounts struct {
 	metal int
 }
 
-var (
-	topBarColor     = uiColor(26, 32, 28, 245)
-	topBarEdgeColor = uiColor(134, 114, 65, 210)
-)
+type gameStatus struct {
+	phase     phase
+	chapter   string
+	day       int
+	calmTime  int
+	raidCount int
+	barricade int
+	resources resourceCounts
+}
 
 // setPrototypeGameStatus initializes fixed state shown before gameplay systems exist.
 func (s *State) setPrototypeGameStatus() {
-	s.phase = phaseCalm
-	s.chapter = "Chapter I: The Ashen Copse"
-	s.day = 1
-	s.calmTime = 120
-	s.raidCount = 12
-	s.barricade = 3
-	s.resources = resourceCounts{
-		wood:  80,
-		stone: 45,
-		metal: 12,
+	s.status = gameStatus{
+		phase:     phaseCalm,
+		chapter:   "Chapter I: The Ashen Copse",
+		day:       1,
+		calmTime:  120,
+		raidCount: 12,
+		barricade: 3,
+		resources: resourceCounts{
+			wood:  80,
+			stone: 45,
+			metal: 12,
+		},
 	}
 }
 
 // chapterDayText formats the Chapter and Day summary for the top bar.
 func (s *State) chapterDayText() string {
-	return fmt.Sprintf("%s | Day %d", s.chapter, s.day)
+	return fmt.Sprintf("%s | Day %d", s.status.chapter, s.status.day)
 }
 
 // phaseText formats the phase-specific top bar status.
 func (s *State) phaseText() string {
-	switch s.phase {
+	switch s.status.phase {
 	case phaseRaid:
-		return fmt.Sprintf("Enemies remaining: %d", s.raidCount)
+		return fmt.Sprintf("Enemies remaining: %d", s.status.raidCount)
 	default:
-		minutes := s.calmTime / 60
-		seconds := s.calmTime % 60
+		minutes := s.status.calmTime / 60
+		seconds := s.status.calmTime % 60
 		return fmt.Sprintf("Raid in %02d:%02d", minutes, seconds)
 	}
 }
@@ -68,32 +74,27 @@ func (s *State) phaseText() string {
 func (s *State) resourcesAndBarricadeText() string {
 	return fmt.Sprintf(
 		"Wood %d  Stone %d  Metal %d | Barricade %d",
-		s.resources.wood,
-		s.resources.stone,
-		s.resources.metal,
-		s.barricade,
+		s.status.resources.wood,
+		s.status.resources.stone,
+		s.status.resources.metal,
+		s.status.barricade,
 	)
 }
 
 // drawTopBar renders the game status bar at the top of the screen.
 func (s *State) drawTopBar(screen *ebiten.Image) {
-	vector.FillRect(screen, 0, 0, float32(s.width), topBarHeight, topBarColor, false)
-	vector.StrokeLine(screen, 0, topBarHeight-2, float32(s.width), topBarHeight-2, 3, topBarEdgeColor, false)
+	vector.FillRect(screen, 0, 0, float32(s.ui.width), topBarHeight, topBarColor, false)
+	vector.StrokeLine(screen, 0, topBarHeight-2, float32(s.ui.width), topBarHeight-2, 3, topBarEdgeColor, false)
 
 	left := s.chapterDayText()
 	center := s.phaseText()
 	right := s.resourcesAndBarricadeText()
 
-	s.drawText(screen, left, s.hudFace, topBarMargin, 29, textColor)
+	s.drawText(screen, left, s.ui.hudFace, topBarMargin, 29, textColor)
 
-	centerWidth, _ := text.Measure(center, s.hudFace, s.hudFace.Size)
-	s.drawText(screen, center, s.hudFace, (float64(s.width)-centerWidth)/2, 29, pauseColor)
+	centerWidth, _ := text.Measure(center, s.ui.hudFace, s.ui.hudFace.Size)
+	s.drawText(screen, center, s.ui.hudFace, (float64(s.ui.width)-centerWidth)/2, 29, pauseColor)
 
-	rightWidth, _ := text.Measure(right, s.hudFace, s.hudFace.Size)
-	s.drawText(screen, right, s.hudFace, float64(s.width)-rightWidth-topBarMargin, 29, textColor)
-}
-
-// uiColor builds an RGBA color for HUD-specific translucent surfaces.
-func uiColor(r, g, b, a uint8) color.RGBA {
-	return color.RGBA{R: r, G: g, B: b, A: a}
+	rightWidth, _ := text.Measure(right, s.ui.hudFace, s.ui.hudFace.Size)
+	s.drawText(screen, right, s.ui.hudFace, float64(s.ui.width)-rightWidth-topBarMargin, 29, textColor)
 }

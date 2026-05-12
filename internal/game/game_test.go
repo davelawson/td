@@ -22,11 +22,11 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.Paused() {
 		t.Fatal("expected new state to start unpaused")
 	}
-	if state.phase != phaseCalm {
-		t.Fatalf("phase = %v, want %v", state.phase, phaseCalm)
+	if state.status.phase != phaseCalm {
+		t.Fatalf("phase = %v, want %v", state.status.phase, phaseCalm)
 	}
-	if state.resources.wood != 80 || state.resources.stone != 45 || state.resources.metal != 12 {
-		t.Fatalf("resources = %+v, want wood 80 stone 45 metal 12", state.resources)
+	if state.status.resources.wood != 80 || state.status.resources.stone != 45 || state.status.resources.metal != 12 {
+		t.Fatalf("resources = %+v, want wood 80 stone 45 metal 12", state.status.resources)
 	}
 }
 
@@ -54,8 +54,8 @@ func TestStateFormatsRaidTopBar(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	state.phase = phaseRaid
-	state.raidCount = 7
+	state.status.phase = phaseRaid
+	state.status.raidCount = 7
 
 	if value := state.phaseText(); value != "Enemies remaining: 7" {
 		t.Fatalf("phaseText = %q", value)
@@ -154,7 +154,7 @@ func TestResumeRestoresRunningState(t *testing.T) {
 	}
 
 	state.Update(Input{ToggleMenu: true})
-	state.Update(clickInput(state.menu.buttons[0]))
+	state.Update(clickInput(state.ui.menu.buttons[0]))
 	if state.IngameMenuOpen() {
 		t.Fatal("expected Resume to close the in-game menu")
 	}
@@ -208,7 +208,7 @@ func TestSurrenderAction(t *testing.T) {
 	}
 
 	state.Update(Input{ToggleMenu: true})
-	if action := state.Update(clickInput(state.menu.buttons[1])); action != ActionSurrender {
+	if action := state.Update(clickInput(state.ui.menu.buttons[1])); action != ActionSurrender {
 		t.Fatalf("Update(surrender click) = %v, want %v", action, ActionSurrender)
 	}
 }
@@ -222,7 +222,7 @@ func TestIngameMenuResizeRecentersButtons(t *testing.T) {
 
 	state.Resize(2560, 1440)
 	state.Update(Input{ToggleMenu: true})
-	resumeButton := state.menu.buttons[0]
+	resumeButton := state.ui.menu.buttons[0]
 	if resumeButton.X+resumeButton.W/2 != 1280 {
 		t.Fatalf("resume center x = %d, want %d", resumeButton.X+resumeButton.W/2, 1280)
 	}

@@ -14,6 +14,9 @@ var (
 	Parchment         = color.RGBA{R: 238, G: 224, B: 188, A: 255}
 	MutedParchment    = color.RGBA{R: 184, G: 172, B: 139, A: 255}
 	Purple            = color.RGBA{R: 98, G: 90, B: 145, A: 255}
+	TransparentBlack  = color.RGBA{R: 0, G: 0, B: 0, A: 128}
+	TopBarGreen       = color.RGBA{R: 26, G: 32, B: 28, A: 245}
+	TopBarBronze      = color.RGBA{R: 134, G: 114, B: 65, A: 210}
 	TransparentPurple = color.RGBA{R: 98, G: 90, B: 145, A: 130}
 	TransparentBronze = color.RGBA{R: 134, G: 114, B: 65, A: 115}
 )

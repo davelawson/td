@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"image/color"
 
-	"td/internal/ui"
-
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -25,34 +23,20 @@ type Input struct {
 // State owns the current game state and logical update rules.
 type State struct {
 	wizardName string
-	width      int
-	height     int
 	updates    int
 	paused     bool
-	menu       ingameMenu
-	phase      phase
-	chapter    string
-	day        int
-	calmTime   int
-	raidCount  int
-	barricade  int
-	resources  resourceCounts
-	titleFace  *text.GoTextFace
-	bodyFace   *text.GoTextFace
-	hudFace    *text.GoTextFace
+	status     gameStatus
+	ui         gameUI
 }
 
-var (
-	backgroundColor  = ui.CharcoalBlack
-	fieldColor       = ui.PineGreen
-	fieldEdgeColor   = ui.Bronze
-	textColor        = ui.Parchment
-	mutedTextColor   = ui.MutedParchment
-	pauseColor       = ui.LightBronze
-	fieldAccentColor = ui.Purple
-	pathColor        = ui.OliveBrown
-	clearingColor    = ui.MossGreen
-)
+type gameUI struct {
+	width     int
+	height    int
+	menu      ingameMenu
+	titleFace *text.GoTextFace
+	bodyFace  *text.GoTextFace
+	hudFace   *text.GoTextFace
+}
 
 // New creates the initial game state for a Wizard name.
 func New(wizardName string, width, height int) (*State, error) {
@@ -63,8 +47,18 @@ func New(wizardName string, width, height int) (*State, error) {
 
 	state := &State{
 		wizardName: wizardName,
-		width:      width,
-		height:     height,
+		ui:         newGameUI(source, width, height),
+	}
+	state.setPrototypeGameStatus()
+	state.layoutIngameMenu()
+	return state, nil
+}
+
+// newGameUI creates render-facing state for the current drawable size.
+func newGameUI(source *text.GoTextFaceSource, width, height int) gameUI {
+	return gameUI{
+		width:  width,
+		height: height,
 		titleFace: &text.GoTextFace{
 			Source: source,
 			Size:   34,
@@ -88,9 +82,6 @@ func New(wizardName string, width, height int) (*State, error) {
 			},
 		},
 	}
-	state.setPrototypeGameStatus()
-	state.layoutIngameMenu()
-	return state, nil
 }
 
 // Resize updates drawable dimensions for game rendering.
@@ -98,14 +89,14 @@ func (s *State) Resize(width, height int) {
 	if width <= 0 || height <= 0 {
 		return
 	}
-	s.width = width
-	s.height = height
+	s.ui.width = width
+	s.ui.height = height
 	s.layoutIngameMenu()
 }
 
 // Update applies game input and advances one logical update when unpaused.
 func (s *State) Update(input Input) Action {
-	if s.menu.open {
+	if s.ui.menu.open {
 		return s.updateIngameMenu(input)
 	}
 	if input.ToggleMenu {
@@ -145,7 +136,7 @@ func (s *State) Paused() bool {
 
 // IngameMenuOpen reports whether the in-game overlay menu is visible.
 func (s *State) IngameMenuOpen() bool {
-	return s.menu.open
+	return s.ui.menu.open
 }
 
 // WizardName returns the Wizard name used to start the game.
@@ -157,8 +148,8 @@ func (s *State) WizardName() string {
 func (s *State) drawPrototypeField(screen *ebiten.Image) {
 	fieldW := float32(820)
 	fieldH := float32(460)
-	fieldX := float32(s.width)/2 - fieldW/2
-	fieldY := float32(s.height)/2 - fieldH/2
+	fieldX := float32(s.ui.width)/2 - fieldW/2
+	fieldY := float32(s.ui.height)/2 - fieldH/2
 
 	vector.FillRect(screen, fieldX, fieldY, fieldW, fieldH, fieldColor, false)
 	vector.StrokeRect(screen, fieldX, fieldY, fieldW, fieldH, 4, fieldEdgeColor, false)
@@ -173,20 +164,20 @@ func (s *State) drawPrototypeField(screen *ebiten.Image) {
 // drawWizardName renders the active Wizard name.
 func (s *State) drawWizardName(screen *ebiten.Image) {
 	value := fmt.Sprintf("Wizard %s", s.wizardName)
-	s.drawText(screen, value, s.titleFace, 56, 112, textColor)
-	s.drawText(screen, "The first defenses are waiting for orders.", s.bodyFace, 56, 156, mutedTextColor)
+	s.drawText(screen, value, s.ui.titleFace, 56, 112, textColor)
+	s.drawText(screen, "The first defenses are waiting for orders.", s.ui.bodyFace, 56, 156, mutedTextColor)
 }
 
 // drawCounter renders update and pause status in the top-right corner.
 func (s *State) drawCounter(screen *ebiten.Image) {
 	value := fmt.Sprintf("Updates: %d", s.updates)
-	width, _ := text.Measure(value, s.bodyFace, s.bodyFace.Size)
-	x := float64(s.width) - width - 48
-	s.drawText(screen, value, s.bodyFace, x, float64(s.height)-58, mutedTextColor)
+	width, _ := text.Measure(value, s.ui.bodyFace, s.ui.bodyFace.Size)
+	x := float64(s.ui.width) - width - 48
+	s.drawText(screen, value, s.ui.bodyFace, x, float64(s.ui.height)-58, mutedTextColor)
 
 	if s.paused {
-		pauseWidth, _ := text.Measure("PAUSED", s.bodyFace, s.bodyFace.Size)
-		s.drawText(screen, "PAUSED", s.bodyFace, float64(s.width)-pauseWidth-48, float64(s.height)-94, pauseColor)
+		pauseWidth, _ := text.Measure("PAUSED", s.ui.bodyFace, s.ui.bodyFace.Size)
+		s.drawText(screen, "PAUSED", s.ui.bodyFace, float64(s.ui.width)-pauseWidth-48, float64(s.ui.height)-94, pauseColor)
 	}
 }
 
