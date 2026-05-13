@@ -15,7 +15,6 @@ var (
 	emptyTileColor    = ui.PineGreen
 	roadTileColor     = ui.OliveBrown
 	tileGridColor     = ui.DarkMossGreen
-	sanctumColor      = ui.Purple
 
 	topBarColor     = ui.DarkCharcoalGreen
 	topBarEdgeColor = ui.Bronze

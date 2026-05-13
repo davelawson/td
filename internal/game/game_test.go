@@ -32,6 +32,9 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.gameMap.Home.Tiles[homePlotCenter][homePlotCenter].Feature != featureSanctum {
 		t.Fatal("expected new state to store the default home Plot")
 	}
+	if state.assetCatalog.Sprite.Structure.Sanctum == nil {
+		t.Fatal("expected new state to store the Sanctum sprite")
+	}
 	if state.camera.zoom != cameraInitialZoom {
 		t.Fatalf("camera zoom = %f, want %f", state.camera.zoom, cameraInitialZoom)
 	}

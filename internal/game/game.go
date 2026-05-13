@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"image/color"
 
+	"td/assets"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"golang.org/x/image/font/gofont/goregular"
@@ -26,13 +28,14 @@ type Input struct {
 
 // State owns the current game state and logical update rules.
 type State struct {
-	wizardName string
-	updates    int
-	paused     bool
-	gameMap    Map
-	camera     camera
-	status     gameStatus
-	ui         gameUI
+	wizardName   string
+	updates      int
+	paused       bool
+	assetCatalog assets.Catalog
+	gameMap      Map
+	camera       camera
+	status       gameStatus
+	ui           gameUI
 }
 
 type gameUI struct {
@@ -50,12 +53,17 @@ func New(wizardName string, width, height int) (*State, error) {
 	if err != nil {
 		return nil, err
 	}
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		return nil, err
+	}
 
 	state := &State{
-		wizardName: wizardName,
-		gameMap:    NewDefaultMap(),
-		camera:     newCamera(),
-		ui:         newGameUI(source, width, height),
+		wizardName:   wizardName,
+		assetCatalog: assetCatalog,
+		gameMap:      NewDefaultMap(),
+		camera:       newCamera(),
+		ui:           newGameUI(source, width, height),
 	}
 	state.setPrototypeGameStatus()
 	state.layoutIngameMenu()

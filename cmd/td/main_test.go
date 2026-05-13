@@ -86,7 +86,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "10-basic-camera", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "11-asset-catalog", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{

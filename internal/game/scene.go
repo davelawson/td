@@ -2,7 +2,6 @@ package game
 
 import (
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -41,22 +40,20 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 
 // drawSanctum renders the centered Sanctum feature.
 func (s *State) drawSanctum(screen *ebiten.Image, tileX, tileY, tileSize float32) {
-	centerX := tileX + tileSize/2
-	centerY := tileY + tileSize/2
-	radius := tileSize * 0.34
-
-	vector.FillCircle(screen, centerX, centerY, radius, sanctumColor, false)
-	vector.StrokeCircle(screen, centerX, centerY, radius, 3, fieldEdgeColor, false)
-
-	if tileSize < 18 {
+	sanctum := s.assetCatalog.Sprite.Structure.Sanctum
+	if sanctum == nil || tileSize <= 0 {
 		return
 	}
-	label := "S"
-	labelWidth, _ := text.Measure(label, s.ui.titleFace, s.ui.titleFace.Size)
-	labelScale := float64(tileSize) / plotBaseTileSize
-	options := &text.DrawOptions{}
-	options.GeoM.Scale(labelScale, labelScale)
-	options.GeoM.Translate(float64(centerX)-labelWidth*labelScale/2, float64(centerY)-22*labelScale)
-	options.ColorScale.ScaleWithColor(textColor)
-	text.Draw(screen, label, s.ui.titleFace, options)
+
+	spriteWidth := float64(sanctum.Bounds().Dx())
+	spriteHeight := float64(sanctum.Bounds().Dy())
+	targetSize := float64(tileSize) * 0.82
+	scale := targetSize / spriteWidth
+	options := &ebiten.DrawImageOptions{}
+	options.GeoM.Scale(scale, scale)
+	options.GeoM.Translate(
+		float64(tileX)+(float64(tileSize)-spriteWidth*scale)/2,
+		float64(tileY)+(float64(tileSize)-spriteHeight*scale)/2,
+	)
+	screen.DrawImage(sanctum, options)
 }

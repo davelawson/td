@@ -2,13 +2,13 @@
 
 `td` is a local PC prototype for a 2D tower-defense game built with Go and Ebitengine. The intended game combines exploration, base-building, resource gathering, and conventional tower-defense combat in a medieval wizardry fantasy setting.
 
-The repository now contains a small runnable prototype shell: a Go/Ebitengine desktop app with a main menu, a New Game configuration screen for entering a Wizard name, a first game screen with a static 15x15 home Plot scene, mouse-wheel map zoom, `WASD` camera panning, a prototype status top bar, a logical update counter, an ESC in-game overlay menu, a placeholder Settings screen, disabled Load option, SPACE pause behavior, and a quit option. Exploration, base-building, tower-defense combat, real resource changes, real settings, save/load behavior, and static assets have not been implemented yet.
+The repository now contains a small runnable prototype shell: a Go/Ebitengine desktop app with a main menu, a New Game configuration screen for entering a Wizard name, a first game screen with a static 15x15 home Plot scene, a sprite-backed Sanctum, mouse-wheel map zoom, `WASD` camera panning, a prototype status top bar, a logical update counter, an ESC in-game overlay menu, a placeholder Settings screen, disabled Load option, SPACE pause behavior, and a quit option. Exploration, base-building, tower-defense combat, real resource changes, real settings, save/load behavior, and an asset pipeline have not been implemented yet.
 
 ## Current Status
 
 - Stage: local runnable prototype foundation.
 - Runtime stack: Go with Ebitengine.
-- Current playable slice: a 1920x1080 desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` opens a configuration screen with Wizard name entry up to 32 characters, active `Start` after a name is entered, and active `Cancel`; `Start` opens the first game screen with a static empty 15x15 home Plot containing only the centered Sanctum and a straight road north to the Plot edge; mouse-wheel input zooms the map, `WASD` pans the camera, and these camera controls keep working while paused; a top bar shows fixed prototype Chapter, Day, resource, phase, and Sanctum barricade values, plus a debug logical update counter; SPACE toggles pause; ESC opens an in-game overlay menu with `Resume` and `Surrender` and blocks camera input while open; `Settings` opens a placeholder screen with `Back`; `Load` is disabled; and `Quit` closes the app.
+- Current playable slice: a 1920x1080 desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` opens a configuration screen with Wizard name entry up to 32 characters, active `Start` after a name is entered, and active `Cancel`; `Start` opens the first game screen with a static empty 15x15 home Plot containing only the centered sprite-backed Sanctum and a straight road north to the Plot edge; mouse-wheel input zooms the map, `WASD` pans the camera, and these camera controls keep working while paused; a top bar shows fixed prototype Chapter, Day, resource, phase, and Sanctum barricade values, plus a debug logical update counter; SPACE toggles pause; ESC opens an in-game overlay menu with `Resume` and `Surrender` and blocks camera input while open; `Settings` opens a placeholder screen with `Back`; `Load` is disabled; and `Quit` closes the app.
 - Current display policy: the window is resizable, and the drawable layout follows the actual window size so text remains raw-pixel-sized instead of being stretched during upscaling.
 - Current non-goals: exploration, base-building, tower-defense combat, saving games, and campaign structure.
 - Repository operations such as license, CI, release packaging, and distribution are intentionally deferred.
@@ -28,12 +28,13 @@ Use these commands from the repository root:
 - `AGENTS.md` defines repository-specific instructions for coding agents.
 - `ARCHITECTURE.md` describes intended code ownership, boundaries, and extension points.
 - `ART.md` records guidance for generated art assets, prompt patterns, and asset review.
+- `assets/` contains the typed runtime asset catalog package and static sprite files.
 - `CODESTYLE.md` defines Go-oriented source conventions, commenting requirements, and file-size expectations.
 - `cmd/td/` contains the Ebitengine executable entry point.
 - `DESIGN.md` records the medieval wizardry design direction and UI review expectations.
 - `GAME.md` records intended game design decisions and open gameplay questions regardless of implementation state.
 - `go.mod` and `go.sum` define the Go module and runtime dependencies.
-- `internal/game/` contains testable game state, prototype map data, camera state, scene projection and rendering, and logical update behavior.
+- `internal/game/` contains testable game state, prototype map data, camera state, scene projection and rendering, asset-catalog ownership for active games, and logical update behavior.
 - `internal/menu/` contains testable menu hit-testing, action-selection, screen-routing, and Wizard name input behavior.
 - `PLANS.md` defines how ExecPlans are written and maintained.
 - `PRODUCT.md` records current user-visible product truth.
@@ -42,7 +43,7 @@ Use these commands from the repository root:
 - `.agents/skills/` stores repo-local agent workflows.
 - `.codex/config.toml` stores project-scoped Codex defaults.
 
-Static game assets should eventually live in `assets/`, and tests should mirror the package layout under `tests/` or live beside Go packages when idiomatic package-level tests are clearer.
+Additional static game assets should live in `assets/`, and tests should mirror the package layout under `tests/` or live beside Go packages when idiomatic package-level tests are clearer.
 
 ## Development Notes
 

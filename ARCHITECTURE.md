@@ -2,7 +2,7 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository contains an early runtime shell: a Go module, a small Ebitengine executable, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, camera state, home Plot projection and rendering, and in-game overlay menu.
+The repository contains an early runtime shell: a Go module, a small Ebitengine executable, an asset catalog package that loads runtime sprites, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, camera state, home Plot projection and rendering, and in-game overlay menu.
 
 ## System Overview
 
@@ -13,11 +13,12 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 ## Codemap
 
 - `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, surrender-to-menu handling, pixel-sized Ebitengine layout, and process startup.
+- `assets/` owns static runtime asset files and the typed asset catalog package. The catalog embeds required files, groups loaded assets by type and subtype, and returns Ebitengine-ready images for game rendering.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
-- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, prototype top-bar status display, prototype map data, prototype camera state, map-to-screen projection, home Plot rendering, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from map data, camera state, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and defense scene state when those systems exist.
+- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, active asset catalog ownership, prototype top-bar status display, prototype map data, prototype camera state, map-to-screen projection, home Plot rendering, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from assets, map data, camera state, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and defense scene state when those systems exist.
 - `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
-- `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
+- `assets/` stores static images and the first typed runtime asset catalog. It may later grow to include fonts, audio, and other runtime assets.
 - `plans/` stores ordered ExecPlans. `plans/00-initial-ebitengine-menu.md` is the first implementation plan.
 - `.agents/skills/` stores repo-local agent workflows.
 - `.codex/config.toml` stores Codex defaults only; it is not application configuration.
@@ -45,7 +46,7 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 
 1. A contributor starts a game from the New Game screen after entering a Wizard name.
 2. `cmd/td` routes Ebitengine updates and drawing to `internal/game`.
-3. The game package renders a static empty 15x15 home Plot from its stored prototype map data. The Plot contains the centered Sanctum and a straight road north to the Plot edge.
+3. The game package renders a static empty 15x15 home Plot from its stored prototype map data. The Plot contains the centered Sanctum, rendered from a loaded sprite, and a straight road north to the Plot edge.
 4. `cmd/td` polls mouse-wheel input and held `W`, `A`, `S`, and `D` keys, then passes those values to `internal/game`.
 5. The game package updates a private camera for map inspection. Mouse-wheel input changes zoom around the scene viewport center, and `WASD` changes the camera center. The camera has a tiny minimum zoom for technical safety but no maximum zoom and no pan bounds.
 6. The game package renders a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, plus a debug logical update counter in screen space so camera changes affect only the map scene.
@@ -71,6 +72,7 @@ This future flow is roadmap intent, not current behavior.
 
 - Keep Ebitengine process startup in `cmd/td/`.
 - Keep app-mode routing in `cmd/td/`; reusable game state and rules belong in `internal/game`.
+- Keep runtime asset loading in `assets/` so gameplay rules do not decode files directly.
 - Keep the current display policy as a pixel-sized drawable layout: the initial window is 1920x1080, resizes update menu geometry, and text remains raw-pixel-sized rather than stretched by framebuffer scaling.
 - Keep reusable game logic in `internal/` packages when it outgrows the entry point.
 - Keep the first map data in `internal/game/map.go` and the first camera/projection behavior in `internal/game/camera.go` until real exploration, generation, multi-map behavior, or multiple gameplay scenes create a reason for separate packages.
@@ -95,7 +97,7 @@ There is no application configuration system yet. If configuration becomes neces
 
 ### Assets
 
-There are no real assets yet. Early prototypes may draw shapes and text directly. When assets arrive, store them under `assets/` and keep loading code separated from gameplay rules.
+The first real sprite asset is the 64x64 Sanctum PNG under `assets/sprites/structures/`. The `assets` package embeds and loads required runtime assets into a typed catalog. Early prototypes may still draw simple shapes and text directly when no sprite exists, but gameplay rules should not decode files or know asset paths.
 
 ### Testing
 
@@ -113,7 +115,7 @@ To add a new screen later, keep the transition logic explicit and avoid building
 
 To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input. The current prototype map and camera follow that pattern: `internal/game/map.go` creates the default home Plot, `internal/game/camera.go` owns camera movement and projection state, and rendering reads from stored map and camera state.
 
-To add assets, place files under `assets/`, document source and licensing, and avoid mixing asset-loading details into gameplay rules.
+To add assets, place files under `assets/`, document source and licensing, add them to the typed catalog only when game code needs them, and avoid mixing asset-loading details into gameplay rules.
 
 ## Open Questions
 
