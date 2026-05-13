@@ -66,6 +66,7 @@ The current phase is not trying to build campaign progression, save/load, multip
 - `ROADMAP.md` explains intended future direction.
 - `GAME.md` records intended game design decisions and open gameplay questions, including planned behavior that may not exist yet.
 - `DESIGN.md` captures the fantasy design direction and UI review expectations.
+- `ART.md` captures guidance for generated art assets, prompt patterns, asset review criteria, and prototype asset constraints.
 - `CODESTYLE.md` defines source conventions and file-size expectations.
 - `ARCHITECTURE.md` explains intended code structure and boundaries.
 - `PLANS.md` defines ExecPlan requirements.

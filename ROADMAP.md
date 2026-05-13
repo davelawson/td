@@ -52,6 +52,7 @@ The current roadmap window does not prioritize saving games, campaign progressio
 - `GAME.md` records intended game design decisions and open gameplay questions.
 - `README.md` explains onboarding, status, commands, and layout.
 - `DESIGN.md` captures the intended fantasy visual language.
+- `ART.md` captures guidance for generated art assets, prompt patterns, asset review criteria, and prototype asset constraints.
 - `ARCHITECTURE.md` describes intended code structure and boundaries.
 - `CODESTYLE.md` describes source conventions.
 - `PLANS.md` describes how substantial work is planned.

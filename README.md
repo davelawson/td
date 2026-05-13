@@ -27,6 +27,7 @@ Use these commands from the repository root:
 
 - `AGENTS.md` defines repository-specific instructions for coding agents.
 - `ARCHITECTURE.md` describes intended code ownership, boundaries, and extension points.
+- `ART.md` records guidance for generated art assets, prompt patterns, and asset review.
 - `CODESTYLE.md` defines Go-oriented source conventions, commenting requirements, and file-size expectations.
 - `cmd/td/` contains the Ebitengine executable entry point.
 - `DESIGN.md` records the medieval wizardry design direction and UI review expectations.
