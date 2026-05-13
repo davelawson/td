@@ -6,10 +6,11 @@ This file is guidance for asset creation, not a final art bible. `DESIGN.md` rem
 
 ## Visual Goals
 
+run python3 rather than python
 Generated assets are 2D pixel art.  
 PNG format.
 Clearly visible, even if scaled down to 50% size.
-Sharp contrast, and low detail.  Avoid color-gradients.
+Very sharp contrast, low detail, and bright colours.  
 No lighting or shadows.
 
 ## Dimensions
@@ -21,7 +22,7 @@ Enemy: 64x64
 
 ## Location
 
-Generated graphical assets should be placed in a subfolder under the `assets/sprites` folder.  The name of the subfolder should reflect the purpose of the asset: terrains, features, enemies, or icons.
+Generated graphical assets should be placed in a subfolder under the `assets/sprites` folder.  The name of the subfolder should reflect the purpose of the asset: terrains, structures, enemies, or icons.
 
 ## Open Questions
 
