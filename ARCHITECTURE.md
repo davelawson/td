@@ -48,7 +48,7 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 3. The game package renders a static empty 15x15 home Plot from its stored prototype map data. The Plot contains the centered Sanctum and a straight road north to the Plot edge.
 4. `cmd/td` polls mouse-wheel input and held `W`, `A`, `S`, and `D` keys, then passes those values to `internal/game`.
 5. The game package updates a private camera for map inspection. Mouse-wheel input changes zoom around the scene viewport center, and `WASD` changes the camera center. The camera has a tiny minimum zoom for technical safety but no maximum zoom and no pan bounds.
-6. The game package renders the Wizard name, a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, and a debug logical update counter in screen space so camera changes affect only the map scene.
+6. The game package renders a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, plus a debug logical update counter in screen space so camera changes affect only the map scene.
 7. While unpaused, each Ebitengine update advances the logical update counter by one. The static map and scene do not change from these ticks.
 8. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
 9. While paused, the game renders a `PAUSED` label and does not increment the logical update counter, but camera input still updates so the map can be inspected.

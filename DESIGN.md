@@ -31,7 +31,7 @@ Avoid letting the whole interface become a single purple, beige, or dark-blue pa
 - Text must remain readable at the target window size. The current desktop target opens at 1920x1080, and menu text should remain raw-pixel-sized when the window is enlarged instead of stretching with the window.
 - In-game HUD text should be compact, high-contrast, and restrained. It should expose essential play status without covering the defended field or competing with the in-game overlay menu.
 - Static map scenes should keep tile boundaries, roads, and the Sanctum readable before adding decorative terrain or production art.
-- Camera zoom and pan should affect the map scene only. The top HUD, Wizard name, debug counter, pause label, and in-game overlay should remain readable screen-space UI, and the overlay should block camera controls while it is open.
+- Camera zoom and pan should affect the map scene only. The top HUD, debug counter, pause label, and in-game overlay should remain readable screen-space UI, and the overlay should block camera controls while it is open.
 - Quit behavior must be obvious and should close the app cleanly.
 - Keyboard access should be considered early, even when the first slice only requires pointer input.
 

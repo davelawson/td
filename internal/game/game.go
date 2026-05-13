@@ -128,7 +128,6 @@ func (s *State) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	s.drawHomePlot(screen)
 	s.drawTopBar(screen)
-	s.drawWizardName(screen)
 	s.drawCounter(screen)
 	s.drawIngameMenu(screen)
 }
@@ -151,13 +150,6 @@ func (s *State) IngameMenuOpen() bool {
 // WizardName returns the Wizard name used to start the game.
 func (s *State) WizardName() string {
 	return s.wizardName
-}
-
-// drawWizardName renders the active Wizard name.
-func (s *State) drawWizardName(screen *ebiten.Image) {
-	value := fmt.Sprintf("Wizard %s", s.wizardName)
-	s.drawText(screen, value, s.ui.titleFace, 56, 112, textColor)
-	s.drawText(screen, "The first defenses are waiting for orders.", s.ui.bodyFace, 56, 156, mutedTextColor)
 }
 
 // drawCounter renders update and pause status in the top-right corner.
