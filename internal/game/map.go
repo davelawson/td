@@ -26,6 +26,7 @@ type tileTerrain int
 const (
 	terrainEmpty tileTerrain = iota
 	terrainRoad
+	terrainForest
 )
 
 type tileFeature int
@@ -42,9 +43,16 @@ func NewDefaultMap() Map {
 	}
 }
 
-// NewDefaultHomePlot creates the starting Plot with only a Sanctum and north road.
+// NewDefaultHomePlot creates the starting Plot with a Sanctum, north road, and tree border.
 func NewDefaultHomePlot() Plot {
 	var plot Plot
+	for y := 0; y < plotSize; y++ {
+		for x := 0; x < plotSize; x++ {
+			if x == 0 || y == 0 || x == plotSize-1 || y == plotSize-1 {
+				plot.Tiles[y][x].Terrain = terrainForest
+			}
+		}
+	}
 	for y := 0; y <= homePlotCenter; y++ {
 		plot.Tiles[y][homePlotCenter].Terrain = terrainRoad
 	}

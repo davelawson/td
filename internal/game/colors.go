@@ -14,6 +14,7 @@ var (
 	plotBackdropColor = ui.DarkCharcoalGreen
 	emptyTileColor    = ui.PineGreen
 	roadTileColor     = ui.OliveBrown
+	forestTileColor   = ui.DarkMossGreen
 	tileGridColor     = ui.DarkMossGreen
 
 	topBarColor     = ui.DarkCharcoalGreen

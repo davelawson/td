@@ -75,18 +75,38 @@ func TestDefaultHomePlotRoadRunsNorth(t *testing.T) {
 	}
 }
 
-// TestDefaultHomePlotIsOtherwiseEmpty verifies no extra terrain or features exist yet.
-func TestDefaultHomePlotIsOtherwiseEmpty(t *testing.T) {
+// TestDefaultHomePlotTreeBorder verifies edge Tiles are forest except the road opening.
+func TestDefaultHomePlotTreeBorder(t *testing.T) {
 	plot := NewDefaultHomePlot()
 
 	for y := 0; y < plotSize; y++ {
 		for x := 0; x < plotSize; x++ {
 			tile := plot.Tiles[y][x]
 			onNorthRoad := x == homePlotCenter && y <= homePlotCenter
+			onEdge := x == 0 || y == 0 || x == plotSize-1 || y == plotSize-1
+
+			if onEdge && !onNorthRoad && tile.Terrain != terrainForest {
+				t.Fatalf("tile (%d,%d) terrain = %v, want forest edge", x, y, tile.Terrain)
+			}
+			if onNorthRoad && tile.Terrain != terrainRoad {
+				t.Fatalf("tile (%d,%d) terrain = %v, want road", x, y, tile.Terrain)
+			}
+		}
+	}
+}
+
+// TestDefaultHomePlotInteriorIsOtherwiseEmpty verifies non-road interior Tiles stay empty.
+func TestDefaultHomePlotInteriorIsOtherwiseEmpty(t *testing.T) {
+	plot := NewDefaultHomePlot()
+
+	for y := 1; y < plotSize-1; y++ {
+		for x := 1; x < plotSize-1; x++ {
+			tile := plot.Tiles[y][x]
+			onNorthRoad := x == homePlotCenter && y <= homePlotCenter
 			atSanctum := x == homePlotCenter && y == homePlotCenter
 
 			if !onNorthRoad && tile.Terrain != terrainEmpty {
-				t.Fatalf("tile (%d,%d) terrain = %v, want empty", x, y, tile.Terrain)
+				t.Fatalf("tile (%d,%d) terrain = %v, want empty interior", x, y, tile.Terrain)
 			}
 			if !atSanctum && tile.Feature != featureNone {
 				t.Fatalf("tile (%d,%d) feature = %v, want none", x, y, tile.Feature)

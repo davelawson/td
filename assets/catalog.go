@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/structures/sanctum.png
+//go:embed sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 // Catalog groups all loaded runtime assets by type and subtype.
@@ -21,11 +21,17 @@ type Catalog struct {
 // SpriteCatalog groups loaded image sprites by game-domain subtype.
 type SpriteCatalog struct {
 	Structure StructureSprites
+	Terrain   TerrainSprites
 }
 
 // StructureSprites groups loaded sprites for map and base structures.
 type StructureSprites struct {
 	Sanctum *ebiten.Image
+}
+
+// TerrainSprites groups loaded sprites for map terrain.
+type TerrainSprites struct {
+	PineTrees [4]*ebiten.Image
 }
 
 // NewCatalog loads the runtime assets required by a new game.
@@ -34,10 +40,21 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
+	var pineTrees [4]*ebiten.Image
+	for i := range pineTrees {
+		path := fmt.Sprintf("sprites/terrains/pine-tree-%d.png", i+1)
+		pineTrees[i], err = loadSprite(path)
+		if err != nil {
+			return Catalog{}, err
+		}
+	}
 	return Catalog{
 		Sprite: SpriteCatalog{
 			Structure: StructureSprites{
 				Sanctum: sanctum,
+			},
+			Terrain: TerrainSprites{
+				PineTrees: pineTrees,
 			},
 		},
 	}, nil

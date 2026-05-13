@@ -67,7 +67,7 @@ The map is built on a grid. Each grid square is called a Tile. Tiles are grouped
 
 Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
 
-At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot is intentionally empty except for the centered Sanctum and a straight road north to the Plot edge; terrain variety, resources, and build rules remain future work.
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening; richer terrain variety, resources, and build rules remain future work.
 
 Plots exist in one of these high-level states:
 
@@ -182,7 +182,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It is intentionally empty except for the centered Sanctum and the straight road north to the Plot edge.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 
 ## Open Game Design Questions
@@ -268,6 +268,10 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Start each Fable with a one-Plot Domain containing the centered Sanctum and an outgoing road.
   Rationale: This gives every playthrough a clear initial defended space and a road hook for future exploration, enemy routing, and Domain expansion.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Render the first home Plot with a pine-tree border around the Plot edge except where the north road exits.
+  Rationale: The tree border makes the starting Domain read as a small clearing while preserving the existing road connector for future path and expansion rules.
+  Date/Author: 2026-05-13 / Codex
 
 - Decision: In the first static home Plot scene, the outgoing road runs straight north from the centered Sanctum to the north edge-center connector.
   Rationale: A single straight north road gives the first scene a clear route without implying branching, pathfinding, exploration, or combat rules.
