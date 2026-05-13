@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene, pause behavior, and an in-game overlay menu. The actual exploration, resource, base-building, and tower-defense systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene, basic camera zoom and pan, pause behavior, and an in-game overlay menu. The actual exploration, resource, base-building, and tower-defense systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -57,7 +57,9 @@ Exploration should give the player information and access. It may reveal terrain
 
 During the calm phase, the wizard can spend resources to explore another Plot adjacent to the current Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and defend along a longer path.
 
-Open decisions include whether exploration uses direct player movement, camera-based inspection, tile reveal, or another interaction model, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
+Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, select Tiles, gather resources, or move a wizard character.
+
+Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
 
 ### Map
 
@@ -181,6 +183,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
 - The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It is intentionally empty except for the centered Sanctum and the straight road north to the Plot edge.
+- Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 
 ## Open Game Design Questions
 
@@ -196,7 +199,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - How are Plot dominant characters generated, selected, or presented to the player?
 - How many road exits can a Plot have, and can roads branch inside a Plot after entering through edge-center connector Tiles?
 - Are Wood, Stone, and Metal enough for interesting choices, or are additional resources needed?
-- Does the wizard move as an on-map character, act through camera inspection, or both?
+- Should later exploration add an on-map wizard character, remain camera-inspection driven, or combine both?
 - How many arcane barrier charges does the Sanctum have, and can those charges be restored or increased?
 - How does the Domain expand, contract, or change over time?
 - What enemy archetypes, spawn rules, and pathing rules should Raids use first?
@@ -257,6 +260,10 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Roads connect adjacent Plots only through the middle Tile of the shared Plot edge.
   Rationale: A fixed edge-center connector rule keeps inter-Plot paths readable, takes advantage of the 15x15 Plot centerline, and lets internal road shapes vary without making Plot-to-Plot connectivity ambiguous.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Use camera zoom and pan as the first map inspection model instead of wizard-character movement.
+  Rationale: Camera inspection lets the player examine the starting Plot while keeping exploration, tile selection, resource rules, and character movement out of the first scene-interaction slice.
+  Date/Author: 2026-05-13 / Codex
 
 - Decision: Start each Fable with a one-Plot Domain containing the centered Sanctum and an outgoing road.
   Rationale: This gives every playthrough a clear initial defended space and a road hook for future exploration, enemy routing, and Domain expansion.

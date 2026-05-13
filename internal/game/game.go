@@ -14,6 +14,11 @@ import (
 type Input struct {
 	TogglePause bool
 	ToggleMenu  bool
+	WheelY      float64
+	PanUp       bool
+	PanDown     bool
+	PanLeft     bool
+	PanRight    bool
 	CursorX     int
 	CursorY     int
 	Clicked     bool
@@ -25,6 +30,7 @@ type State struct {
 	updates    int
 	paused     bool
 	gameMap    Map
+	camera     camera
 	status     gameStatus
 	ui         gameUI
 }
@@ -48,6 +54,7 @@ func New(wizardName string, width, height int) (*State, error) {
 	state := &State{
 		wizardName: wizardName,
 		gameMap:    NewDefaultMap(),
+		camera:     newCamera(),
 		ui:         newGameUI(source, width, height),
 	}
 	state.setPrototypeGameStatus()
@@ -104,6 +111,7 @@ func (s *State) Update(input Input) Action {
 		s.openIngameMenu()
 		return ActionNone
 	}
+	s.applyCameraInput(input)
 	if input.TogglePause {
 		s.paused = !s.paused
 		return ActionNone

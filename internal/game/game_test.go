@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math"
 	"testing"
 
 	"td/internal/ui"
@@ -30,6 +31,13 @@ func TestNewStateStartsRunning(t *testing.T) {
 	}
 	if state.gameMap.Home.Tiles[homePlotCenter][homePlotCenter].Feature != featureSanctum {
 		t.Fatal("expected new state to store the default home Plot")
+	}
+	if state.camera.zoom != cameraInitialZoom {
+		t.Fatalf("camera zoom = %f, want %f", state.camera.zoom, cameraInitialZoom)
+	}
+	expectedCenter := float64(plotSize) * plotBaseTileSize / 2
+	if state.camera.centerX != expectedCenter || state.camera.centerY != expectedCenter {
+		t.Fatalf("camera center = (%f,%f), want (%f,%f)", state.camera.centerX, state.camera.centerY, expectedCenter, expectedCenter)
 	}
 }
 
@@ -98,6 +106,141 @@ func TestUpdatesDoNotChangeHomePlot(t *testing.T) {
 
 	if state.gameMap != initial {
 		t.Fatal("expected logical updates to leave the prototype map unchanged")
+	}
+}
+
+// TestCameraWheelUpIncreasesZoom verifies scroll-up zooms in.
+func TestCameraWheelUpIncreasesZoom(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	state.Update(Input{WheelY: 1})
+
+	if state.camera.zoom <= cameraInitialZoom {
+		t.Fatalf("camera zoom = %f, want greater than %f", state.camera.zoom, cameraInitialZoom)
+	}
+}
+
+// TestCameraWheelDownDecreasesZoomToFloor verifies scroll-down zooms out safely.
+func TestCameraWheelDownDecreasesZoomToFloor(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	state.Update(Input{WheelY: -1})
+	if state.camera.zoom >= cameraInitialZoom {
+		t.Fatalf("camera zoom = %f, want less than %f", state.camera.zoom, cameraInitialZoom)
+	}
+
+	state.Update(Input{WheelY: -1000})
+	if state.camera.zoom != cameraMinZoom {
+		t.Fatalf("camera zoom = %f, want floor %f", state.camera.zoom, cameraMinZoom)
+	}
+}
+
+// TestCameraPanInputMovesCenter verifies WASD pan in the expected directions.
+func TestCameraPanInputMovesCenter(t *testing.T) {
+	tests := []struct {
+		name  string
+		input Input
+		wantX float64
+		wantY float64
+	}{
+		{name: "up", input: Input{PanUp: true}, wantX: 0, wantY: -cameraPanSpeed},
+		{name: "down", input: Input{PanDown: true}, wantX: 0, wantY: cameraPanSpeed},
+		{name: "left", input: Input{PanLeft: true}, wantX: -cameraPanSpeed, wantY: 0},
+		{name: "right", input: Input{PanRight: true}, wantX: cameraPanSpeed, wantY: 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			state, err := New("Merlin", 1920, 1080)
+			if err != nil {
+				t.Fatal(err)
+			}
+			startX := state.camera.centerX
+			startY := state.camera.centerY
+
+			state.Update(tt.input)
+
+			if !almostEqual(state.camera.centerX-startX, tt.wantX) || !almostEqual(state.camera.centerY-startY, tt.wantY) {
+				t.Fatalf("camera delta = (%f,%f), want (%f,%f)", state.camera.centerX-startX, state.camera.centerY-startY, tt.wantX, tt.wantY)
+			}
+		})
+	}
+}
+
+// TestCameraPanSpeedDividesByZoom verifies panning slows in world pixels when zoomed in.
+func TestCameraPanSpeedDividesByZoom(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state.camera.zoom = 2
+	startX := state.camera.centerX
+
+	state.Update(Input{PanRight: true})
+
+	if got, want := state.camera.centerX-startX, cameraPanSpeed/2; !almostEqual(got, want) {
+		t.Fatalf("camera x delta = %f, want %f", got, want)
+	}
+}
+
+// TestCameraInputWorksWhilePaused verifies pause stops logic but not map inspection.
+func TestCameraInputWorksWhilePaused(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	state.Update(Input{TogglePause: true})
+	startX := state.camera.centerX
+	startZoom := state.camera.zoom
+	state.Update(Input{WheelY: 1, PanRight: true})
+
+	if state.camera.centerX <= startX {
+		t.Fatalf("camera center x = %f, want greater than %f", state.camera.centerX, startX)
+	}
+	if state.camera.zoom <= startZoom {
+		t.Fatalf("camera zoom = %f, want greater than %f", state.camera.zoom, startZoom)
+	}
+	if state.Updates() != 0 {
+		t.Fatalf("updates = %d, want %d", state.Updates(), 0)
+	}
+}
+
+// TestIngameMenuBlocksCameraInput verifies overlay-open frames ignore camera controls.
+func TestIngameMenuBlocksCameraInput(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	state.Update(Input{ToggleMenu: true})
+	startCamera := state.camera
+	state.Update(Input{WheelY: 1, PanRight: true, PanDown: true})
+
+	if state.camera != startCamera {
+		t.Fatalf("camera = %+v, want unchanged %+v", state.camera, startCamera)
+	}
+}
+
+// TestCameraChangesDoNotChangeHomePlot verifies inspection controls leave map data untouched.
+func TestCameraChangesDoNotChangeHomePlot(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	initial := state.gameMap
+
+	state.Update(Input{WheelY: 2, PanUp: true, PanLeft: true})
+	state.Update(Input{WheelY: -4, PanDown: true, PanRight: true})
+
+	if state.gameMap != initial {
+		t.Fatal("expected camera changes to leave the prototype map unchanged")
 	}
 }
 
@@ -311,4 +454,9 @@ func clickInput(button ui.Button[Action]) Input {
 		CursorY: button.Y + button.H/2,
 		Clicked: true,
 	}
+}
+
+// almostEqual reports whether two float values are close enough for camera tests.
+func almostEqual(a, b float64) bool {
+	return math.Abs(a-b) < 0.000001
 }

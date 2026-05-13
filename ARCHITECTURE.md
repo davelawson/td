@@ -2,7 +2,7 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository contains an early runtime shell: a Go module, a small Ebitengine executable, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, static home Plot rendering, and in-game overlay menu.
+The repository contains an early runtime shell: a Go module, a small Ebitengine executable, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, camera state, home Plot projection and rendering, and in-game overlay menu.
 
 ## System Overview
 
@@ -14,7 +14,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 
 - `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, surrender-to-menu handling, pixel-sized Ebitengine layout, and process startup.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
-- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, prototype top-bar status display, prototype map data, static home Plot rendering, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from map data, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and defense scene state when those systems exist.
+- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, prototype top-bar status display, prototype map data, prototype camera state, map-to-screen projection, home Plot rendering, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from map data, camera state, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and defense scene state when those systems exist.
 - `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` will store static images, fonts, audio, and other runtime assets once real assets exist.
@@ -46,14 +46,16 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 1. A contributor starts a game from the New Game screen after entering a Wizard name.
 2. `cmd/td` routes Ebitengine updates and drawing to `internal/game`.
 3. The game package renders a static empty 15x15 home Plot from its stored prototype map data. The Plot contains the centered Sanctum and a straight road north to the Plot edge.
-4. The game package renders the Wizard name, a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, and a debug logical update counter.
-5. While unpaused, each Ebitengine update advances the logical update counter by one. The static map and scene do not change from these ticks.
-6. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
-7. While paused, the game renders a `PAUSED` label and does not increment the logical update counter.
-8. When the user presses ESC, `cmd/td` passes overlay-menu input to `internal/game`.
-9. The game package opens a centered in-game menu, pauses the game, draws it over the still-visible game scene, and darkens the rest of the scene by about 50%.
-10. When the user presses ESC again or clicks `Resume`, the game package closes the overlay and restores the pause state from before the overlay opened.
-11. When the user clicks `Surrender`, `internal/game` returns a surrender action to `cmd/td`, and `cmd/td` discards the active game state and returns to the top-level main menu.
+4. `cmd/td` polls mouse-wheel input and held `W`, `A`, `S`, and `D` keys, then passes those values to `internal/game`.
+5. The game package updates a private camera for map inspection. Mouse-wheel input changes zoom around the scene viewport center, and `WASD` changes the camera center. The camera has a tiny minimum zoom for technical safety but no maximum zoom and no pan bounds.
+6. The game package renders the Wizard name, a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, and a debug logical update counter in screen space so camera changes affect only the map scene.
+7. While unpaused, each Ebitengine update advances the logical update counter by one. The static map and scene do not change from these ticks.
+8. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
+9. While paused, the game renders a `PAUSED` label and does not increment the logical update counter, but camera input still updates so the map can be inspected.
+10. When the user presses ESC, `cmd/td` passes overlay-menu input to `internal/game`.
+11. The game package opens a centered in-game menu, pauses the game, draws it over the still-visible game scene, darkens the rest of the scene by about 50%, and blocks camera input while the overlay remains open.
+12. When the user presses ESC again or clicks `Resume`, the game package closes the overlay and restores the pause state from before the overlay opened.
+13. When the user clicks `Surrender`, `internal/game` returns a surrender action to `cmd/td`, and `cmd/td` discards the active game state and returns to the top-level main menu.
 
 ### Future Gameplay Flow
 
@@ -71,7 +73,7 @@ This future flow is roadmap intent, not current behavior.
 - Keep app-mode routing in `cmd/td/`; reusable game state and rules belong in `internal/game`.
 - Keep the current display policy as a pixel-sized drawable layout: the initial window is 1920x1080, resizes update menu geometry, and text remains raw-pixel-sized rather than stretched by framebuffer scaling.
 - Keep reusable game logic in `internal/` packages when it outgrows the entry point.
-- Keep the first map data in `internal/game/map.go` until real exploration, generation, or multi-map behavior creates a reason for a separate package.
+- Keep the first map data in `internal/game/map.go` and the first camera/projection behavior in `internal/game/camera.go` until real exploration, generation, multi-map behavior, or multiple gameplay scenes create a reason for separate packages.
 - Keep in-game overlay behavior inside `internal/game` while it is tightly coupled to game pause state and game rendering.
 - Keep pure state transitions, hit testing, and simple menu text input testable without opening a graphics window.
 - Keep the current menu and game transition explicit until there are enough real non-menu screens to justify a shared scene abstraction.
@@ -109,7 +111,7 @@ To add the first executable app, follow `plans/00-initial-ebitengine-menu.md` in
 
 To add a new screen later, keep the transition logic explicit and avoid building a large scene framework before there are at least two or three real screens with shared needs.
 
-To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input. The current prototype map follows that pattern: `internal/game/map.go` creates the default home Plot, and rendering reads from that stored state.
+To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input. The current prototype map and camera follow that pattern: `internal/game/map.go` creates the default home Plot, `internal/game/camera.go` owns camera movement and projection state, and rendering reads from stored map and camera state.
 
 To add assets, place files under `assets/`, document source and licensing, and avoid mixing asset-loading details into gameplay rules.
 
@@ -117,4 +119,4 @@ To add assets, place files under `assets/`, document source and licensing, and a
 
 - What package boundaries will be useful after the first menu screen exists?
 - Should the project use a custom scene manager, or keep explicit state transitions until repetition appears?
-- Should later gameplay use the same pixel-sized layout policy as the current menus, or introduce a separate world camera?
+- When should the prototype camera be split from `internal/game` into reusable rendering or scene infrastructure?
