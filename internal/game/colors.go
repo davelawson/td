@@ -3,17 +3,21 @@ package game
 import "td/internal/ui"
 
 var (
-	backgroundColor  = ui.CharcoalBlack
-	fieldColor       = ui.PineGreen
-	fieldEdgeColor   = ui.Bronze
-	textColor        = ui.Parchment
-	mutedTextColor   = ui.MutedParchment
-	pauseColor       = ui.LightBronze
-	fieldAccentColor = ui.Purple
-	pathColor        = ui.OliveBrown
-	clearingColor    = ui.MossGreen
+	backgroundColor   = ui.CharcoalBlack
+	fieldColor        = ui.PineGreen
+	fieldEdgeColor    = ui.Bronze
+	textColor         = ui.Parchment
+	mutedTextColor    = ui.MutedParchment
+	pauseColor        = ui.LightBronze
+	fieldAccentColor  = ui.Purple
+	clearingColor     = ui.MossGreen
+	plotBackdropColor = ui.DarkCharcoalGreen
+	emptyTileColor    = ui.PineGreen
+	roadTileColor     = ui.OliveBrown
+	tileGridColor     = ui.DarkMossGreen
+	sanctumColor      = ui.Purple
 
-	topBarColor     = ui.TopBarGreen
-	topBarEdgeColor = ui.TopBarBronze
+	topBarColor     = ui.DarkCharcoalGreen
+	topBarEdgeColor = ui.Bronze
 	overlayColor    = ui.TransparentBlack
 )

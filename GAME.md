@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a placeholder game screen, pause behavior, and an in-game overlay menu. The actual exploration, resource, base-building, and tower-defense systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene, pause behavior, and an in-game overlay menu. The actual exploration, resource, base-building, and tower-defense systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -16,7 +16,7 @@ Use these terms consistently when describing the intended game:
 
 - `Sanctum`: the tower at the center of the wizard's Domain.
 - `Domain`: the territory claimed by the wizard.
-- `Plot`: an 11x11 group of Tiles used as the main unit of exploration, Domain expansion, and Chapter progress.
+- `Plot`: a 15x15 group of Tiles used as the main unit of exploration, Domain expansion, and Chapter progress.
 - `Fable`: a playthrough of the game as a wizard wherein the wizard attempts to overcome their Nemesis. A Fable is composed of a series of Chapters.
 - `Chapter`: a section of a Fable wherein the wizard attempts to overcome a Rival.
 - `Nemesis`: a powerful antagonist to the wizard who influences an entire Fable and commands several of the wizard's Rivals.
@@ -61,11 +61,11 @@ Open decisions include whether exploration uses direct player movement, camera-b
 
 ### Map
 
-The map is built on a grid. Each grid square is called a Tile. Tiles are grouped into 11x11 Plots. A Plot is the main strategic map unit: the player explores Plots, expands the Domain by claiming Plots, discovers resources within Plots, and eventually reaches the Rival's Lair by pushing the Domain outward through adjacent Plots.
+The map is built on a grid. Each grid square is called a Tile. Tiles are grouped into 15x15 Plots. A Plot is the main strategic map unit: the player explores Plots, expands the Domain by claiming Plots, discovers resources within Plots, and eventually reaches the Rival's Lair by pushing the Domain outward through adjacent Plots.
 
 Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
 
-At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum.
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot is intentionally empty except for the centered Sanctum and a straight road north to the Plot edge; terrain variety, resources, and build rules remain future work.
 
 Plots exist in one of these high-level states:
 
@@ -78,7 +78,7 @@ Exploring a Plot changes it from `Unknown` to `Scouted`. Claiming a scouted Plot
 
 Plots are adjacent orthogonally, not diagonally, for exploration and Domain expansion. A new Plot can only be explored if it touches at least one Claimed Plot on its north, south, east, or west edge. This keeps expansion readable and prevents disconnected pockets of Domain from appearing before there is a deliberate system for them.
 
-Each Plot edge has one possible road connection point: the middle Tile of that edge. Roads do not need to exist on every edge, but when a road connects one Plot to an adjacent Plot, it must leave one Plot through the middle Tile of the shared edge and enter the adjacent Plot through the matching middle Tile. For an 11x11 Plot, these edge connector Tiles are the center Tile of the north, south, east, or west edge.
+Each Plot edge has one possible road connection point: the middle Tile of that edge. Roads do not need to exist on every edge, but when a road connects one Plot to an adjacent Plot, it must leave one Plot through the middle Tile of the shared edge and enter the adjacent Plot through the matching middle Tile. For a 15x15 Plot, these edge connector Tiles are the center Tile of the north, south, east, or west edge.
 
 Roads are the primary way enemies move during Raids. When a Plot is claimed, any road segment that connects back to the Sanctum can become part of the defended route. Expanding toward richer resources or the Rival's Lair may lengthen that route, creating the intended tradeoff between growth and exposure.
 
@@ -93,7 +93,7 @@ The terrain types are:
 - `Mountain`
 - `Water`
 
-Open decisions include Tile dimensions in screen or world space, height scale, movement and build rules for each terrain type, feature exclusivity rules, exact internal road-shape behavior, whether Scouted and Claimed remain separate in the first implementation, how Plot contents are generated or authored, how the Rival's Lair is placed, and where the starting road leads.
+Open decisions include Tile dimensions in screen or world space, height scale, movement and build rules for each terrain type, feature exclusivity rules, exact internal road-shape behavior beyond the first north road, whether Scouted and Claimed remain separate in the first implementation, how richer Plot contents are generated or authored, and how the Rival's Lair is placed.
 
 ### Resources
 
@@ -180,7 +180,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The next gameplay-facing work should move beyond menus with one observable slice at a time, starting with a static prototype scene before combat or resource rules.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It is intentionally empty except for the centered Sanctum and the straight road north to the Plot edge.
 
 ## Open Game Design Questions
 
@@ -188,6 +188,10 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - How do newly explored Plots connect to roads and enemy paths?
 - How is the Rival's Lair revealed or signaled to the player?
 - What movement, build, resource, and road rules apply to each terrain type?
+- Should the entire map be defined at the start of a Fable, or should Plots and Tiles be generated as the wizard explores?
+- Should the map be able to expand indefinitely, or should each Fable use bounded map dimensions?
+- Should the durable map model be one 2D Tile array, with Plots acting only as convenience groupings over that array?
+- If maps can expand after creation, how should the map data structure grow while preserving existing Tile, Plot, road, and Domain state?
 - Should scouting and claiming be separate actions in the first playable implementation, or should early exploration immediately claim a Plot?
 - How are Plot dominant characters generated, selected, or presented to the player?
 - How many road exits can a Plot have, and can roads branch inside a Plot after entering through edge-center connector Tiles?
@@ -234,9 +238,9 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: A wood-only, moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Build maps from grid Tiles grouped into 11x11 Plots.
-  Rationale: A tile grid gives exploration, building, resources, roads, terrain, and height a shared spatial model while Plots provide a larger grouping for generation, reveal, and Domain-scale reasoning. The odd Plot dimension gives each Plot a natural center Tile for the Sanctum, lairs, landmarks, and authored road composition.
-  Date/Author: 2026-05-08 / Codex
+- Decision: Build maps from grid Tiles grouped into 15x15 Plots.
+  Rationale: A tile grid gives exploration, building, resources, roads, terrain, and height a shared spatial model while Plots provide a larger grouping for generation, reveal, and Domain-scale reasoning. The 15x15 size preserves an odd dimension with a natural center Tile while giving each Plot more space than the initial 11x11 prototype direction.
+  Date/Author: 2026-05-13 / Codex
 
 - Decision: Treat Plots as the main strategic map unit for exploration, Domain expansion, resource discovery, and Rival Lair progress.
   Rationale: This keeps player-facing map decisions at a readable scale while still allowing Tile-level terrain, road, resource, and structure rules inside each Plot.
@@ -251,12 +255,20 @@ Record game design decisions here when they become durable enough to guide imple
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Roads connect adjacent Plots only through the middle Tile of the shared Plot edge.
-  Rationale: A fixed edge-center connector rule keeps inter-Plot paths readable, takes advantage of the 11x11 Plot centerline, and lets internal road shapes vary without making Plot-to-Plot connectivity ambiguous.
+  Rationale: A fixed edge-center connector rule keeps inter-Plot paths readable, takes advantage of the 15x15 Plot centerline, and lets internal road shapes vary without making Plot-to-Plot connectivity ambiguous.
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Start each Fable with a one-Plot Domain containing the centered Sanctum and an outgoing road.
   Rationale: This gives every playthrough a clear initial defended space and a road hook for future exploration, enemy routing, and Domain expansion.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: In the first static home Plot scene, the outgoing road runs straight north from the centered Sanctum to the north edge-center connector.
+  Rationale: A single straight north road gives the first scene a clear route without implying branching, pathfinding, exploration, or combat rules.
+  Date/Author: 2026-05-13 / Codex
+
+- Decision: Keep the first rendered home Plot empty except for the Sanctum and north road.
+  Rationale: The milestone is meant to prove map state and static scene rendering before terrain, resource, building, or combat rules exist.
+  Date/Author: 2026-05-13 / Codex
 
 - Decision: Let the wizard spend resources during calm phases to explore new Plots and unlock building there.
   Rationale: This connects resources, calm-phase planning, Domain expansion, and base-building into one concrete preparation loop.

@@ -7,7 +7,6 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 	"golang.org/x/image/font/gofont/goregular"
 )
 
@@ -25,6 +24,7 @@ type State struct {
 	wizardName string
 	updates    int
 	paused     bool
+	gameMap    Map
 	status     gameStatus
 	ui         gameUI
 }
@@ -47,6 +47,7 @@ func New(wizardName string, width, height int) (*State, error) {
 
 	state := &State{
 		wizardName: wizardName,
+		gameMap:    NewDefaultMap(),
 		ui:         newGameUI(source, width, height),
 	}
 	state.setPrototypeGameStatus()
@@ -117,7 +118,7 @@ func (s *State) Update(input Input) Action {
 // Draw renders the current game screen.
 func (s *State) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
-	s.drawPrototypeField(screen)
+	s.drawHomePlot(screen)
 	s.drawTopBar(screen)
 	s.drawWizardName(screen)
 	s.drawCounter(screen)
@@ -142,23 +143,6 @@ func (s *State) IngameMenuOpen() bool {
 // WizardName returns the Wizard name used to start the game.
 func (s *State) WizardName() string {
 	return s.wizardName
-}
-
-// drawPrototypeField renders the first placeholder game scene.
-func (s *State) drawPrototypeField(screen *ebiten.Image) {
-	fieldW := float32(820)
-	fieldH := float32(460)
-	fieldX := float32(s.ui.width)/2 - fieldW/2
-	fieldY := float32(s.ui.height)/2 - fieldH/2
-
-	vector.FillRect(screen, fieldX, fieldY, fieldW, fieldH, fieldColor, false)
-	vector.StrokeRect(screen, fieldX, fieldY, fieldW, fieldH, 4, fieldEdgeColor, false)
-	vector.StrokeRect(screen, fieldX+18, fieldY+18, fieldW-36, fieldH-36, 1.5, fieldAccentColor, false)
-
-	pathY := fieldY + fieldH/2
-	vector.StrokeLine(screen, fieldX+70, pathY, fieldX+fieldW-70, pathY, 10, pathColor, false)
-	vector.FillCircle(screen, fieldX+fieldW/2, pathY, 42, clearingColor, false)
-	vector.StrokeCircle(screen, fieldX+fieldW/2, pathY, 42, 3, fieldEdgeColor, false)
 }
 
 // drawWizardName renders the active Wizard name.

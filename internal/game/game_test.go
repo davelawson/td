@@ -28,6 +28,77 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.status.resources.wood != 80 || state.status.resources.stone != 45 || state.status.resources.metal != 12 {
 		t.Fatalf("resources = %+v, want wood 80 stone 45 metal 12", state.status.resources)
 	}
+	if state.gameMap.Home.Tiles[homePlotCenter][homePlotCenter].Feature != featureSanctum {
+		t.Fatal("expected new state to store the default home Plot")
+	}
+}
+
+// TestDefaultHomePlotShape verifies the prototype Plot dimensions and center.
+func TestDefaultHomePlotShape(t *testing.T) {
+	plot := NewDefaultHomePlot()
+
+	if len(plot.Tiles) != plotSize {
+		t.Fatalf("plot rows = %d, want %d", len(plot.Tiles), plotSize)
+	}
+	if len(plot.Tiles[0]) != plotSize {
+		t.Fatalf("plot columns = %d, want %d", len(plot.Tiles[0]), plotSize)
+	}
+	if plot.Tiles[homePlotCenter][homePlotCenter].Feature != featureSanctum {
+		t.Fatal("expected Sanctum at the center Tile")
+	}
+}
+
+// TestDefaultHomePlotRoadRunsNorth verifies the authored road layout.
+func TestDefaultHomePlotRoadRunsNorth(t *testing.T) {
+	plot := NewDefaultHomePlot()
+
+	for y := 0; y <= homePlotCenter; y++ {
+		if plot.Tiles[y][homePlotCenter].Terrain != terrainRoad {
+			t.Fatalf("tile (%d,%d) terrain = %v, want road", homePlotCenter, y, plot.Tiles[y][homePlotCenter].Terrain)
+		}
+	}
+	for y := homePlotCenter + 1; y < plotSize; y++ {
+		if plot.Tiles[y][homePlotCenter].Terrain == terrainRoad {
+			t.Fatalf("tile (%d,%d) is road below the Sanctum", homePlotCenter, y)
+		}
+	}
+}
+
+// TestDefaultHomePlotIsOtherwiseEmpty verifies no extra terrain or features exist yet.
+func TestDefaultHomePlotIsOtherwiseEmpty(t *testing.T) {
+	plot := NewDefaultHomePlot()
+
+	for y := 0; y < plotSize; y++ {
+		for x := 0; x < plotSize; x++ {
+			tile := plot.Tiles[y][x]
+			onNorthRoad := x == homePlotCenter && y <= homePlotCenter
+			atSanctum := x == homePlotCenter && y == homePlotCenter
+
+			if !onNorthRoad && tile.Terrain != terrainEmpty {
+				t.Fatalf("tile (%d,%d) terrain = %v, want empty", x, y, tile.Terrain)
+			}
+			if !atSanctum && tile.Feature != featureNone {
+				t.Fatalf("tile (%d,%d) feature = %v, want none", x, y, tile.Feature)
+			}
+		}
+	}
+}
+
+// TestUpdatesDoNotChangeHomePlot verifies time passing does not mutate the scene.
+func TestUpdatesDoNotChangeHomePlot(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	initial := state.gameMap
+
+	state.Update(Input{})
+	state.Update(Input{})
+	state.Update(Input{})
+
+	if state.gameMap != initial {
+		t.Fatal("expected logical updates to leave the prototype map unchanged")
+	}
 }
 
 // TestStateFormatsCalmTopBar verifies initial top-bar text.

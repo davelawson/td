@@ -24,19 +24,17 @@ The secondary user is the developer maintaining the prototype. Success for this 
 
 ## Current Phase
 
-The current phase is still early prototype foundation, but the repository now has a more complete runnable shell than the first menu slice. It can build, test, and run a 1920x1080 Go/Ebitengine desktop app with a resizable pixel-sized layout, a main menu, a New Game configuration screen for entering a Wizard name, a placeholder Settings screen, disabled Load option, a first placeholder game state, a prototype top-bar HUD, a debug logical update counter, SPACE pause behavior, an ESC in-game overlay menu with surrender-to-menu behavior, and a clean quit path.
+The current phase is still early prototype foundation, but the repository now has a more complete runnable shell than the first menu slice. It can build, test, and run a 1920x1080 Go/Ebitengine desktop app with a resizable pixel-sized layout, a main menu, a New Game configuration screen for entering a Wizard name, a placeholder Settings screen, disabled Load option, a first static home Plot scene, prototype map state, a prototype top-bar HUD, a debug logical update counter, SPACE pause behavior, an ESC in-game overlay menu with surrender-to-menu behavior, and a clean quit path.
 
 The immediate product goal is not to make a full tower-defense encounter. The next work should move beyond menus by adding one observable gameplay-facing slice at a time while preserving the small, testable codebase.
 
 ## Near-Term Priorities
 
-The completed foundation plans have established the runnable app, expanded menu flow, menu package boundary, New Game configuration screen, current 1920x1080 resize policy, first game-state package, app-mode transition, logical update counter, pause behavior, in-game overlay menu, and a prototype top bar for future gameplay status. The next priorities should remain separate plans so the codebase grows from verified behavior rather than speculative architecture.
+The completed foundation plans have established the runnable app, expanded menu flow, menu package boundary, New Game configuration screen, current 1920x1080 resize policy, first game-state package, app-mode transition, logical update counter, pause behavior, in-game overlay menu, a prototype top bar for future gameplay status, and a static starting Plot scene backed by prototype map state. The next priorities should remain separate plans so the codebase grows from verified behavior rather than speculative architecture.
 
-1. Add a static prototype scene. This should be the first non-menu rendered view: a placeholder medieval wizardry map or defended clearing with simple drawn shapes, no real gameplay, and screenshot evidence under its active plan directory.
-2. Replace the placeholder game state with a static prototype scene when there is enough map composition to review. Save data, campaign flow, and progression should remain out of scope.
-3. Add basic scene interaction. Prove one small interaction model, such as camera movement, cursor inspection, or player-position movement, before adding combat or resource rules.
-4. Add an early deterministic defense loop. Use fixed paths, placeholder enemies, placeholder towers, simple targeting, and testable combat rules before adding art assets or broader encounter variety.
-5. Add the first resource and base-building slice. Introduce gathering, costs, and placement only after the defense loop has a visible baseline that can show why those decisions matter.
+1. Add basic scene interaction. Prove one small interaction model, such as cursor inspection of the home Plot, before adding combat or resource rules.
+2. Add an early deterministic defense loop. Use fixed paths, placeholder enemies, placeholder towers, simple targeting, and testable combat rules before adding art assets or broader encounter variety.
+3. Add the first resource and base-building slice. Introduce gathering, costs, and placement only after the defense loop has a visible baseline that can show why those decisions matter.
 
 ## Later Opportunities
 
