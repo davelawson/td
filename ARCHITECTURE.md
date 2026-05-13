@@ -113,7 +113,7 @@ To add the first executable app, follow `plans/00-initial-ebitengine-menu.md` in
 
 To add a new screen later, keep the transition logic explicit and avoid building a large scene framework before there are at least two or three real screens with shared needs.
 
-To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input. The current prototype map and camera follow that pattern: `internal/game/map.go` creates the default home Plot, `internal/game/camera.go` owns camera movement and projection state, and rendering reads from stored map and camera state.
+To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input. The current prototype map and camera follow that pattern: `internal/game/map.go` creates the default home Plot, stores per-Tile visual variation tweaks, `internal/game/camera.go` owns camera movement and projection state, and rendering reads from stored map and camera state.
 
 To add assets, place files under `assets/`, document source and licensing, add them to the typed catalog only when game code needs them, and avoid mixing asset-loading details into gameplay rules.
 

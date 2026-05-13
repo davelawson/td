@@ -273,6 +273,10 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: The tree border makes the starting Domain read as a small clearing while preserving the existing road connector for future path and expansion rules.
   Date/Author: 2026-05-13 / Codex
 
+- Decision: Store prototype Tile sprite variation as a `Tweak` value on each Tile.
+  Rationale: Keeping visual variation in map data lets rendering choose stable per-Tile sprite variants without turning the tweak into a gameplay mechanic.
+  Date/Author: 2026-05-13 / Codex
+
 - Decision: In the first static home Plot scene, the outgoing road runs straight north from the centered Sanctum to the north edge-center connector.
   Rationale: A single straight north road gives the first scene a clear route without implying branching, pathfinding, exploration, or combat rules.
   Date/Author: 2026-05-13 / Codex

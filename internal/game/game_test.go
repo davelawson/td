@@ -59,6 +59,25 @@ func TestDefaultHomePlotShape(t *testing.T) {
 	}
 }
 
+// TestDefaultHomePlotAssignsTileTweaks verifies Tile creation stores tweak values on map data.
+func TestDefaultHomePlotAssignsTileTweaks(t *testing.T) {
+	var next uint16
+	plot := newDefaultHomePlotWithTweakSource(func() uint16 {
+		value := next
+		next++
+		return value
+	})
+
+	for y := 0; y < plotSize; y++ {
+		for x := 0; x < plotSize; x++ {
+			want := uint16(y*plotSize + x)
+			if plot.Tiles[y][x].Tweak != want {
+				t.Fatalf("tile (%d,%d) tweak = %d, want %d", x, y, plot.Tiles[y][x].Tweak, want)
+			}
+		}
+	}
+}
+
 // TestDefaultHomePlotRoadRunsNorth verifies the authored road layout.
 func TestDefaultHomePlotRoadRunsNorth(t *testing.T) {
 	plot := NewDefaultHomePlot()
@@ -112,6 +131,37 @@ func TestDefaultHomePlotInteriorIsOtherwiseEmpty(t *testing.T) {
 				t.Fatalf("tile (%d,%d) feature = %v, want none", x, y, tile.Feature)
 			}
 		}
+	}
+}
+
+// TestPineTreeSpriteIndexUsesLowTweakBits verifies tree variant selection ignores the flip bit.
+func TestPineTreeSpriteIndexUsesLowTweakBits(t *testing.T) {
+	tests := []struct {
+		name  string
+		tweak uint16
+		want  int
+	}{
+		{name: "first", tweak: 0, want: 0},
+		{name: "wrap", tweak: 5, want: 1},
+		{name: "high bit ignored", tweak: 0x8005, want: 1},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := pineTreeSpriteIndex(tt.tweak, 4); got != tt.want {
+				t.Fatalf("pineTreeSpriteIndex(%d, 4) = %d, want %d", tt.tweak, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestTreeSpriteFlippedUsesHighTweakBit verifies the high tweak bit controls mirroring.
+func TestTreeSpriteFlippedUsesHighTweakBit(t *testing.T) {
+	if treeSpriteFlipped(0x7fff) {
+		t.Fatal("expected tweak below high bit to avoid horizontal flip")
+	}
+	if !treeSpriteFlipped(0x8000) {
+		t.Fatal("expected high bit to request horizontal flip")
 	}
 }
 
