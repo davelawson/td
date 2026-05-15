@@ -28,16 +28,17 @@ type Input struct {
 
 // State owns the current game state and logical update rules.
 type State struct {
-	wizardName   string
-	updates      int
-	paused       bool
-	assetCatalog assets.Catalog
-	enemyCatalog EnemyCatalog
-	gameMap      Map
-	camera       camera
-	status       gameStatus
-	raid         raidState
-	ui           gameUI
+	wizardName       string
+	updates          int
+	paused           bool
+	assetCatalog     assets.Catalog
+	enemyCatalog     EnemyCatalog
+	structureCatalog StructureCatalog
+	gameMap          Map
+	camera           camera
+	status           gameStatus
+	raid             raidState
+	ui               gameUI
 }
 
 type gameUI struct {
@@ -62,12 +63,13 @@ func New(wizardName string, width, height int) (*State, error) {
 	}
 
 	state := &State{
-		wizardName:   wizardName,
-		assetCatalog: assetCatalog,
-		enemyCatalog: NewEnemyCatalog(),
-		gameMap:      NewDefaultMap(),
-		camera:       newCamera(),
-		ui:           newGameUI(source, width, height),
+		wizardName:       wizardName,
+		assetCatalog:     assetCatalog,
+		enemyCatalog:     NewEnemyCatalog(),
+		structureCatalog: NewStructureCatalog(assetCatalog),
+		gameMap:          NewDefaultMap(),
+		camera:           newCamera(),
+		ui:               newGameUI(source, width, height),
 	}
 	state.setPrototypeGameStatus()
 	state.layoutIngameMenu()

@@ -15,7 +15,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 - `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, surrender-to-menu handling, pixel-sized Ebitengine layout, and process startup.
 - `assets/` owns static runtime asset files and the typed asset catalog package. The catalog embeds required files, groups loaded assets by type and subtype, and returns Ebitengine-ready images for game rendering.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
-- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, active asset catalog ownership, prototype top-bar status display, prototype map data, prototype camera state, map-to-screen projection, home Plot rendering, deterministic placeholder Raid state and enemy rendering, bottom-left in-game Raid controls, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from assets, map data, camera state, Raid state, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and fuller defense scene state when those systems exist.
+- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, active asset catalog ownership, prototype structure catalog ownership, prototype top-bar status display, prototype map data, prototype camera state, map-to-screen projection, home Plot rendering, deterministic placeholder Raid state and enemy rendering, bottom-left in-game Raid controls, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from assets, map data, camera state, Raid state, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and fuller defense scene state when those systems exist.
 - `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` stores static images and the first typed runtime asset catalog. It may later grow to include fonts, audio, and other runtime assets.
@@ -46,7 +46,7 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 
 1. A contributor starts a game from the New Game screen after entering a Wizard name.
 2. `cmd/td` routes Ebitengine updates and drawing to `internal/game`.
-3. The game package renders a static 15x15 home Plot from its stored prototype map data. The Plot contains the centered Sanctum, rendered from a loaded sprite, a straight road north to the Plot edge, and pine trees around the Plot edge except where the road exits.
+3. The game package renders a static 15x15 home Plot from its stored prototype map data. The Plot contains the centered Sanctum, rendered from a loaded sprite, a straight road north to the Plot edge, one Bow Tower rendered from a loaded sprite beside the road, and pine trees around the Plot edge except where the road exits.
 4. `cmd/td` polls mouse-wheel input and held `W`, `A`, `S`, and `D` keys, then passes those values to `internal/game`.
 5. The game package updates a private camera for map inspection. Mouse-wheel input changes zoom around the scene viewport center, and `WASD` changes the camera center. The camera has a tiny minimum zoom for technical safety but no maximum zoom and no pan bounds.
 6. The game package renders a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, plus a bottom-left `Next Raid` button and a debug logical update counter in screen space so camera changes affect only the map scene.
@@ -98,7 +98,7 @@ There is no application configuration system yet. If configuration becomes neces
 
 ### Assets
 
-The first runtime sprites are the 64x64 Sanctum PNG under `assets/sprites/structures/` and pine tree PNGs under `assets/sprites/terrains/`. The `assets` package embeds and loads required runtime assets into a typed catalog. Early prototypes may still draw simple shapes and text directly when no sprite exists, but gameplay rules should not decode files or know asset paths.
+The first runtime sprites are the 64x64 Sanctum and Bow Tower PNGs under `assets/sprites/structures/`, the skeleton enemy PNG under `assets/sprites/enemies/`, and pine tree PNGs under `assets/sprites/terrains/`. The `assets` package embeds and loads required runtime assets into a typed catalog. Early prototypes may still draw simple shapes and text directly when no sprite exists, but gameplay rules should not decode files or know asset paths.
 
 ### Testing
 

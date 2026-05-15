@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice. The actual exploration, resource, base-building, tower targeting, and combat damage systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with one visible non-combat Bow Tower, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice. The actual exploration, resource, base-building, tower targeting, and combat damage systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -67,7 +67,7 @@ The map is built on a grid. Each grid square is called a Tile. Tiles are grouped
 
 Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
 
-At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening; richer terrain variety, resources, and build rules remain future work.
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum, a straight road north to the Plot edge, one Bow Tower beside the road, and a pine-tree border around the Plot edge except at the road opening; richer terrain variety, resources, build rules, and tower combat remain future work.
 
 Plots exist in one of these high-level states:
 
@@ -186,7 +186,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one non-combat Bow Tower on the east side of the path, and a pine-tree border around the Plot edge except at the road opening.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic placeholder enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, and reaching enemies spend Barricade charges until the Sanctum is breached.
 

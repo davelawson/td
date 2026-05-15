@@ -44,6 +44,9 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	if tile.Feature == featureSanctum {
 		s.drawSanctum(screen, rect.x, rect.y, rect.w)
 	}
+	if tile.Feature == featureBowTower {
+		s.drawBowTower(screen, rect.x, rect.y, rect.w)
+	}
 }
 
 // drawPineTree renders a tree sprite variant chosen from the Tile tweak.
@@ -107,4 +110,24 @@ func (s *State) drawSanctum(screen *ebiten.Image, tileX, tileY, tileSize float32
 		float64(tileY)+(float64(tileSize)-spriteHeight*scale)/2,
 	)
 	screen.DrawImage(sanctum, options)
+}
+
+// drawBowTower renders the authored Bow Tower feature.
+func (s *State) drawBowTower(screen *ebiten.Image, tileX, tileY, tileSize float32) {
+	bowTower := s.structureCatalog.BowTower.Sprite
+	if bowTower == nil || tileSize <= 0 {
+		return
+	}
+
+	spriteWidth := float64(bowTower.Bounds().Dx())
+	spriteHeight := float64(bowTower.Bounds().Dy())
+	targetSize := float64(tileSize) * 0.76
+	scale := targetSize / spriteWidth
+	options := &ebiten.DrawImageOptions{}
+	options.GeoM.Scale(scale, scale)
+	options.GeoM.Translate(
+		float64(tileX)+(float64(tileSize)-spriteWidth*scale)/2,
+		float64(tileY)+(float64(tileSize)-spriteHeight*scale)/2,
+	)
+	screen.DrawImage(bowTower, options)
 }
