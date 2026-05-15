@@ -32,6 +32,7 @@ type State struct {
 	updates      int
 	paused       bool
 	assetCatalog assets.Catalog
+	enemyCatalog EnemyCatalog
 	gameMap      Map
 	camera       camera
 	status       gameStatus
@@ -63,6 +64,7 @@ func New(wizardName string, width, height int) (*State, error) {
 	state := &State{
 		wizardName:   wizardName,
 		assetCatalog: assetCatalog,
+		enemyCatalog: NewEnemyCatalog(),
 		gameMap:      NewDefaultMap(),
 		camera:       newCamera(),
 		ui:           newGameUI(source, width, height),
@@ -130,8 +132,8 @@ func (s *State) Update(input Input) Action {
 	if s.paused {
 		return ActionNone
 	}
-	s.updates++
 	s.updateRaid()
+	s.updates++
 	return ActionNone
 }
 

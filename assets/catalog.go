@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 // Catalog groups all loaded runtime assets by type and subtype.
@@ -20,8 +20,14 @@ type Catalog struct {
 
 // SpriteCatalog groups loaded image sprites by game-domain subtype.
 type SpriteCatalog struct {
+	Enemy     EnemySprites
 	Structure StructureSprites
 	Terrain   TerrainSprites
+}
+
+// EnemySprites groups loaded sprites for enemy units.
+type EnemySprites struct {
+	SkeletonSwordShield *ebiten.Image
 }
 
 // StructureSprites groups loaded sprites for map and base structures.
@@ -36,6 +42,10 @@ type TerrainSprites struct {
 
 // NewCatalog loads the runtime assets required by a new game.
 func NewCatalog() (Catalog, error) {
+	skeletonSwordShield, err := loadSprite("sprites/enemies/skeleton-sword-shield.png")
+	if err != nil {
+		return Catalog{}, err
+	}
 	sanctum, err := loadSprite("sprites/structures/sanctum.png")
 	if err != nil {
 		return Catalog{}, err
@@ -50,6 +60,9 @@ func NewCatalog() (Catalog, error) {
 	}
 	return Catalog{
 		Sprite: SpriteCatalog{
+			Enemy: EnemySprites{
+				SkeletonSwordShield: skeletonSwordShield,
+			},
 			Structure: StructureSprites{
 				Sanctum: sanctum,
 			},

@@ -35,6 +35,12 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.assetCatalog.Sprite.Structure.Sanctum == nil {
 		t.Fatal("expected new state to store the Sanctum sprite")
 	}
+	if state.enemyCatalog.SkeletonSwordShield.Name == "" {
+		t.Fatal("expected new state to store the skeleton sword-and-shield enemy template")
+	}
+	if state.enemyCatalog.SkeletonSwordShield.SpriteKey != "skeleton-sword-shield" {
+		t.Fatalf("skeleton sprite key = %q, want %q", state.enemyCatalog.SkeletonSwordShield.SpriteKey, "skeleton-sword-shield")
+	}
 	if state.camera.zoom != cameraInitialZoom {
 		t.Fatalf("camera zoom = %f, want %f", state.camera.zoom, cameraInitialZoom)
 	}

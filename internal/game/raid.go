@@ -17,6 +17,7 @@ type raidState struct {
 }
 
 type raidEnemy struct {
+	template *EnemyTemplate
 	progress float64
 }
 
@@ -78,7 +79,9 @@ func (s *State) spawnRaidEnemy() {
 		return
 	}
 
-	s.raid.enemies = append(s.raid.enemies, raidEnemy{})
+	s.raid.enemies = append(s.raid.enemies, raidEnemy{
+		template: &s.enemyCatalog.SkeletonSwordShield,
+	})
 	s.raid.pendingEnemies--
 	s.raid.spawnCountdown = raidSpawnInterval
 }

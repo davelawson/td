@@ -2,6 +2,23 @@ package assets
 
 import "testing"
 
+// TestNewCatalogLoadsSkeletonSwordShieldSprite verifies the required enemy sprite is embedded.
+func TestNewCatalogLoadsSkeletonSwordShieldSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	skeleton := catalog.Sprite.Enemy.SkeletonSwordShield
+	if skeleton == nil {
+		t.Fatal("expected skeleton sword-and-shield sprite to load")
+	}
+	width, height := skeleton.Bounds().Dx(), skeleton.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("skeleton sword-and-shield sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsSanctumSprite verifies the required structure sprite is embedded.
 func TestNewCatalogLoadsSanctumSprite(t *testing.T) {
 	catalog, err := NewCatalog()
