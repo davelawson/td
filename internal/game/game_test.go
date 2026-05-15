@@ -342,7 +342,9 @@ func TestStateFormatsRaidTopBar(t *testing.T) {
 		t.Fatal(err)
 	}
 	state.status.phase = phaseRaid
-	state.status.raidCount = 7
+	state.raid.active = true
+	state.raid.pendingEnemies = 5
+	state.raid.enemies = []raidEnemy{{}, {}}
 
 	if value := state.phaseText(); value != "Enemies remaining: 7" {
 		t.Fatalf("phaseText = %q", value)

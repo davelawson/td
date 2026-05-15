@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene, basic camera zoom and pan, pause behavior, and an in-game overlay menu. The actual exploration, resource, base-building, and tower-defense systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice. The actual exploration, resource, base-building, tower targeting, and combat damage systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -131,9 +131,9 @@ Open decisions include how many charges the barrier has, whether charges can be 
 
 ### Tower Defense
 
-Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first combat slice should favor simple fixed paths, placeholder enemies, placeholder towers, and testable targeting rules.
+Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first Raid slice uses simple fixed paths and placeholder enemies before towers or combat damage exist. The first combat slice should add placeholder towers and testable targeting rules without replacing the simple Raid lifecycle.
 
-Open decisions include enemy families, wave structure, win and loss conditions, damage types, and upgrade rules.
+Open decisions include enemy families, tower targeting, win and loss conditions beyond the first breach state, damage types, and upgrade rules.
 
 ### Raids
 
@@ -145,9 +145,13 @@ A Raid ends when all enemies have been defeated or when the Sanctum has been bre
 
 The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's Domain has expanded to include the Plot containing the Rival's Lair, the next Raid is the final Raid. If the wizard overcomes that final Raid, the Rival is defeated and the Chapter is completed successfully.
 
-Open decisions include enemy spawn rules, enemy path selection, whether a Raid can include multiple waves, how Raid difficulty scales with Domain expansion, and what happens when the Sanctum is breached.
-
 During a Raid, the in-game top bar should show how many enemies remain in the current assault. This can be formatted before enemy simulation exists, but real values should come from the Raid system once it is implemented.
+
+The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five placeholder enemies, and each later Raid adds two enemies. One enemy appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. There are no enemy archetypes, tower attacks, rewards, or alternate paths in this first slice.
+
+If a placeholder enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If a placeholder enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists.
+
+Open decisions include enemy archetypes, whether a Raid can include multiple waves or paths, how Raid difficulty scales with Domain expansion, whether towers or resources can remove enemies before they reach the Sanctum, and what longer-term recovery or loss flow follows a breached Sanctum.
 
 ### Tower Types
 
@@ -184,6 +188,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
 - The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
+- The first Raid slice uses deterministic placeholder enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, and reaching enemies spend Barricade charges until the Sanctum is breached.
 
 ## Open Game Design Questions
 
@@ -202,8 +207,8 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Should later exploration add an on-map wizard character, remain camera-inspection driven, or combine both?
 - How many arcane barrier charges does the Sanctum have, and can those charges be restored or increased?
 - How does the Domain expand, contract, or change over time?
-- What enemy archetypes, spawn rules, and pathing rules should Raids use first?
-- What are the first win and loss conditions?
+- What enemy archetypes, spawn rules, and pathing rules should Raids use after the first placeholder north-road slice?
+- What are the first full win and loss conditions beyond basic Raid completion and Sanctum breach?
 - Should the early prototype use separate phases or continuous real-time play?
 - How long is a calm phase, and can the player pause or accelerate it?
 - What happens when the Sanctum is breached during a Raid?
@@ -240,6 +245,14 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Use the Bow Tower as the first defined tower type.
   Rationale: A wood-only, moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Use deterministic placeholder Raids as the first enemy-wave slice.
+  Rationale: A fixed enemy count, fixed stagger, and fixed north-road path make Raid behavior visible and testable before adding towers, combat damage, pathfinding, rewards, or enemy variety.
+  Date/Author: 2026-05-15 / Codex
+
+- Decision: A zero-Barricade Sanctum breach clears the active Raid and prevents further Raid starts in the first slice.
+  Rationale: This gives the prototype a concrete failure state without prematurely designing game-over routing, recovery, or campaign consequences.
+  Date/Author: 2026-05-15 / Codex
 
 - Decision: Build maps from grid Tiles grouped into 15x15 Plots.
   Rationale: A tile grid gives exploration, building, resources, roads, terrain, and height a shared spatial model while Plots provide a larger grouping for generation, reveal, and Domain-scale reasoning. The 15x15 size preserves an odd dimension with a natural center Tile while giving each Plot more space than the initial 11x11 prototype direction.

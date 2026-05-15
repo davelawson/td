@@ -16,6 +16,7 @@ var (
 	roadTileColor     = ui.OliveBrown
 	forestTileColor   = ui.DarkMossGreen
 	tileGridColor     = ui.DarkMossGreen
+	raidEnemyColor    = ui.Purple
 
 	topBarColor     = ui.DarkCharcoalGreen
 	topBarEdgeColor = ui.Bronze

@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
@@ -31,7 +33,6 @@ type gameStatus struct {
 	chapter   string
 	day       int
 	calmTime  int
-	raidCount int
 	barricade int
 	resources resourceCounts
 }
@@ -43,7 +44,6 @@ func (s *State) setPrototypeGameStatus() {
 		chapter:   "Chapter I: The Ashen Copse",
 		day:       1,
 		calmTime:  120,
-		raidCount: 12,
 		barricade: 3,
 		resources: resourceCounts{
 			wood:  80,
@@ -60,9 +60,12 @@ func (s *State) chapterDayText() string {
 
 // phaseText formats the phase-specific top bar status.
 func (s *State) phaseText() string {
+	if s.raid.breached {
+		return "Sanctum breached"
+	}
 	switch s.status.phase {
 	case phaseRaid:
-		return fmt.Sprintf("Enemies remaining: %d", s.status.raidCount)
+		return fmt.Sprintf("Enemies remaining: %d", s.raidEnemiesRemaining())
 	default:
 		minutes := s.status.calmTime / 60
 		seconds := s.status.calmTime % 60
@@ -90,11 +93,11 @@ func (s *State) drawTopBar(screen *ebiten.Image) {
 	center := s.phaseText()
 	right := s.resourcesAndBarricadeText()
 
-	s.drawText(screen, left, s.ui.hudFace, topBarMargin, 29, textColor)
+	ui.DrawText(screen, left, s.ui.hudFace, topBarMargin, 29, textColor)
 
 	centerWidth, _ := text.Measure(center, s.ui.hudFace, s.ui.hudFace.Size)
-	s.drawText(screen, center, s.ui.hudFace, (float64(s.ui.width)-centerWidth)/2, 29, pauseColor)
+	ui.DrawText(screen, center, s.ui.hudFace, (float64(s.ui.width)-centerWidth)/2, 29, pauseColor)
 
 	rightWidth, _ := text.Measure(right, s.ui.hudFace, s.ui.hudFace.Size)
-	s.drawText(screen, right, s.ui.hudFace, float64(s.ui.width)-rightWidth-topBarMargin, 29, textColor)
+	ui.DrawText(screen, right, s.ui.hudFace, float64(s.ui.width)-rightWidth-topBarMargin, 29, textColor)
 }

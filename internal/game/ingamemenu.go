@@ -136,7 +136,7 @@ func (s *State) drawIngameMenuPanel(screen *ebiten.Image) {
 
 	titleWidth, _ := text.Measure("Paused", s.ui.menu.titleFace, s.ui.menu.titleFace.Size)
 	titleX := (float64(s.ui.width) - titleWidth) / 2
-	s.drawText(screen, "Paused", s.ui.menu.titleFace, titleX, float64(panelY)+42, textColor)
+	ui.DrawText(screen, "Paused", s.ui.menu.titleFace, titleX, float64(panelY)+42, textColor)
 }
 
 // drawIngameMenuButtons renders overlay buttons with hover feedback.
@@ -154,6 +154,6 @@ func (s *State) drawIngameMenuButtons(screen *ebiten.Image) {
 
 		labelWidth, _ := text.Measure(button.Label, s.ui.menu.buttonFace, s.ui.menu.buttonFace.Size)
 		labelX := float64(button.X) + (float64(button.W)-labelWidth)/2
-		s.drawText(screen, button.Label, s.ui.menu.buttonFace, labelX, float64(button.Y+10), textColor)
+		ui.DrawText(screen, button.Label, s.ui.menu.buttonFace, labelX, float64(button.Y+10), textColor)
 	}
 }

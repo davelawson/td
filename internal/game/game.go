@@ -3,9 +3,9 @@ package game
 import (
 	"bytes"
 	"fmt"
-	"image/color"
 
 	"td/assets"
+	"td/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
@@ -35,16 +35,18 @@ type State struct {
 	gameMap      Map
 	camera       camera
 	status       gameStatus
+	raid         raidState
 	ui           gameUI
 }
 
 type gameUI struct {
-	width     int
-	height    int
-	menu      ingameMenu
-	titleFace *text.GoTextFace
-	bodyFace  *text.GoTextFace
-	hudFace   *text.GoTextFace
+	width         int
+	height        int
+	menu          ingameMenu
+	nextRaidHover bool
+	titleFace     *text.GoTextFace
+	bodyFace      *text.GoTextFace
+	hudFace       *text.GoTextFace
 }
 
 // New creates the initial game state for a Wizard name.
@@ -124,10 +126,12 @@ func (s *State) Update(input Input) Action {
 		s.paused = !s.paused
 		return ActionNone
 	}
+	s.updateRaidControls(input)
 	if s.paused {
 		return ActionNone
 	}
 	s.updates++
+	s.updateRaid()
 	return ActionNone
 }
 
@@ -135,7 +139,9 @@ func (s *State) Update(input Input) Action {
 func (s *State) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	s.drawHomePlot(screen)
+	s.drawRaidEnemies(screen)
 	s.drawTopBar(screen)
+	s.drawRaidControls(screen)
 	s.drawCounter(screen)
 	s.drawIngameMenu(screen)
 }
@@ -165,18 +171,10 @@ func (s *State) drawCounter(screen *ebiten.Image) {
 	value := fmt.Sprintf("Updates: %d", s.updates)
 	width, _ := text.Measure(value, s.ui.bodyFace, s.ui.bodyFace.Size)
 	x := float64(s.ui.width) - width - 48
-	s.drawText(screen, value, s.ui.bodyFace, x, float64(s.ui.height)-58, mutedTextColor)
+	ui.DrawText(screen, value, s.ui.bodyFace, x, float64(s.ui.height)-58, mutedTextColor)
 
 	if s.paused {
 		pauseWidth, _ := text.Measure("PAUSED", s.ui.bodyFace, s.ui.bodyFace.Size)
-		s.drawText(screen, "PAUSED", s.ui.bodyFace, float64(s.ui.width)-pauseWidth-48, float64(s.ui.height)-94, pauseColor)
+		ui.DrawText(screen, "PAUSED", s.ui.bodyFace, float64(s.ui.width)-pauseWidth-48, float64(s.ui.height)-94, pauseColor)
 	}
-}
-
-// drawText draws one line at the given coordinates.
-func (s *State) drawText(screen *ebiten.Image, value string, face *text.GoTextFace, x, y float64, clr color.Color) {
-	options := &text.DrawOptions{}
-	options.GeoM.Translate(x, y)
-	options.ColorScale.ScaleWithColor(clr)
-	text.Draw(screen, value, face, options)
 }

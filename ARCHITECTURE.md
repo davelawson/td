@@ -2,7 +2,7 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository contains an early runtime shell: a Go module, a small Ebitengine executable, an asset catalog package that loads runtime sprites, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, camera state, home Plot projection and rendering, and in-game overlay menu.
+The repository contains an early runtime shell: a Go module, a small Ebitengine executable, an asset catalog package that loads runtime sprites, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, camera state, home Plot projection and rendering, deterministic placeholder Raid state, and in-game overlay menu.
 
 ## System Overview
 
@@ -15,7 +15,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 - `cmd/td/` owns the executable entry point, Ebitengine window setup, callback wiring, app-mode routing between menu and game, Ebitengine input polling, quit termination handling, surrender-to-menu handling, pixel-sized Ebitengine layout, and process startup.
 - `assets/` owns static runtime asset files and the typed asset catalog package. The catalog embeds required files, groups loaded assets by type and subtype, and returns Ebitengine-ready images for game rendering.
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
-- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, active asset catalog ownership, prototype top-bar status display, prototype map data, prototype camera state, map-to-screen projection, home Plot rendering, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from assets, map data, camera state, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and defense scene state when those systems exist.
+- `internal/game/` owns the first top-level game state, Wizard name storage, pause state, logical update counting, active asset catalog ownership, prototype top-bar status display, prototype map data, prototype camera state, map-to-screen projection, home Plot rendering, deterministic placeholder Raid state and enemy rendering, bottom-left in-game Raid controls, and in-game overlay menu behavior. Its `State` type stays the package root while private substructs group prototype game-status data separately from assets, map data, camera state, Raid state, scene rendering layout, font faces, and overlay UI state. It may later grow into exploration, base-building, and fuller defense scene state when those systems exist.
 - `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` stores static images and the first typed runtime asset catalog. It may later grow to include fonts, audio, and other runtime assets.
@@ -49,14 +49,15 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 3. The game package renders a static 15x15 home Plot from its stored prototype map data. The Plot contains the centered Sanctum, rendered from a loaded sprite, a straight road north to the Plot edge, and pine trees around the Plot edge except where the road exits.
 4. `cmd/td` polls mouse-wheel input and held `W`, `A`, `S`, and `D` keys, then passes those values to `internal/game`.
 5. The game package updates a private camera for map inspection. Mouse-wheel input changes zoom around the scene viewport center, and `WASD` changes the camera center. The camera has a tiny minimum zoom for technical safety but no maximum zoom and no pan bounds.
-6. The game package renders a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, plus a debug logical update counter in screen space so camera changes affect only the map scene.
-7. While unpaused, each Ebitengine update advances the logical update counter by one. The static map and scene do not change from these ticks.
-8. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
-9. While paused, the game renders a `PAUSED` label and does not increment the logical update counter, but camera input still updates so the map can be inspected.
-10. When the user presses ESC, `cmd/td` passes overlay-menu input to `internal/game`.
-11. The game package opens a centered in-game menu, pauses the game, draws it over the still-visible game scene, darkens the rest of the scene by about 50%, and blocks camera input while the overlay remains open.
-12. When the user presses ESC again or clicks `Resume`, the game package closes the overlay and restores the pause state from before the overlay opened.
-13. When the user clicks `Surrender`, `internal/game` returns a surrender action to `cmd/td`, and `cmd/td` discards the active game state and returns to the top-level main menu.
+6. The game package renders a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, plus a bottom-left `Next Raid` button and a debug logical update counter in screen space so camera changes affect only the map scene.
+7. While unpaused, each Ebitengine update advances the logical update counter by one. If a Raid is active, the game package advances deterministic enemy spawning and movement along the fixed north road. Enemies that reach the Sanctum spend Barricade charges and are removed, or breach the Sanctum when no charges remain.
+8. Clicking `Next Raid` while no Raid is active and the Sanctum is not breached starts the next deterministic placeholder Raid immediately. The button is disabled during an active Raid and after breach.
+9. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
+10. While paused, the game renders a `PAUSED` label and does not increment the logical update counter or advance Raid simulation, but camera input still updates so the map can be inspected.
+11. When the user presses ESC, `cmd/td` passes overlay-menu input to `internal/game`.
+12. The game package opens a centered in-game menu, pauses the game, draws it over the still-visible game scene, darkens the rest of the scene by about 50%, and blocks camera and Raid input while the overlay remains open.
+13. When the user presses ESC again or clicks `Resume`, the game package closes the overlay and restores the pause state from before the overlay opened.
+14. When the user clicks `Surrender`, `internal/game` returns a surrender action to `cmd/td`, and `cmd/td` discards the active game state and returns to the top-level main menu.
 
 ### Future Gameplay Flow
 
@@ -113,7 +114,7 @@ To add the first executable app, follow `plans/00-initial-ebitengine-menu.md` in
 
 To add a new screen later, keep the transition logic explicit and avoid building a large scene framework before there are at least two or three real screens with shared needs.
 
-To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input. The current prototype map and camera follow that pattern: `internal/game/map.go` creates the default home Plot, stores per-Tile visual variation tweaks, `internal/game/camera.go` owns camera movement and projection state, and rendering reads from stored map and camera state.
+To add gameplay systems, start with pure data and functions that can be tested by `go test ./...`, then connect them to Ebitengine rendering and input. The current prototype map, camera, and Raid systems follow that pattern: `internal/game/map.go` creates the default home Plot, stores per-Tile visual variation tweaks, `internal/game/camera.go` owns camera movement and projection state, `internal/game/raid.go` owns deterministic Raid state transitions, and rendering reads from stored map, camera, and Raid state.
 
 To add assets, place files under `assets/`, document source and licensing, add them to the typed catalog only when game code needs them, and avoid mixing asset-loading details into gameplay rules.
 

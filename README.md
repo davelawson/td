@@ -2,7 +2,7 @@
 
 `td` is a local PC prototype for a 2D tower-defense game built with Go and Ebitengine. The intended game combines exploration, base-building, resource gathering, and conventional tower-defense combat in a medieval wizardry fantasy setting.
 
-The repository now contains a small runnable prototype shell: a Go/Ebitengine desktop app with a main menu, a New Game configuration screen for entering a Wizard name, a first game screen with a static 15x15 home Plot scene, a sprite-backed Sanctum, mouse-wheel map zoom, `WASD` camera panning, a prototype status top bar, a logical update counter, an ESC in-game overlay menu, a placeholder Settings screen, disabled Load option, SPACE pause behavior, and a quit option. Exploration, base-building, tower-defense combat, real resource changes, real settings, save/load behavior, and an asset pipeline have not been implemented yet.
+The repository now contains a small runnable prototype shell: a Go/Ebitengine desktop app with a main menu, a New Game configuration screen for entering a Wizard name, a first game screen with a static 15x15 home Plot scene, a sprite-backed Sanctum, mouse-wheel map zoom, `WASD` camera panning, a prototype status top bar, deterministic placeholder Raids started by a `Next Raid` button, a logical update counter, an ESC in-game overlay menu, a placeholder Settings screen, disabled Load option, SPACE pause behavior, and a quit option. Exploration, base-building, tower targeting, combat damage, real resource changes, real settings, save/load behavior, and an asset pipeline have not been implemented yet.
 
 ## Current Status
 
@@ -10,7 +10,7 @@ The repository now contains a small runnable prototype shell: a Go/Ebitengine de
 - Runtime stack: Go with Ebitengine.
 - Current playable slice: a 1920x1080 desktop app that shows `New`, `Load`, `Settings`, and `Quit`; `New` opens a configuration screen with Wizard name entry up to 32 characters, active `Start` after a name is entered, and active `Cancel`; `Start` opens the first game screen with a static 15x15 home Plot containing the centered sprite-backed Sanctum, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening; mouse-wheel input zooms the map, `WASD` pans the camera, and these camera controls keep working while paused; a top bar shows fixed prototype Chapter, Day, resource, phase, and Sanctum barricade values, plus a debug logical update counter; SPACE toggles pause; ESC opens an in-game overlay menu with `Resume` and `Surrender` and blocks camera input while open; `Settings` opens a placeholder screen with `Back`; `Load` is disabled; and `Quit` closes the app.
 - Current display policy: the window is resizable, and the drawable layout follows the actual window size so text remains raw-pixel-sized instead of being stretched during upscaling.
-- Current non-goals: exploration, base-building, tower-defense combat, saving games, and campaign structure.
+- Current non-goals: exploration, base-building, full tower-defense combat, saving games, and campaign structure.
 - Repository operations such as license, CI, release packaging, and distribution are intentionally deferred.
 
 ## Commands
