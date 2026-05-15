@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/structures/bow-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 // Catalog groups all loaded runtime assets by type and subtype.
@@ -32,7 +32,8 @@ type EnemySprites struct {
 
 // StructureSprites groups loaded sprites for map and base structures.
 type StructureSprites struct {
-	Sanctum *ebiten.Image
+	Sanctum  *ebiten.Image
+	BowTower *ebiten.Image
 }
 
 // TerrainSprites groups loaded sprites for map terrain.
@@ -50,6 +51,10 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
+	bowTower, err := loadSprite("sprites/structures/bow-tower.png")
+	if err != nil {
+		return Catalog{}, err
+	}
 	var pineTrees [4]*ebiten.Image
 	for i := range pineTrees {
 		path := fmt.Sprintf("sprites/terrains/pine-tree-%d.png", i+1)
@@ -64,7 +69,8 @@ func NewCatalog() (Catalog, error) {
 				SkeletonSwordShield: skeletonSwordShield,
 			},
 			Structure: StructureSprites{
-				Sanctum: sanctum,
+				Sanctum:  sanctum,
+				BowTower: bowTower,
 			},
 			Terrain: TerrainSprites{
 				PineTrees: pineTrees,

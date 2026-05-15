@@ -36,6 +36,23 @@ func TestNewCatalogLoadsSanctumSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsBowTowerSprite verifies the required Bow Tower sprite is embedded.
+func TestNewCatalogLoadsBowTowerSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bowTower := catalog.Sprite.Structure.BowTower
+	if bowTower == nil {
+		t.Fatal("expected Bow Tower sprite to load")
+	}
+	width, height := bowTower.Bounds().Dx(), bowTower.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("Bow Tower sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsPineTreeSprites verifies the required terrain sprites are embedded.
 func TestNewCatalogLoadsPineTreeSprites(t *testing.T) {
 	catalog, err := NewCatalog()
