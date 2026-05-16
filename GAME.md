@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with one automated Bow Tower, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton enemies and first-pass projectile combat. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton enemies and first-pass projectile combat. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -67,7 +67,7 @@ The map is built on a grid. Each grid square is called a Tile. Tiles are grouped
 
 Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
 
-At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum, a straight road north to the Plot edge, one Bow Tower beside the road, and a pine-tree border around the Plot edge except at the road opening; richer terrain variety, resources, build rules, and tower combat remain future work.
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum, a straight road north to the Plot edge, a Bow Tower and Flame Bolt Tower across the road from each other, and a pine-tree border around the Plot edge except at the road opening; richer terrain variety, resources, build rules, and tower combat remain future work.
 
 Plots exist in one of these high-level states:
 
@@ -153,7 +153,7 @@ The first implemented Raid behavior is deliberately deterministic. A `Next Raid`
 
 The first Raid slice stores each active skeleton's current world position directly. On the starting road, skeletons spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Skeletons have 20 health in the first combat slice.
 
-The first Bow Tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
+The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
 If a skeleton reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If a skeleton reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists.
 
@@ -164,6 +164,7 @@ Open decisions include enemy archetypes, whether a Raid can include multiple wav
 Tower types define the defensive structures the wizard can build in the Domain.
 
 - `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. It costs only Wood to build. The Bow Tower is a general-purpose tower that deals moderate damage at moderate range. The first prototype Bow Tower has 3.0-Tile range, deals 10 damage per hit, fires every 1.0 second, and launches projectiles that travel at 9.0 Tiles per second.
+- `Flame Bolt Tower`: a magical tower that hurls bolts of flame at enemies within range. It is a shorter-range, slower-firing damage tower than the Bow Tower in the first prototype. The first prototype Flame Bolt Tower has 2.5-Tile range, deals 20 damage per hit, fires every 1.5 seconds, and launches projectiles that travel at 7.0 Tiles per second.
 
 Open decisions include exact tower costs, upgrade paths, specialized targeting modes, and what other tower types exist.
 
@@ -192,9 +193,9 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, and a pine-tree border around the Plot edge except at the road opening.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, and a pine-tree border around the Plot edge except at the road opening.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
-- The first Raid slice uses deterministic sprite-backed skeleton enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, the Bow Tower fires projectiles at in-range enemies, and reaching enemies spend Barricade charges until the Sanctum is breached.
+- The first Raid slice uses deterministic sprite-backed skeleton enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, and reaching enemies spend Barricade charges until the Sanctum is breached.
 
 ## Open Game Design Questions
 
@@ -259,6 +260,10 @@ Record game design decisions here when they become durable enough to guide imple
 
 - Decision: The first Bow Tower targets the in-range enemy closest to the Sanctum and drops projectiles harmlessly if their original target is gone before impact.
   Rationale: Closest-to-Sanctum targeting prioritizes the most urgent threat on the current single road, while no-retarget projectiles keep the first combat model deterministic and easy to test.
+  Date/Author: 2026-05-16 / Codex
+
+- Decision: Add the Flame Bolt Tower as the second defined tower type and place one west of the starting road across from the Bow Tower.
+  Rationale: A short-range, slower-firing magical damage tower makes the starting defense visibly more wizardly while keeping the first targeting and projectile rules shared and testable.
   Date/Author: 2026-05-16 / Codex
 
 - Decision: Use deterministic placeholder Raids as the first enemy-wave slice.

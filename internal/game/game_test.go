@@ -35,6 +35,9 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature != featureBowTower {
 		t.Fatal("expected new state to store the starting Bow Tower")
 	}
+	if state.gameMap.Home.Tiles[5][homePlotCenter-1].Feature != featureFlameBoltTower {
+		t.Fatal("expected new state to store the starting Flame Bolt Tower")
+	}
 	if state.assetCatalog.Sprite.Structure.Sanctum == nil {
 		t.Fatal("expected new state to store the Sanctum sprite")
 	}
@@ -52,6 +55,12 @@ func TestNewStateStartsRunning(t *testing.T) {
 	}
 	if state.structureCatalog.BowTower.Sprite == nil {
 		t.Fatal("expected new state to store the Bow Tower structure template sprite")
+	}
+	if state.structureCatalog.FlameBoltTower.Name != "Flame Bolt Tower" {
+		t.Fatalf("Flame Bolt Tower name = %q, want %q", state.structureCatalog.FlameBoltTower.Name, "Flame Bolt Tower")
+	}
+	if state.structureCatalog.FlameBoltTower.Sprite == nil {
+		t.Fatal("expected new state to store the Flame Bolt Tower structure template sprite")
 	}
 	if state.camera.zoom != cameraInitialZoom {
 		t.Fatalf("camera zoom = %f, want %f", state.camera.zoom, cameraInitialZoom)
@@ -76,17 +85,24 @@ func TestDefaultHomePlotShape(t *testing.T) {
 	}
 }
 
-// TestDefaultHomePlotIncludesStartingBowTower verifies the authored tower placement.
-func TestDefaultHomePlotIncludesStartingBowTower(t *testing.T) {
+// TestDefaultHomePlotIncludesStartingTowers verifies the authored tower placements.
+func TestDefaultHomePlotIncludesStartingTowers(t *testing.T) {
 	plot := NewDefaultHomePlot()
-	towerX := homePlotCenter + 1
 	towerY := 5
 
-	if plot.Tiles[towerY][towerX].Feature != featureBowTower {
-		t.Fatalf("tile (%d,%d) feature = %v, want Bow Tower", towerX, towerY, plot.Tiles[towerY][towerX].Feature)
+	bowTowerX := homePlotCenter + 1
+	if plot.Tiles[towerY][bowTowerX].Feature != featureBowTower {
+		t.Fatalf("tile (%d,%d) feature = %v, want Bow Tower", bowTowerX, towerY, plot.Tiles[towerY][bowTowerX].Feature)
 	}
-	if plot.Tiles[towerY][towerX].Terrain != terrainEmpty {
-		t.Fatalf("tile (%d,%d) terrain = %v, want empty buildable ground", towerX, towerY, plot.Tiles[towerY][towerX].Terrain)
+	if plot.Tiles[towerY][bowTowerX].Terrain != terrainEmpty {
+		t.Fatalf("tile (%d,%d) terrain = %v, want empty buildable ground", bowTowerX, towerY, plot.Tiles[towerY][bowTowerX].Terrain)
+	}
+	flameTowerX := homePlotCenter - 1
+	if plot.Tiles[towerY][flameTowerX].Feature != featureFlameBoltTower {
+		t.Fatalf("tile (%d,%d) feature = %v, want Flame Bolt Tower", flameTowerX, towerY, plot.Tiles[towerY][flameTowerX].Feature)
+	}
+	if plot.Tiles[towerY][flameTowerX].Terrain != terrainEmpty {
+		t.Fatalf("tile (%d,%d) terrain = %v, want empty buildable ground", flameTowerX, towerY, plot.Tiles[towerY][flameTowerX].Terrain)
 	}
 	if plot.Tiles[towerY][homePlotCenter].Terrain != terrainRoad {
 		t.Fatalf("adjacent path tile (%d,%d) terrain = %v, want road", homePlotCenter, towerY, plot.Tiles[towerY][homePlotCenter].Terrain)
@@ -157,7 +173,7 @@ func TestDefaultHomePlotInteriorIsOtherwiseEmpty(t *testing.T) {
 			tile := plot.Tiles[y][x]
 			onNorthRoad := x == homePlotCenter && y <= homePlotCenter
 			atSanctum := x == homePlotCenter && y == homePlotCenter
-			atStartingTower := x == homePlotCenter+1 && y == 5
+			atStartingTower := y == 5 && (x == homePlotCenter+1 || x == homePlotCenter-1)
 
 			if !onNorthRoad && tile.Terrain != terrainEmpty {
 				t.Fatalf("tile (%d,%d) terrain = %v, want empty interior", x, y, tile.Terrain)

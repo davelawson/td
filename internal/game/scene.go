@@ -45,7 +45,10 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 		s.drawSanctum(screen, rect.x, rect.y, rect.w)
 	}
 	if tile.Feature == featureBowTower {
-		s.drawBowTower(screen, rect.x, rect.y, rect.w)
+		s.drawStructureSprite(screen, s.structureCatalog.BowTower.Sprite, rect.x, rect.y, rect.w)
+	}
+	if tile.Feature == featureFlameBoltTower {
+		s.drawStructureSprite(screen, s.structureCatalog.FlameBoltTower.Sprite, rect.x, rect.y, rect.w)
 	}
 }
 
@@ -112,15 +115,14 @@ func (s *State) drawSanctum(screen *ebiten.Image, tileX, tileY, tileSize float32
 	screen.DrawImage(sanctum, options)
 }
 
-// drawBowTower renders the authored Bow Tower feature.
-func (s *State) drawBowTower(screen *ebiten.Image, tileX, tileY, tileSize float32) {
-	bowTower := s.structureCatalog.BowTower.Sprite
-	if bowTower == nil || tileSize <= 0 {
+// drawStructureSprite renders a centered authored structure feature.
+func (s *State) drawStructureSprite(screen *ebiten.Image, sprite *ebiten.Image, tileX, tileY, tileSize float32) {
+	if sprite == nil || tileSize <= 0 {
 		return
 	}
 
-	spriteWidth := float64(bowTower.Bounds().Dx())
-	spriteHeight := float64(bowTower.Bounds().Dy())
+	spriteWidth := float64(sprite.Bounds().Dx())
+	spriteHeight := float64(sprite.Bounds().Dy())
 	targetSize := float64(tileSize) * 0.76
 	scale := targetSize / spriteWidth
 	options := &ebiten.DrawImageOptions{}
@@ -129,5 +131,5 @@ func (s *State) drawBowTower(screen *ebiten.Image, tileX, tileY, tileSize float3
 		float64(tileX)+(float64(tileSize)-spriteWidth*scale)/2,
 		float64(tileY)+(float64(tileSize)-spriteHeight*scale)/2,
 	)
-	screen.DrawImage(bowTower, options)
+	screen.DrawImage(sprite, options)
 }

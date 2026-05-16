@@ -42,7 +42,7 @@ func (s *State) updateCombat() {
 	s.ensureCombatState()
 	s.updateTowerCooldowns(gameUpdateSeconds)
 	s.updateProjectiles(gameUpdateSeconds)
-	s.fireBowTowers()
+	s.fireCombatTowers()
 }
 
 // ensureCombatState initializes lazy combat maps for tests that construct State values directly.
@@ -63,16 +63,12 @@ func (s *State) updateTowerCooldowns(deltaSeconds float64) {
 	}
 }
 
-// fireBowTowers launches projectiles from ready Bow Towers with targets in range.
-func (s *State) fireBowTowers() {
-	template := s.structureCatalog.BowTower
-	if template.RangeTiles <= 0 || template.Damage <= 0 || template.FireIntervalSeconds <= 0 || template.ProjectileSpeedTilesPerSecond <= 0 {
-		return
-	}
-
+// fireCombatTowers launches projectiles from ready combat towers with targets in range.
+func (s *State) fireCombatTowers() {
 	for y := 0; y < plotSize; y++ {
 		for x := 0; x < plotSize; x++ {
-			if s.gameMap.Home.Tiles[y][x].Feature != featureBowTower {
+			template, ok := s.combatTowerTemplate(s.gameMap.Home.Tiles[y][x].Feature)
+			if !ok || !template.canFireProjectiles() {
 				continue
 			}
 			key := tileCoordinate{X: x, Y: y}
@@ -80,7 +76,7 @@ func (s *State) fireBowTowers() {
 				continue
 			}
 			towerPosition := tileWorldCenter(x, y)
-			target, ok := s.findBowTowerTarget(towerPosition, template.RangeTiles)
+			target, ok := s.findTowerTarget(towerPosition, template.RangeTiles)
 			if !ok {
 				continue
 			}
@@ -96,8 +92,25 @@ func (s *State) fireBowTowers() {
 	}
 }
 
-// findBowTowerTarget chooses the in-range enemy closest to the Sanctum.
-func (s *State) findBowTowerTarget(towerPosition worldPosition, rangeTiles float64) (raidEnemy, bool) {
+// combatTowerTemplate returns the projectile-firing template for a placed feature.
+func (s *State) combatTowerTemplate(feature tileFeature) (StructureTemplate, bool) {
+	switch feature {
+	case featureBowTower:
+		return s.structureCatalog.BowTower, true
+	case featureFlameBoltTower:
+		return s.structureCatalog.FlameBoltTower, true
+	default:
+		return StructureTemplate{}, false
+	}
+}
+
+// canFireProjectiles reports whether a structure template has complete projectile combat stats.
+func (t StructureTemplate) canFireProjectiles() bool {
+	return t.RangeTiles > 0 && t.Damage > 0 && t.FireIntervalSeconds > 0 && t.ProjectileSpeedTilesPerSecond > 0
+}
+
+// findTowerTarget chooses the in-range enemy closest to the Sanctum.
+func (s *State) findTowerTarget(towerPosition worldPosition, rangeTiles float64) (raidEnemy, bool) {
 	rangeSquared := rangeTiles * rangeTiles
 	var target raidEnemy
 	found := false

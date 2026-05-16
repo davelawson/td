@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 // Catalog groups all loaded runtime assets by type and subtype.
@@ -33,13 +33,15 @@ type EnemySprites struct {
 
 // ProjectileSprites groups loaded sprites for projectiles fired by combat structures.
 type ProjectileSprites struct {
-	BowTowerProjectile *ebiten.Image
+	BowTowerProjectile       *ebiten.Image
+	FlameBoltTowerProjectile *ebiten.Image
 }
 
 // StructureSprites groups loaded sprites for map and base structures.
 type StructureSprites struct {
-	Sanctum  *ebiten.Image
-	BowTower *ebiten.Image
+	Sanctum        *ebiten.Image
+	BowTower       *ebiten.Image
+	FlameBoltTower *ebiten.Image
 }
 
 // TerrainSprites groups loaded sprites for map terrain.
@@ -65,6 +67,14 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
+	flameBoltTower, err := loadSprite("sprites/structures/flame-bolt-tower.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	flameBoltTowerProjectile, err := loadSprite("sprites/structures/flame-bolt-tower-projectile.png")
+	if err != nil {
+		return Catalog{}, err
+	}
 	var pineTrees [4]*ebiten.Image
 	for i := range pineTrees {
 		path := fmt.Sprintf("sprites/terrains/pine-tree-%d.png", i+1)
@@ -79,11 +89,13 @@ func NewCatalog() (Catalog, error) {
 				SkeletonSwordShield: skeletonSwordShield,
 			},
 			Projectile: ProjectileSprites{
-				BowTowerProjectile: bowTowerProjectile,
+				BowTowerProjectile:       bowTowerProjectile,
+				FlameBoltTowerProjectile: flameBoltTowerProjectile,
 			},
 			Structure: StructureSprites{
-				Sanctum:  sanctum,
-				BowTower: bowTower,
+				Sanctum:        sanctum,
+				BowTower:       bowTower,
+				FlameBoltTower: flameBoltTower,
 			},
 			Terrain: TerrainSprites{
 				PineTrees: pineTrees,

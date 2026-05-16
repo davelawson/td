@@ -38,6 +38,7 @@ const (
 	featureNone tileFeature = iota
 	featureSanctum
 	featureBowTower
+	featureFlameBoltTower
 )
 
 // NewDefaultMap creates the prototype map used by a new game.
@@ -68,6 +69,7 @@ func newDefaultHomePlotWithTweakSource(nextTweak func() uint16) Plot {
 	}
 	plot.Tiles[homePlotCenter][homePlotCenter].Feature = featureSanctum
 	plot.Tiles[5][homePlotCenter+1].Feature = featureBowTower
+	plot.Tiles[5][homePlotCenter-1].Feature = featureFlameBoltTower
 	return plot
 }
 

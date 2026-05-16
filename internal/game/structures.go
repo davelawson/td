@@ -26,8 +26,9 @@ type Structure struct {
 
 // StructureCatalog groups every structure template available to game systems.
 type StructureCatalog struct {
-	Sanctum  StructureTemplate
-	BowTower StructureTemplate
+	Sanctum        StructureTemplate
+	BowTower       StructureTemplate
+	FlameBoltTower StructureTemplate
 }
 
 // NewStructureCatalog creates the default structure template catalog.
@@ -45,6 +46,15 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			FireIntervalSeconds:           1.0,
 			ProjectileSpeedTilesPerSecond: 9.0,
 			ProjectileSprite:              assetCatalog.Sprite.Projectile.BowTowerProjectile,
+		},
+		FlameBoltTower: StructureTemplate{
+			Name:                          "Flame Bolt Tower",
+			Sprite:                        assetCatalog.Sprite.Structure.FlameBoltTower,
+			RangeTiles:                    2.5,
+			Damage:                        20,
+			FireIntervalSeconds:           1.5,
+			ProjectileSpeedTilesPerSecond: 7.0,
+			ProjectileSprite:              assetCatalog.Sprite.Projectile.FlameBoltTowerProjectile,
 		},
 	}
 }

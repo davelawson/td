@@ -28,6 +28,7 @@ func TestSpawnRaidEnemyAssignsHealthAndStableIDs(t *testing.T) {
 // TestBowTowerDoesNotFireOutsideRange verifies range gates projectile launch.
 func TestBowTowerDoesNotFireOutsideRange(t *testing.T) {
 	state := newRaidTestState(t)
+	removeStartingFlameBoltTower(state)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 7}, 20)}
 
 	state.updateCombat()
@@ -40,6 +41,7 @@ func TestBowTowerDoesNotFireOutsideRange(t *testing.T) {
 // TestBowTowerFiresAtEnemyInRangeAndStartsCooldown verifies launch and second-based cooldown state.
 func TestBowTowerFiresAtEnemyInRangeAndStartsCooldown(t *testing.T) {
 	state := newRaidTestState(t)
+	removeStartingFlameBoltTower(state)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 20)}
 
 	state.updateCombat()
@@ -63,9 +65,34 @@ func TestBowTowerFiresAtEnemyInRangeAndStartsCooldown(t *testing.T) {
 	}
 }
 
+// TestFlameBoltTowerFiresAtEnemyInRange verifies the authored flame tower combat stats.
+func TestFlameBoltTowerFiresAtEnemyInRange(t *testing.T) {
+	state := newRaidTestState(t)
+	removeStartingBowTower(state)
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 20)}
+
+	state.updateCombat()
+
+	if len(state.combat.projectiles) != 1 {
+		t.Fatalf("projectiles = %d, want 1", len(state.combat.projectiles))
+	}
+	projectile := state.combat.projectiles[0]
+	if projectile.damage != 20 {
+		t.Fatalf("projectile damage = %d, want 20", projectile.damage)
+	}
+	if projectile.speedTilesPerSecond != 7.0 {
+		t.Fatalf("projectile speed = %f, want 7.0", projectile.speedTilesPerSecond)
+	}
+	key := tileCoordinate{X: homePlotCenter - 1, Y: 5}
+	if got, want := state.combat.towerCooldowns[key], 1.5; math.Abs(got-want) > 0.000001 {
+		t.Fatalf("cooldown seconds = %f, want %f", got, want)
+	}
+}
+
 // TestBowTowerTargetPriorityUsesClosestEnemyToSanctum verifies urgent targets are chosen first.
 func TestBowTowerTargetPriorityUsesClosestEnemyToSanctum(t *testing.T) {
 	state := newRaidTestState(t)
+	removeStartingFlameBoltTower(state)
 	state.raid.enemies = []raidEnemy{
 		combatTestEnemy(0, worldPosition{X: 0, Y: 3}, 20),
 		combatTestEnemy(1, worldPosition{X: 0, Y: 1}, 20),
@@ -172,4 +199,14 @@ func combatTestEnemy(id int, position worldPosition, health int) raidEnemy {
 		position: position,
 		health:   health,
 	}
+}
+
+// removeStartingBowTower removes the default Bow Tower from focused combat tests.
+func removeStartingBowTower(state *State) {
+	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureNone
+}
+
+// removeStartingFlameBoltTower removes the default Flame Bolt Tower from focused combat tests.
+func removeStartingFlameBoltTower(state *State) {
+	state.gameMap.Home.Tiles[5][homePlotCenter-1].Feature = featureNone
 }

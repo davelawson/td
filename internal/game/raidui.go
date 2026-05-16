@@ -169,7 +169,7 @@ func (s *State) drawProjectile(screen *ebiten.Image, viewport sceneViewport, pro
 	screen.DrawImage(projectile.sprite, options)
 }
 
-// projectileDrawRotation returns a screen-space rotation for the arrow sprite.
+// projectileDrawRotation returns a screen-space rotation for projectile sprites.
 func (s *State) projectileDrawRotation(projectile combatProjectile) float64 {
 	enemyIndex, ok := s.enemyIndexByID(projectile.targetID)
 	if !ok {

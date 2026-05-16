@@ -66,6 +66,39 @@ func TestNewStructureCatalogIncludesBowTower(t *testing.T) {
 	}
 }
 
+// TestNewStructureCatalogIncludesFlameBoltTower verifies the Flame Bolt Tower template values.
+func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	catalog := NewStructureCatalog(assetCatalog)
+	flameBoltTower := catalog.FlameBoltTower
+
+	if flameBoltTower.Name != "Flame Bolt Tower" {
+		t.Fatalf("Flame Bolt Tower name = %q, want %q", flameBoltTower.Name, "Flame Bolt Tower")
+	}
+	if flameBoltTower.Sprite != assetCatalog.Sprite.Structure.FlameBoltTower {
+		t.Fatal("expected Flame Bolt Tower sprite to reference the loaded asset catalog sprite")
+	}
+	if flameBoltTower.RangeTiles != 2.5 {
+		t.Fatalf("Flame Bolt Tower range = %f, want 2.5", flameBoltTower.RangeTiles)
+	}
+	if flameBoltTower.Damage != 20 {
+		t.Fatalf("Flame Bolt Tower damage = %d, want 20", flameBoltTower.Damage)
+	}
+	if flameBoltTower.FireIntervalSeconds != 1.5 {
+		t.Fatalf("Flame Bolt Tower fire interval = %f, want 1.5", flameBoltTower.FireIntervalSeconds)
+	}
+	if flameBoltTower.ProjectileSpeedTilesPerSecond != 7.0 {
+		t.Fatalf("Flame Bolt Tower projectile speed = %f, want 7.0", flameBoltTower.ProjectileSpeedTilesPerSecond)
+	}
+	if flameBoltTower.ProjectileSprite != assetCatalog.Sprite.Projectile.FlameBoltTowerProjectile {
+		t.Fatal("expected Flame Bolt Tower projectile sprite to reference the loaded asset catalog projectile sprite")
+	}
+}
+
 // TestStructureStoresTemplateAndTileCoordinates verifies a placed structure instance.
 func TestStructureStoresTemplateAndTileCoordinates(t *testing.T) {
 	assetCatalog, err := assets.NewCatalog()
