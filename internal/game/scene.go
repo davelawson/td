@@ -10,8 +10,9 @@ const treeHorizontalFlipMask uint16 = 0x8000
 // drawHomePlot renders the static home Plot from map state.
 func (s *State) drawHomePlot(screen *ebiten.Image) {
 	viewport := s.sceneViewport()
-	size := float64(plotSize) * plotBaseTileSize
-	backdrop := s.projectRect(viewport, -18, -18, size+36, size+36)
+	margin := 18 / plotBaseTileSize
+	size := float64(plotSize)
+	backdrop := s.projectRect(viewport, -size/2-margin, size/2+margin, size+margin*2, size+margin*2)
 	vector.FillRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, plotBackdropColor, false)
 	vector.StrokeRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, 3, fieldEdgeColor, false)
 
@@ -24,9 +25,8 @@ func (s *State) drawHomePlot(screen *ebiten.Image) {
 
 // drawHomePlotTile renders one Tile in the static home Plot.
 func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x, y int, tile Tile) {
-	worldX := float64(x) * plotBaseTileSize
-	worldY := float64(y) * plotBaseTileSize
-	rect := s.projectRect(viewport, worldX, worldY, plotBaseTileSize, plotBaseTileSize)
+	worldWest, worldNorth, worldW, worldH := tileWorldRect(x, y)
+	rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
 
 	tileColor := emptyTileColor
 	switch tile.Terrain {
