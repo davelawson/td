@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with one visible non-combat Bow Tower, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice. The actual exploration, resource, base-building, tower targeting, and combat damage systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with one visible non-combat Bow Tower, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton enemies. The actual exploration, resource, base-building, tower targeting, and combat damage systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -131,7 +131,7 @@ Open decisions include how many charges the barrier has, whether charges can be 
 
 ### Tower Defense
 
-Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first Raid slice uses simple fixed paths and placeholder enemies before towers or combat damage exist. The first combat slice should add placeholder towers and testable targeting rules without replacing the simple Raid lifecycle.
+Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first Raid slice uses simple fixed paths and skeleton enemies before towers or combat damage exist. The first combat slice should add placeholder towers and testable targeting rules without replacing the simple Raid lifecycle.
 
 Open decisions include enemy families, tower targeting, win and loss conditions beyond the first breach state, damage types, and upgrade rules.
 
@@ -147,9 +147,9 @@ The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's 
 
 During a Raid, the in-game top bar should show how many enemies remain in the current assault. This can be formatted before enemy simulation exists, but real values should come from the Raid system once it is implemented.
 
-The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five placeholder enemies, and each later Raid adds two enemies. One enemy appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. There are no enemy archetypes, tower attacks, rewards, or alternate paths in this first slice.
+The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five skeleton enemies, and each later Raid adds two enemies. One skeleton appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. Skeletons are the only enemy archetype in this first slice, and there are no tower attacks, rewards, or alternate paths yet.
 
-If a placeholder enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If a placeholder enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists.
+If a skeleton reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If a skeleton reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists.
 
 Open decisions include enemy archetypes, whether a Raid can include multiple waves or paths, how Raid difficulty scales with Domain expansion, whether towers or resources can remove enemies before they reach the Sanctum, and what longer-term recovery or loss flow follows a breached Sanctum.
 
@@ -188,7 +188,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
 - The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one non-combat Bow Tower on the east side of the path, and a pine-tree border around the Plot edge except at the road opening.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
-- The first Raid slice uses deterministic placeholder enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, and reaching enemies spend Barricade charges until the Sanctum is breached.
+- The first Raid slice uses deterministic sprite-backed skeleton enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, and reaching enemies spend Barricade charges until the Sanctum is breached.
 
 ## Open Game Design Questions
 

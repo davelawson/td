@@ -1,10 +1,18 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"td/assets"
+)
 
 // TestNewEnemyCatalogIncludesSkeletonSwordShield verifies the initial enemy template values.
 func TestNewEnemyCatalogIncludesSkeletonSwordShield(t *testing.T) {
-	catalog := NewEnemyCatalog()
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog := NewEnemyCatalog(assetCatalog)
 	skeleton := catalog.SkeletonSwordShield
 
 	if skeleton.Name != "Skeleton Sword-and-Shield" {
@@ -21,5 +29,11 @@ func TestNewEnemyCatalogIncludesSkeletonSwordShield(t *testing.T) {
 	}
 	if skeleton.SpriteKey != "skeleton-sword-shield" {
 		t.Fatalf("skeleton sprite key = %q, want %q", skeleton.SpriteKey, "skeleton-sword-shield")
+	}
+	if skeleton.Sprite == nil {
+		t.Fatal("expected skeleton sprite to be assigned")
+	}
+	if skeleton.Sprite != assetCatalog.Sprite.Enemy.SkeletonSwordShield {
+		t.Fatal("expected skeleton sprite to reference the loaded asset catalog sprite")
 	}
 }

@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	nextRaidButtonX = 42
-	nextRaidButtonW = 190
-	nextRaidButtonH = 52
-	nextRaidMarginY = 42
-	raidEnemyRadius = 14
+	nextRaidButtonX     = 42
+	nextRaidButtonW     = 190
+	nextRaidButtonH     = 52
+	nextRaidMarginY     = 42
+	raidEnemyRadius     = 14
+	raidEnemySpriteSize = 44
 )
 
 // updateRaidControls applies pointer hover and button clicks for Raid controls.
@@ -73,6 +74,17 @@ func (s *State) drawRaidEnemies(screen *ebiten.Image) {
 	viewport := s.sceneViewport()
 	for _, enemy := range s.raid.enemies {
 		worldX, worldY := raidEnemyWorldPosition(enemy)
+		s.drawRaidEnemy(screen, viewport, enemy, worldX, worldY)
+	}
+}
+
+// drawRaidEnemy renders one active enemy at its projected world position.
+func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enemy raidEnemy, worldX, worldY float64) {
+	var sprite *ebiten.Image
+	if enemy.template != nil {
+		sprite = enemy.template.Sprite
+	}
+	if sprite == nil {
 		rect := s.projectRect(
 			viewport,
 			worldX-raidEnemyRadius,
@@ -82,5 +94,28 @@ func (s *State) drawRaidEnemies(screen *ebiten.Image) {
 		)
 		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, raidEnemyColor, false)
 		vector.StrokeCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, 2, textColor, false)
+		return
 	}
+
+	rect := s.projectRect(
+		viewport,
+		worldX-raidEnemySpriteSize/2,
+		worldY-raidEnemySpriteSize/2,
+		raidEnemySpriteSize,
+		raidEnemySpriteSize,
+	)
+	spriteWidth := float64(sprite.Bounds().Dx())
+	spriteHeight := float64(sprite.Bounds().Dy())
+	if spriteWidth <= 0 || spriteHeight <= 0 || rect.w <= 0 || rect.h <= 0 {
+		return
+	}
+
+	scale := float64(rect.w) / spriteWidth
+	options := &ebiten.DrawImageOptions{}
+	options.GeoM.Scale(scale, scale)
+	options.GeoM.Translate(
+		float64(rect.x)+(float64(rect.w)-spriteWidth*scale)/2,
+		float64(rect.y)+(float64(rect.h)-spriteHeight*scale)/2,
+	)
+	screen.DrawImage(sprite, options)
 }

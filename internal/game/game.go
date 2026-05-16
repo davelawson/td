@@ -65,7 +65,7 @@ func New(wizardName string, width, height int) (*State, error) {
 	state := &State{
 		wizardName:       wizardName,
 		assetCatalog:     assetCatalog,
-		enemyCatalog:     NewEnemyCatalog(),
+		enemyCatalog:     NewEnemyCatalog(assetCatalog),
 		structureCatalog: NewStructureCatalog(assetCatalog),
 		gameMap:          NewDefaultMap(),
 		camera:           newCamera(),

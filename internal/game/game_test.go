@@ -44,6 +44,9 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.enemyCatalog.SkeletonSwordShield.SpriteKey != "skeleton-sword-shield" {
 		t.Fatalf("skeleton sprite key = %q, want %q", state.enemyCatalog.SkeletonSwordShield.SpriteKey, "skeleton-sword-shield")
 	}
+	if state.enemyCatalog.SkeletonSwordShield.Sprite == nil {
+		t.Fatal("expected new state to store the skeleton sword-and-shield enemy sprite")
+	}
 	if state.structureCatalog.BowTower.Name != "Bow Tower" {
 		t.Fatalf("Bow Tower name = %q, want %q", state.structureCatalog.BowTower.Name, "Bow Tower")
 	}

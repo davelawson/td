@@ -27,6 +27,9 @@ func TestNextRaidButtonStartsFirstRaid(t *testing.T) {
 	if state.raid.enemies[0].template != &state.enemyCatalog.SkeletonSwordShield {
 		t.Fatal("expected spawned enemy to reference the skeleton sword-and-shield template")
 	}
+	if state.raid.enemies[0].template.Sprite == nil {
+		t.Fatal("expected spawned enemy to reference the skeleton sprite")
+	}
 	if state.status.phase != phaseRaid {
 		t.Fatalf("phase = %v, want %v", state.status.phase, phaseRaid)
 	}
@@ -63,6 +66,9 @@ func TestRaidSpawnsEnemiesOnStagger(t *testing.T) {
 	}
 	if state.raid.enemies[1].template != &state.enemyCatalog.SkeletonSwordShield {
 		t.Fatal("expected staggered enemy to reference the skeleton sword-and-shield template")
+	}
+	if state.raid.enemies[1].template.Sprite == nil {
+		t.Fatal("expected staggered enemy to reference the skeleton sprite")
 	}
 }
 

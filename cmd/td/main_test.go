@@ -25,6 +25,7 @@ type screenshotTarget struct {
 	wizardName string
 	paused     bool
 	ingameMenu bool
+	activeRaid bool
 	path       string
 }
 
@@ -86,13 +87,14 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "16-starting-bow-tower", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "17-skeleton-raid-sprites", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
+			{wizardName: "Merlin", activeRaid: true, path: filepath.Join(basePath, "active-raid.png")},
 			{wizardName: "Merlin", paused: true, path: filepath.Join(basePath, "paused-game.png")},
 			{wizardName: "Merlin", ingameMenu: true, path: filepath.Join(basePath, "ingame-menu.png")},
 		},
@@ -119,6 +121,13 @@ func (a *screenshotApp) Update() error {
 			return err
 		}
 		a.app.gameState.Update(game.Input{})
+		if target.activeRaid {
+			a.app.gameState.Update(game.Input{
+				CursorX: 137,
+				CursorY: defaultWindowHeight - 68,
+				Clicked: true,
+			})
+		}
 		if target.paused {
 			a.app.gameState.Update(game.Input{TogglePause: true})
 		}
