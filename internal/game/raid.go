@@ -5,6 +5,7 @@ const (
 	raidEnemyGrowth     = 2
 	raidSpawnInterval   = 45
 	raidEnemySpeed      = 3.0
+	raidEnemySpeedTiles = raidEnemySpeed / plotBaseTileSize
 )
 
 type raidState struct {
@@ -18,7 +19,7 @@ type raidState struct {
 
 type raidEnemy struct {
 	template *EnemyTemplate
-	progress float64
+	position worldPosition
 }
 
 // startNextRaid begins the next deterministic Raid when the game can accept one.
@@ -81,6 +82,7 @@ func (s *State) spawnRaidEnemy() {
 
 	s.raid.enemies = append(s.raid.enemies, raidEnemy{
 		template: &s.enemyCatalog.SkeletonSwordShield,
+		position: raidEnemySpawnPosition(),
 	})
 	s.raid.pendingEnemies--
 	s.raid.spawnCountdown = raidSpawnInterval
@@ -90,8 +92,8 @@ func (s *State) spawnRaidEnemy() {
 func (s *State) updateRaidEnemies() {
 	survivors := s.raid.enemies[:0]
 	for _, enemy := range s.raid.enemies {
-		enemy.progress += raidEnemySpeed
-		if enemy.progress >= raidPathLength() {
+		enemy.position.Y -= raidEnemySpeedTiles
+		if raidEnemyReachedSanctum(enemy) {
 			if s.applySanctumContact() {
 				continue
 			}
@@ -130,14 +132,12 @@ func (s *State) raidEnemiesRemaining() int {
 	return s.raid.pendingEnemies + len(s.raid.enemies)
 }
 
-// raidPathLength returns the current straight north-road distance to the Sanctum.
-func raidPathLength() float64 {
-	return float64(homePlotCenter) * plotBaseTileSize
+// raidEnemySpawnPosition returns the current north-road enemy spawn point.
+func raidEnemySpawnPosition() worldPosition {
+	return worldPosition{X: 0, Y: float64(homePlotCenter)}
 }
 
-// raidEnemyWorldPosition returns an enemy's current world-space center.
-func raidEnemyWorldPosition(enemy raidEnemy) (float64, float64) {
-	x := (float64(homePlotCenter) + 0.5) * plotBaseTileSize
-	y := 0.5*plotBaseTileSize + enemy.progress
-	return x, y
+// raidEnemyReachedSanctum reports whether the enemy has contacted the Sanctum.
+func raidEnemyReachedSanctum(enemy raidEnemy) bool {
+	return enemy.position.Y <= 0
 }

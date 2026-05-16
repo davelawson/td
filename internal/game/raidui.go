@@ -73,36 +73,37 @@ func (s *State) drawRaidEnemies(screen *ebiten.Image) {
 
 	viewport := s.sceneViewport()
 	for _, enemy := range s.raid.enemies {
-		worldX, worldY := raidEnemyWorldPosition(enemy)
-		s.drawRaidEnemy(screen, viewport, enemy, worldX, worldY)
+		s.drawRaidEnemy(screen, viewport, enemy)
 	}
 }
 
 // drawRaidEnemy renders one active enemy at its projected world position.
-func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enemy raidEnemy, worldX, worldY float64) {
+func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enemy raidEnemy) {
 	var sprite *ebiten.Image
 	if enemy.template != nil {
 		sprite = enemy.template.Sprite
 	}
 	if sprite == nil {
+		radius := raidEnemyRadius / plotBaseTileSize
 		rect := s.projectRect(
 			viewport,
-			worldX-raidEnemyRadius,
-			worldY-raidEnemyRadius,
-			raidEnemyRadius*2,
-			raidEnemyRadius*2,
+			enemy.position.X-radius,
+			enemy.position.Y+radius,
+			radius*2,
+			radius*2,
 		)
 		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, raidEnemyColor, false)
 		vector.StrokeCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, 2, textColor, false)
 		return
 	}
 
+	size := raidEnemySpriteSize / plotBaseTileSize
 	rect := s.projectRect(
 		viewport,
-		worldX-raidEnemySpriteSize/2,
-		worldY-raidEnemySpriteSize/2,
-		raidEnemySpriteSize,
-		raidEnemySpriteSize,
+		enemy.position.X-size/2,
+		enemy.position.Y+size/2,
+		size,
+		size,
 	)
 	spriteWidth := float64(sprite.Bounds().Dx())
 	spriteHeight := float64(sprite.Bounds().Dy())

@@ -30,6 +30,11 @@ func TestNextRaidButtonStartsFirstRaid(t *testing.T) {
 	if state.raid.enemies[0].template.Sprite == nil {
 		t.Fatal("expected spawned enemy to reference the skeleton sprite")
 	}
+	wantPosition := raidEnemySpawnPosition()
+	wantPosition.Y -= raidEnemySpeedTiles
+	if got := state.raid.enemies[0].position; got != wantPosition {
+		t.Fatalf("spawned enemy position = %+v, want %+v", got, wantPosition)
+	}
 	if state.status.phase != phaseRaid {
 		t.Fatalf("phase = %v, want %v", state.status.phase, phaseRaid)
 	}
@@ -54,6 +59,9 @@ func TestNextRaidButtonDoesNotQueueWhileActive(t *testing.T) {
 func TestRaidSpawnsEnemiesOnStagger(t *testing.T) {
 	state := newRaidTestState(t)
 	state.startNextRaid()
+	if got, want := state.raid.enemies[0].position, raidEnemySpawnPosition(); got != want {
+		t.Fatalf("initial enemy position = %+v, want %+v", got, want)
+	}
 
 	advanceRaidUpdates(state, raidSpawnInterval-1)
 	if len(state.raid.enemies) != 1 {
@@ -76,12 +84,15 @@ func TestRaidSpawnsEnemiesOnStagger(t *testing.T) {
 func TestRaidEnemiesMoveTowardSanctum(t *testing.T) {
 	state := newRaidTestState(t)
 	state.startNextRaid()
-	start := state.raid.enemies[0].progress
+	start := state.raid.enemies[0].position
 
 	state.Update(Input{})
 
-	if state.raid.enemies[0].progress <= start {
-		t.Fatalf("enemy progress = %f, want greater than %f", state.raid.enemies[0].progress, start)
+	if state.raid.enemies[0].position.Y >= start.Y {
+		t.Fatalf("enemy y = %f, want less than %f", state.raid.enemies[0].position.Y, start.Y)
+	}
+	if state.raid.enemies[0].position.X != start.X {
+		t.Fatalf("enemy x = %f, want %f", state.raid.enemies[0].position.X, start.X)
 	}
 }
 
@@ -113,7 +124,7 @@ func TestRaidEnemyAtSanctumSpendsBarricade(t *testing.T) {
 	state.status.barricade = 2
 	state.raid = raidState{
 		active:  true,
-		enemies: []raidEnemy{{progress: raidPathLength() - raidEnemySpeed}},
+		enemies: []raidEnemy{{position: worldPosition{X: 0, Y: raidEnemySpeedTiles}}},
 	}
 	state.status.phase = phaseRaid
 
@@ -133,7 +144,7 @@ func TestRaidBreachClearsRaidAndDisablesStarts(t *testing.T) {
 	state.status.barricade = 0
 	state.raid = raidState{
 		active:  true,
-		enemies: []raidEnemy{{progress: raidPathLength() - raidEnemySpeed}},
+		enemies: []raidEnemy{{position: worldPosition{X: 0, Y: raidEnemySpeedTiles}}},
 	}
 	state.status.phase = phaseRaid
 
@@ -161,13 +172,13 @@ func TestRaidDoesNotAdvanceWhilePaused(t *testing.T) {
 	state := newRaidTestState(t)
 	state.startNextRaid()
 	state.Update(Input{TogglePause: true})
-	progress := state.raid.enemies[0].progress
+	position := state.raid.enemies[0].position
 	countdown := state.raid.spawnCountdown
 
 	state.Update(Input{})
 
-	if state.raid.enemies[0].progress != progress {
-		t.Fatalf("enemy progress = %f, want %f", state.raid.enemies[0].progress, progress)
+	if state.raid.enemies[0].position != position {
+		t.Fatalf("enemy position = %+v, want %+v", state.raid.enemies[0].position, position)
 	}
 	if state.raid.spawnCountdown != countdown {
 		t.Fatalf("spawn countdown = %d, want %d", state.raid.spawnCountdown, countdown)
@@ -179,13 +190,13 @@ func TestRaidDoesNotAdvanceWhileIngameMenuOpen(t *testing.T) {
 	state := newRaidTestState(t)
 	state.startNextRaid()
 	state.Update(Input{ToggleMenu: true})
-	progress := state.raid.enemies[0].progress
+	position := state.raid.enemies[0].position
 	countdown := state.raid.spawnCountdown
 
 	state.Update(Input{})
 
-	if state.raid.enemies[0].progress != progress {
-		t.Fatalf("enemy progress = %f, want %f", state.raid.enemies[0].progress, progress)
+	if state.raid.enemies[0].position != position {
+		t.Fatalf("enemy position = %+v, want %+v", state.raid.enemies[0].position, position)
 	}
 	if state.raid.spawnCountdown != countdown {
 		t.Fatalf("spawn countdown = %d, want %d", state.raid.spawnCountdown, countdown)

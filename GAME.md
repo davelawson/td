@@ -84,6 +84,8 @@ Each Plot edge has one possible road connection point: the middle Tile of that e
 
 Roads are the primary way enemies move during Raids. When a Plot is claimed, any road segment that connects back to the Sanctum can become part of the defended route. Expanding toward richer resources or the Rival's Lair may lengthen that route, creating the intended tradeoff between growth and exposure.
 
+World positions use Tile units. The center of the Sanctum Tile is the origin `(0, 0)`, one Tile is one world unit, floating point positions are allowed, and positive Y points north. For example, `(0, 1.5)` is the common edge between the first and second road Tiles north of the Sanctum. Enemy positions should use this world-coordinate model instead of storing only path progress.
+
 Plot contents should be readable at a glance. A Plot can mix terrain types, but each Plot should have a dominant character that helps the player reason about it before inspecting every Tile, such as wooded, rocky, wetland, open meadow, hill, ruin, or lair. This dominant character is a design label, not necessarily a separate data type.
 
 The starting Plot should be mostly buildable and forgiving. It should contain the Sanctum, at least one outgoing road, some nearby buildable Grass, and enough visible resource access to support the first build decisions. It should not start with Water or Mountain terrain blocking all useful placement around the Sanctum.
@@ -95,7 +97,7 @@ The terrain types are:
 - `Mountain`
 - `Water`
 
-Open decisions include Tile dimensions in screen or world space, height scale, movement and build rules for each terrain type, feature exclusivity rules, exact internal road-shape behavior beyond the first north road, whether Scouted and Claimed remain separate in the first implementation, how richer Plot contents are generated or authored, and how the Rival's Lair is placed.
+Open decisions include height scale, movement and build rules for each terrain type, feature exclusivity rules, exact internal road-shape behavior beyond the first north road, whether Scouted and Claimed remain separate in the first implementation, how richer Plot contents are generated or authored, and how the Rival's Lair is placed.
 
 ### Resources
 
@@ -148,6 +150,8 @@ The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's 
 During a Raid, the in-game top bar should show how many enemies remain in the current assault. This can be formatted before enemy simulation exists, but real values should come from the Raid system once it is implemented.
 
 The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five skeleton enemies, and each later Raid adds two enemies. One skeleton appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. Skeletons are the only enemy archetype in this first slice, and there are no tower attacks, rewards, or alternate paths yet.
+
+The first Raid slice stores each active skeleton's current world position directly. On the starting road, skeletons spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`.
 
 If a skeleton reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If a skeleton reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists.
 
@@ -273,6 +277,10 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Roads connect adjacent Plots only through the middle Tile of the shared Plot edge.
   Rationale: A fixed edge-center connector rule keeps inter-Plot paths readable, takes advantage of the 15x15 Plot centerline, and lets internal road shapes vary without making Plot-to-Plot connectivity ambiguous.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Use Sanctum-centered Tile-unit world coordinates for gameplay positions.
+  Rationale: Storing entity positions directly in world coordinates keeps enemies situated in the map instead of encoding only their progress along one current path. Positive Y points north so `(0, 1.5)` is the shared edge between the first and second Tiles north of the Sanctum.
+  Date/Author: 2026-05-16 / User and Codex
 
 - Decision: Use camera zoom and pan as the first map inspection model instead of wizard-character movement.
   Rationale: Camera inspection lets the player examine the starting Plot while keeping exploration, tile selection, resource rules, and character movement out of the first scene-interaction slice.

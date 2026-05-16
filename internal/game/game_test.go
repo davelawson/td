@@ -56,9 +56,8 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.camera.zoom != cameraInitialZoom {
 		t.Fatalf("camera zoom = %f, want %f", state.camera.zoom, cameraInitialZoom)
 	}
-	expectedCenter := float64(plotSize) * plotBaseTileSize / 2
-	if state.camera.centerX != expectedCenter || state.camera.centerY != expectedCenter {
-		t.Fatalf("camera center = (%f,%f), want (%f,%f)", state.camera.centerX, state.camera.centerY, expectedCenter, expectedCenter)
+	if state.camera.centerX != 0 || state.camera.centerY != 0 {
+		t.Fatalf("camera center = (%f,%f), want (0,0)", state.camera.centerX, state.camera.centerY)
 	}
 }
 
@@ -258,10 +257,10 @@ func TestCameraPanInputMovesCenter(t *testing.T) {
 		wantX float64
 		wantY float64
 	}{
-		{name: "up", input: Input{PanUp: true}, wantX: 0, wantY: -cameraPanSpeed},
-		{name: "down", input: Input{PanDown: true}, wantX: 0, wantY: cameraPanSpeed},
-		{name: "left", input: Input{PanLeft: true}, wantX: -cameraPanSpeed, wantY: 0},
-		{name: "right", input: Input{PanRight: true}, wantX: cameraPanSpeed, wantY: 0},
+		{name: "up", input: Input{PanUp: true}, wantX: 0, wantY: cameraPanSpeed / plotBaseTileSize},
+		{name: "down", input: Input{PanDown: true}, wantX: 0, wantY: -cameraPanSpeed / plotBaseTileSize},
+		{name: "left", input: Input{PanLeft: true}, wantX: -cameraPanSpeed / plotBaseTileSize, wantY: 0},
+		{name: "right", input: Input{PanRight: true}, wantX: cameraPanSpeed / plotBaseTileSize, wantY: 0},
 	}
 
 	for _, tt := range tests {
@@ -282,7 +281,7 @@ func TestCameraPanInputMovesCenter(t *testing.T) {
 	}
 }
 
-// TestCameraPanSpeedDividesByZoom verifies panning slows in world pixels when zoomed in.
+// TestCameraPanSpeedDividesByZoom verifies panning slows in world units when zoomed in.
 func TestCameraPanSpeedDividesByZoom(t *testing.T) {
 	state, err := New("Merlin", 1920, 1080)
 	if err != nil {
@@ -293,7 +292,7 @@ func TestCameraPanSpeedDividesByZoom(t *testing.T) {
 
 	state.Update(Input{PanRight: true})
 
-	if got, want := state.camera.centerX-startX, cameraPanSpeed/2; !almostEqual(got, want) {
+	if got, want := state.camera.centerX-startX, cameraPanSpeed/(plotBaseTileSize*2); !almostEqual(got, want) {
 		t.Fatalf("camera x delta = %f, want %f", got, want)
 	}
 }

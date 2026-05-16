@@ -32,11 +32,10 @@ type projectedRect struct {
 
 // newCamera creates the initial camera centered on the default home Plot.
 func newCamera() camera {
-	center := float64(plotSize) * plotBaseTileSize / 2
 	return camera{
 		zoom:    cameraInitialZoom,
-		centerX: center,
-		centerY: center,
+		centerX: 0,
+		centerY: 0,
 	}
 }
 
@@ -49,12 +48,12 @@ func (s *State) applyCameraInput(input Input) {
 		}
 	}
 
-	distance := cameraPanSpeed / s.camera.zoom
+	distance := cameraPanSpeed / (plotBaseTileSize * s.camera.zoom)
 	if input.PanUp {
-		s.camera.centerY -= distance
+		s.camera.centerY += distance
 	}
 	if input.PanDown {
-		s.camera.centerY += distance
+		s.camera.centerY -= distance
 	}
 	if input.PanLeft {
 		s.camera.centerX -= distance
@@ -75,13 +74,14 @@ func (s *State) sceneViewport() sceneViewport {
 }
 
 // projectRect converts a world-space rectangle into a screen-space rectangle.
-func (s *State) projectRect(viewport sceneViewport, worldX, worldY, worldW, worldH float64) projectedRect {
+func (s *State) projectRect(viewport sceneViewport, worldWest, worldNorth, worldW, worldH float64) projectedRect {
 	centerX := viewport.x + viewport.w/2
 	centerY := viewport.y + viewport.h/2
+	scale := plotBaseTileSize * s.camera.zoom
 	return projectedRect{
-		x: float32(centerX + (worldX-s.camera.centerX)*s.camera.zoom),
-		y: float32(centerY + (worldY-s.camera.centerY)*s.camera.zoom),
-		w: float32(worldW * s.camera.zoom),
-		h: float32(worldH * s.camera.zoom),
+		x: float32(centerX + (worldWest-s.camera.centerX)*scale),
+		y: float32(centerY + (s.camera.centerY-worldNorth)*scale),
+		w: float32(worldW * scale),
+		h: float32(worldH * scale),
 	}
 }
