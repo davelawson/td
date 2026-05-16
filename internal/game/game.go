@@ -38,6 +38,7 @@ type State struct {
 	camera           camera
 	status           gameStatus
 	raid             raidState
+	combat           combatState
 	ui               gameUI
 }
 
@@ -144,6 +145,7 @@ func (s *State) Draw(screen *ebiten.Image) {
 	screen.Fill(backgroundColor)
 	s.drawHomePlot(screen)
 	s.drawRaidEnemies(screen)
+	s.drawProjectiles(screen)
 	s.drawTopBar(screen)
 	s.drawRaidControls(screen)
 	s.drawCounter(screen)

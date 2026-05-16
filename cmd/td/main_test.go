@@ -87,7 +87,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "18-enemy-world-coordinates", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "20-bow-tower-projectile-combat", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -127,6 +127,9 @@ func (a *screenshotApp) Update() error {
 				CursorY: defaultWindowHeight - 68,
 				Clicked: true,
 			})
+			for i := 0; i < 45; i++ {
+				a.app.gameState.Update(game.Input{})
+			}
 		}
 		if target.paused {
 			a.app.gameState.Update(game.Input{TogglePause: true})

@@ -1,6 +1,8 @@
 package game
 
 import (
+	"math"
+
 	"td/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -9,12 +11,13 @@ import (
 )
 
 const (
-	nextRaidButtonX     = 42
-	nextRaidButtonW     = 190
-	nextRaidButtonH     = 52
-	nextRaidMarginY     = 42
-	raidEnemyRadius     = 14
-	raidEnemySpriteSize = 44
+	nextRaidButtonX      = 42
+	nextRaidButtonW      = 190
+	nextRaidButtonH      = 52
+	nextRaidMarginY      = 42
+	raidEnemyRadius      = 14
+	raidEnemySpriteSize  = 44
+	projectileSpriteSize = 24
 )
 
 // updateRaidControls applies pointer hover and button clicks for Raid controls.
@@ -119,4 +122,65 @@ func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enem
 		float64(rect.y)+(float64(rect.h)-spriteHeight*scale)/2,
 	)
 	screen.DrawImage(sprite, options)
+}
+
+// drawProjectiles renders active combat projectiles on the camera-projected scene.
+func (s *State) drawProjectiles(screen *ebiten.Image) {
+	if len(s.combat.projectiles) == 0 {
+		return
+	}
+
+	viewport := s.sceneViewport()
+	for _, projectile := range s.combat.projectiles {
+		s.drawProjectile(screen, viewport, projectile)
+	}
+}
+
+// drawProjectile renders one active combat projectile at its projected world position.
+func (s *State) drawProjectile(screen *ebiten.Image, viewport sceneViewport, projectile combatProjectile) {
+	size := projectileSpriteSize / plotBaseTileSize
+	rect := s.projectRect(
+		viewport,
+		projectile.position.X-size/2,
+		projectile.position.Y+size/2,
+		size,
+		size,
+	)
+	if rect.w <= 0 || rect.h <= 0 {
+		return
+	}
+	if projectile.sprite == nil {
+		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/3, textColor, false)
+		return
+	}
+
+	spriteWidth := float64(projectile.sprite.Bounds().Dx())
+	spriteHeight := float64(projectile.sprite.Bounds().Dy())
+	if spriteWidth <= 0 || spriteHeight <= 0 {
+		return
+	}
+
+	scale := float64(rect.w) / spriteWidth
+	options := &ebiten.DrawImageOptions{}
+	options.GeoM.Translate(-spriteWidth/2, -spriteHeight/2)
+	options.GeoM.Scale(scale, scale)
+	options.GeoM.Rotate(s.projectileDrawRotation(projectile))
+	options.GeoM.Translate(float64(rect.x)+float64(rect.w)/2, float64(rect.y)+float64(rect.h)/2)
+	screen.DrawImage(projectile.sprite, options)
+}
+
+// projectileDrawRotation returns a screen-space rotation for the arrow sprite.
+func (s *State) projectileDrawRotation(projectile combatProjectile) float64 {
+	enemyIndex, ok := s.enemyIndexByID(projectile.targetID)
+	if !ok {
+		return 0
+	}
+	target := s.raid.enemies[enemyIndex].position
+	screenDX := target.X - projectile.position.X
+	screenDY := projectile.position.Y - target.Y
+	if screenDX == 0 && screenDY == 0 {
+		return 0
+	}
+	const spriteNativeAngle = -math.Pi / 4
+	return math.Atan2(screenDY, screenDX) - spriteNativeAngle
 }

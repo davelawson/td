@@ -19,6 +19,23 @@ func TestNewCatalogLoadsSkeletonSwordShieldSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsBowTowerProjectileSprite verifies the required projectile sprite is embedded.
+func TestNewCatalogLoadsBowTowerProjectileSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	projectile := catalog.Sprite.Projectile.BowTowerProjectile
+	if projectile == nil {
+		t.Fatal("expected Bow Tower projectile sprite to load")
+	}
+	width, height := projectile.Bounds().Dx(), projectile.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("Bow Tower projectile sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsSanctumSprite verifies the required structure sprite is embedded.
 func TestNewCatalogLoadsSanctumSprite(t *testing.T) {
 	catalog, err := NewCatalog()

@@ -46,6 +46,24 @@ func TestNewStructureCatalogIncludesBowTower(t *testing.T) {
 	if bowTower.Sprite != assetCatalog.Sprite.Structure.BowTower {
 		t.Fatal("expected Bow Tower sprite to reference the loaded asset catalog sprite")
 	}
+	if bowTower.RangeTiles != 3.0 {
+		t.Fatalf("Bow Tower range = %f, want 3.0", bowTower.RangeTiles)
+	}
+	if bowTower.Damage != 10 {
+		t.Fatalf("Bow Tower damage = %d, want 10", bowTower.Damage)
+	}
+	if bowTower.FireIntervalSeconds != 1.0 {
+		t.Fatalf("Bow Tower fire interval = %f, want 1.0", bowTower.FireIntervalSeconds)
+	}
+	if bowTower.ProjectileSpeedTilesPerSecond != 9.0 {
+		t.Fatalf("Bow Tower projectile speed = %f, want 9.0", bowTower.ProjectileSpeedTilesPerSecond)
+	}
+	if bowTower.ProjectileSprite == nil {
+		t.Fatal("expected Bow Tower projectile sprite to be assigned")
+	}
+	if bowTower.ProjectileSprite != assetCatalog.Sprite.Projectile.BowTowerProjectile {
+		t.Fatal("expected Bow Tower projectile sprite to reference the loaded asset catalog projectile sprite")
+	}
 }
 
 // TestStructureStoresTemplateAndTileCoordinates verifies a placed structure instance.
@@ -70,6 +88,9 @@ func TestStructureStoresTemplateAndTileCoordinates(t *testing.T) {
 	}
 	if structure.Template.Sprite != assetCatalog.Sprite.Structure.BowTower {
 		t.Fatal("expected structure template sprite to reference the loaded Bow Tower sprite")
+	}
+	if structure.Template.ProjectileSprite != assetCatalog.Sprite.Projectile.BowTowerProjectile {
+		t.Fatal("expected structure template projectile sprite to reference the loaded Bow Tower projectile sprite")
 	}
 	if structure.X != 3 || structure.Y != 4 {
 		t.Fatalf("structure coordinates = (%d,%d), want (3,4)", structure.X, structure.Y)

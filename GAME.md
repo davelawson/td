@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with one visible non-combat Bow Tower, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton enemies. The actual exploration, resource, base-building, tower targeting, and combat damage systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with one automated Bow Tower, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton enemies and first-pass projectile combat. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -133,9 +133,9 @@ Open decisions include how many charges the barrier has, whether charges can be 
 
 ### Tower Defense
 
-Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first Raid slice uses simple fixed paths and skeleton enemies before towers or combat damage exist. The first combat slice should add placeholder towers and testable targeting rules without replacing the simple Raid lifecycle.
+Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first Raid slice uses simple fixed paths and skeleton enemies. The first combat slice adds one automated Bow Tower with testable targeting, projectile travel, and damage rules without replacing the simple Raid lifecycle.
 
-Open decisions include enemy families, tower targeting, win and loss conditions beyond the first breach state, damage types, and upgrade rules.
+Open decisions include enemy families, additional tower targeting modes, win and loss conditions beyond the first breach state, damage types, and upgrade rules.
 
 ### Raids
 
@@ -149,9 +149,11 @@ The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's 
 
 During a Raid, the in-game top bar should show how many enemies remain in the current assault. This can be formatted before enemy simulation exists, but real values should come from the Raid system once it is implemented.
 
-The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five skeleton enemies, and each later Raid adds two enemies. One skeleton appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. Skeletons are the only enemy archetype in this first slice, and there are no tower attacks, rewards, or alternate paths yet.
+The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five skeleton enemies, and each later Raid adds two enemies. One skeleton appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. Skeletons are the only enemy archetype in this first slice, and there are no rewards or alternate paths yet.
 
-The first Raid slice stores each active skeleton's current world position directly. On the starting road, skeletons spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`.
+The first Raid slice stores each active skeleton's current world position directly. On the starting road, skeletons spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Skeletons have 20 health in the first combat slice.
+
+The first Bow Tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
 If a skeleton reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If a skeleton reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists.
 
@@ -161,9 +163,9 @@ Open decisions include enemy archetypes, whether a Raid can include multiple wav
 
 Tower types define the defensive structures the wizard can build in the Domain.
 
-- `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. It costs only Wood to build. The Bow Tower is a general-purpose tower that deals moderate damage at moderate range.
+- `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. It costs only Wood to build. The Bow Tower is a general-purpose tower that deals moderate damage at moderate range. The first prototype Bow Tower has 3.0-Tile range, deals 10 damage per hit, fires every 1.0 second, and launches projectiles that travel at 9.0 Tiles per second.
 
-Open decisions include exact tower costs, ranges, damage values, firing rates, targeting behavior, upgrade paths, and what other tower types exist.
+Open decisions include exact tower costs, upgrade paths, specialized targeting modes, and what other tower types exist.
 
 ### Chapters
 
@@ -190,9 +192,9 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one non-combat Bow Tower on the east side of the path, and a pine-tree border around the Plot edge except at the road opening.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, and a pine-tree border around the Plot edge except at the road opening.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
-- The first Raid slice uses deterministic sprite-backed skeleton enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, and reaching enemies spend Barricade charges until the Sanctum is breached.
+- The first Raid slice uses deterministic sprite-backed skeleton enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, enemies spawn on a fixed stagger, the Bow Tower fires projectiles at in-range enemies, and reaching enemies spend Barricade charges until the Sanctum is breached.
 
 ## Open Game Design Questions
 
@@ -212,6 +214,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - How many arcane barrier charges does the Sanctum have, and can those charges be restored or increased?
 - How does the Domain expand, contract, or change over time?
 - What enemy archetypes, spawn rules, and pathing rules should Raids use after the first placeholder north-road slice?
+- How should future tower stats, damage types, and targeting modes evolve beyond the first Bow Tower baseline?
 - What are the first full win and loss conditions beyond basic Raid completion and Sanctum breach?
 - Should the early prototype use separate phases or continuous real-time play?
 - How long is a calm phase, and can the player pause or accelerate it?
@@ -250,8 +253,16 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: A wood-only, moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
   Date/Author: 2026-05-08 / Codex
 
+- Decision: Use second-based Bow Tower combat stats for the first automated tower slice: 3.0-Tile range, 10 damage, 1.0-second fire interval, and 9.0-Tiles-per-second projectile speed.
+  Rationale: Real-time units keep structure stats independent of frame or update counts, and the chosen values make current 20-health skeletons die in two hits while keeping projectile travel visible.
+  Date/Author: 2026-05-16 / Codex
+
+- Decision: The first Bow Tower targets the in-range enemy closest to the Sanctum and drops projectiles harmlessly if their original target is gone before impact.
+  Rationale: Closest-to-Sanctum targeting prioritizes the most urgent threat on the current single road, while no-retarget projectiles keep the first combat model deterministic and easy to test.
+  Date/Author: 2026-05-16 / Codex
+
 - Decision: Use deterministic placeholder Raids as the first enemy-wave slice.
-  Rationale: A fixed enemy count, fixed stagger, and fixed north-road path make Raid behavior visible and testable before adding towers, combat damage, pathfinding, rewards, or enemy variety.
+  Rationale: A fixed enemy count, fixed stagger, and fixed north-road path make Raid behavior visible and testable before adding pathfinding, rewards, or enemy variety.
   Date/Author: 2026-05-15 / Codex
 
 - Decision: A zero-Barricade Sanctum breach clears the active Raid and prevents further Raid starts in the first slice.

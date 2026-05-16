@@ -14,12 +14,15 @@ type raidState struct {
 	number         int
 	pendingEnemies int
 	spawnCountdown int
+	nextEnemyID    int
 	enemies        []raidEnemy
 }
 
 type raidEnemy struct {
+	id       int
 	template *EnemyTemplate
 	position worldPosition
+	health   int
 }
 
 // startNextRaid begins the next deterministic Raid when the game can accept one.
@@ -31,7 +34,9 @@ func (s *State) startNextRaid() {
 	s.raid.number++
 	s.raid.active = true
 	s.raid.pendingEnemies = raidEnemyCount(s.raid.number)
+	s.raid.nextEnemyID = 0
 	s.raid.enemies = nil
+	s.resetCombatForRaid()
 	s.spawnRaidEnemy()
 	s.status.phase = phaseRaid
 }
@@ -56,6 +61,7 @@ func (s *State) updateRaid() {
 	}
 
 	s.updateRaidSpawning()
+	s.updateCombat()
 	s.updateRaidEnemies()
 	if s.raid.active && s.raid.pendingEnemies == 0 && len(s.raid.enemies) == 0 {
 		s.completeRaid()
@@ -81,9 +87,12 @@ func (s *State) spawnRaidEnemy() {
 	}
 
 	s.raid.enemies = append(s.raid.enemies, raidEnemy{
+		id:       s.raid.nextEnemyID,
 		template: &s.enemyCatalog.SkeletonSwordShield,
 		position: raidEnemySpawnPosition(),
+		health:   s.enemyCatalog.SkeletonSwordShield.MaxHealth,
 	})
+	s.raid.nextEnemyID++
 	s.raid.pendingEnemies--
 	s.raid.spawnCountdown = raidSpawnInterval
 }
@@ -115,6 +124,7 @@ func (s *State) applySanctumContact() bool {
 	s.raid.active = false
 	s.raid.pendingEnemies = 0
 	s.raid.enemies = nil
+	s.combat.projectiles = nil
 	s.status.phase = phaseCalm
 	return false
 }

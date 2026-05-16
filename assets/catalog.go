@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/structures/bow-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 // Catalog groups all loaded runtime assets by type and subtype.
@@ -20,14 +20,20 @@ type Catalog struct {
 
 // SpriteCatalog groups loaded image sprites by game-domain subtype.
 type SpriteCatalog struct {
-	Enemy     EnemySprites
-	Structure StructureSprites
-	Terrain   TerrainSprites
+	Enemy      EnemySprites
+	Projectile ProjectileSprites
+	Structure  StructureSprites
+	Terrain    TerrainSprites
 }
 
 // EnemySprites groups loaded sprites for enemy units.
 type EnemySprites struct {
 	SkeletonSwordShield *ebiten.Image
+}
+
+// ProjectileSprites groups loaded sprites for projectiles fired by combat structures.
+type ProjectileSprites struct {
+	BowTowerProjectile *ebiten.Image
 }
 
 // StructureSprites groups loaded sprites for map and base structures.
@@ -55,6 +61,10 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
+	bowTowerProjectile, err := loadSprite("sprites/structures/bow-tower-projectile.png")
+	if err != nil {
+		return Catalog{}, err
+	}
 	var pineTrees [4]*ebiten.Image
 	for i := range pineTrees {
 		path := fmt.Sprintf("sprites/terrains/pine-tree-%d.png", i+1)
@@ -67,6 +77,9 @@ func NewCatalog() (Catalog, error) {
 		Sprite: SpriteCatalog{
 			Enemy: EnemySprites{
 				SkeletonSwordShield: skeletonSwordShield,
+			},
+			Projectile: ProjectileSprites{
+				BowTowerProjectile: bowTowerProjectile,
 			},
 			Structure: StructureSprites{
 				Sanctum:  sanctum,

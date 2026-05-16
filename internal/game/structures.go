@@ -8,8 +8,13 @@ import (
 
 // StructureTemplate describes shared metadata for every instance of one structure type.
 type StructureTemplate struct {
-	Name   string
-	Sprite *ebiten.Image
+	Name                          string
+	Sprite                        *ebiten.Image
+	RangeTiles                    float64
+	Damage                        int
+	FireIntervalSeconds           float64
+	ProjectileSpeedTilesPerSecond float64
+	ProjectileSprite              *ebiten.Image
 }
 
 // Structure describes one placed structure instance on the map.
@@ -33,8 +38,13 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Sprite: assetCatalog.Sprite.Structure.Sanctum,
 		},
 		BowTower: StructureTemplate{
-			Name:   "Bow Tower",
-			Sprite: assetCatalog.Sprite.Structure.BowTower,
+			Name:                          "Bow Tower",
+			Sprite:                        assetCatalog.Sprite.Structure.BowTower,
+			RangeTiles:                    3.0,
+			Damage:                        10,
+			FireIntervalSeconds:           1.0,
+			ProjectileSpeedTilesPerSecond: 9.0,
+			ProjectileSprite:              assetCatalog.Sprite.Projectile.BowTowerProjectile,
 		},
 	}
 }
