@@ -1,6 +1,7 @@
 package game
 
 import (
+	"image/color"
 	"math"
 
 	"td/internal/ui"
@@ -17,6 +18,8 @@ const (
 	nextRaidMarginY      = 42
 	raidEnemyRadius      = 14
 	raidEnemySpriteSize  = 44
+	raidHealthBarHeight  = 5
+	raidHealthBarGap     = 4
 	projectileSpriteSize = 24
 )
 
@@ -97,6 +100,7 @@ func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enem
 		)
 		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, raidEnemyColor, false)
 		vector.StrokeCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, 2, textColor, false)
+		s.drawRaidEnemyHealthBar(screen, rect, enemy)
 		return
 	}
 
@@ -122,6 +126,61 @@ func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enem
 		float64(rect.y)+(float64(rect.h)-spriteHeight*scale)/2,
 	)
 	screen.DrawImage(sprite, options)
+	s.drawRaidEnemyHealthBar(screen, rect, enemy)
+}
+
+// drawRaidEnemyHealthBar renders a proportional health bar above an enemy.
+func (s *State) drawRaidEnemyHealthBar(screen *ebiten.Image, rect projectedRect, enemy raidEnemy) {
+	if rect.w <= 0 {
+		return
+	}
+
+	fraction := raidEnemyHealthFraction(enemy)
+	barX := rect.x
+	barY := rect.y - raidHealthBarGap - raidHealthBarHeight
+	backing := color.RGBA{R: 18, G: 19, B: 17, A: 210}
+	vector.FillRect(screen, barX, barY, rect.w, raidHealthBarHeight, backing, false)
+	vector.FillRect(screen, barX, barY, rect.w*float32(fraction), raidHealthBarHeight, raidEnemyHealthBarColor(fraction), false)
+}
+
+// raidEnemyHealthFraction returns the enemy's current health as a clamped ratio.
+func raidEnemyHealthFraction(enemy raidEnemy) float64 {
+	maxHealth := raidEnemyMaxHealth(enemy)
+	if maxHealth <= 0 {
+		return 1
+	}
+	fraction := float64(enemy.health) / float64(maxHealth)
+	if fraction < 0 {
+		return 0
+	}
+	if fraction > 1 {
+		return 1
+	}
+	return fraction
+}
+
+// raidEnemyMaxHealth returns the enemy template's maximum health when known.
+func raidEnemyMaxHealth(enemy raidEnemy) int {
+	if enemy.template == nil {
+		return 0
+	}
+	return enemy.template.MaxHealth
+}
+
+// raidEnemyHealthBarColor returns the green-to-red health bar fill color.
+func raidEnemyHealthBarColor(fraction float64) color.RGBA {
+	if fraction < 0 {
+		fraction = 0
+	}
+	if fraction > 1 {
+		fraction = 1
+	}
+	return color.RGBA{
+		R: uint8(math.Round(255 * (1 - fraction))),
+		G: uint8(math.Round(255 * fraction)),
+		B: 0,
+		A: 255,
+	}
 }
 
 // drawProjectiles renders active combat projectiles on the camera-projected scene.
