@@ -151,7 +151,7 @@ During a Raid, the in-game top bar should show how many enemies remain in the cu
 
 The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five skeleton enemies, and each later Raid adds two enemies. One skeleton appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. Skeletons are the only enemy archetype in this first slice, and there are no rewards or alternate paths yet.
 
-The first Raid slice stores each active skeleton's current world position directly. On the starting road, skeletons spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Skeletons have 20 health in the first combat slice.
+The first Raid slice stores each active skeleton's current world position directly. On the starting road, skeletons spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Skeleton movement speed comes from `EnemyTemplate.SpeedTilesPerSecond`, is measured in Tiles per second, and is converted through the fixed logical update duration. Skeleton maximum health comes from `EnemyTemplate.MaxHealth`.
 
 The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
@@ -255,7 +255,7 @@ Record game design decisions here when they become durable enough to guide imple
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Use second-based Bow Tower combat stats for the first automated tower slice: 3.0-Tile range, 10 damage, 1.0-second fire interval, and 9.0-Tiles-per-second projectile speed.
-  Rationale: Real-time units keep structure stats independent of frame or update counts, and the chosen values make current 20-health skeletons die in two hits while keeping projectile travel visible.
+  Rationale: Real-time units keep structure stats independent of frame or update counts, and the chosen values made then-current 20-health skeletons die in two hits while keeping projectile travel visible.
   Date/Author: 2026-05-16 / Codex
 
 - Decision: The first Bow Tower targets the in-range enemy closest to the Sanctum and drops projectiles harmlessly if their original target is gone before impact.

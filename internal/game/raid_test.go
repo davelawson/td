@@ -31,7 +31,7 @@ func TestNextRaidButtonStartsFirstRaid(t *testing.T) {
 		t.Fatal("expected spawned enemy to reference the skeleton sprite")
 	}
 	wantPosition := raidEnemySpawnPosition()
-	wantPosition.Y -= raidEnemySpeedTiles
+	wantPosition.Y -= state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	if got := state.raid.enemies[0].position; got != wantPosition {
 		t.Fatalf("spawned enemy position = %+v, want %+v", got, wantPosition)
 	}
@@ -58,6 +58,7 @@ func TestNextRaidButtonDoesNotQueueWhileActive(t *testing.T) {
 // TestRaidSpawnsEnemiesOnStagger verifies enemies do not all spawn at once.
 func TestRaidSpawnsEnemiesOnStagger(t *testing.T) {
 	state := newRaidTestState(t)
+	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
 	state.startNextRaid()
 	if got, want := state.raid.enemies[0].position, raidEnemySpawnPosition(); got != want {
 		t.Fatalf("initial enemy position = %+v, want %+v", got, want)
@@ -96,6 +97,43 @@ func TestRaidEnemiesMoveTowardSanctum(t *testing.T) {
 	}
 }
 
+// TestRaidEnemyMovementUsesTemplateSpeed verifies enemy speed is second-based template data.
+func TestRaidEnemyMovementUsesTemplateSpeed(t *testing.T) {
+	state := newRaidTestState(t)
+	template := &EnemyTemplate{SpeedTilesPerSecond: 2.5}
+	state.raid = raidState{
+		active:  true,
+		enemies: []raidEnemy{{template: template, position: worldPosition{X: 0, Y: 5}}},
+	}
+
+	state.updateRaidEnemies()
+
+	if got, want := state.raid.enemies[0].position.Y, 5.0-2.5*gameUpdateSeconds; got != want {
+		t.Fatalf("enemy y = %f, want %f", got, want)
+	}
+}
+
+// TestRaidEnemyWithoutPositiveSpeedDoesNotMove verifies malformed enemies stay put.
+func TestRaidEnemyWithoutPositiveSpeedDoesNotMove(t *testing.T) {
+	state := newRaidTestState(t)
+	state.raid = raidState{
+		active: true,
+		enemies: []raidEnemy{
+			{position: worldPosition{X: 0, Y: 5}},
+			{template: &EnemyTemplate{SpeedTilesPerSecond: -1}, position: worldPosition{X: 0, Y: 4}},
+		},
+	}
+
+	state.updateRaidEnemies()
+
+	if got, want := state.raid.enemies[0].position.Y, 5.0; got != want {
+		t.Fatalf("nil-template enemy y = %f, want %f", got, want)
+	}
+	if got, want := state.raid.enemies[1].position.Y, 4.0; got != want {
+		t.Fatalf("nonpositive-speed enemy y = %f, want %f", got, want)
+	}
+}
+
 // TestRaidCompletionReturnsToCalmAndAdvancesDay verifies successful Raid lifecycle completion.
 func TestRaidCompletionReturnsToCalmAndAdvancesDay(t *testing.T) {
 	state := newRaidTestState(t)
@@ -122,9 +160,10 @@ func TestRaidCompletionReturnsToCalmAndAdvancesDay(t *testing.T) {
 func TestRaidEnemyAtSanctumSpendsBarricade(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.barricade = 2
+	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	state.raid = raidState{
 		active:  true,
-		enemies: []raidEnemy{{position: worldPosition{X: 0, Y: raidEnemySpeedTiles}}},
+		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: worldPosition{X: 0, Y: step}}},
 	}
 	state.status.phase = phaseRaid
 
@@ -142,9 +181,10 @@ func TestRaidEnemyAtSanctumSpendsBarricade(t *testing.T) {
 func TestRaidBreachClearsRaidAndDisablesStarts(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.barricade = 0
+	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	state.raid = raidState{
 		active:  true,
-		enemies: []raidEnemy{{position: worldPosition{X: 0, Y: raidEnemySpeedTiles}}},
+		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: worldPosition{X: 0, Y: step}}},
 	}
 	state.status.phase = phaseRaid
 

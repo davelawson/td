@@ -18,11 +18,11 @@ func TestNewEnemyCatalogIncludesSkeletonSwordShield(t *testing.T) {
 	if skeleton.Name != "Skeleton Sword-and-Shield" {
 		t.Fatalf("skeleton name = %q, want %q", skeleton.Name, "Skeleton Sword-and-Shield")
 	}
-	if skeleton.MaxHealth != 20 {
-		t.Fatalf("skeleton max health = %d, want 20", skeleton.MaxHealth)
+	if skeleton.MaxHealth != 50 {
+		t.Fatalf("skeleton max health = %d, want 50", skeleton.MaxHealth)
 	}
-	if skeleton.Speed != 3.0 {
-		t.Fatalf("skeleton speed = %f, want 3.0", skeleton.Speed)
+	if skeleton.SpeedTilesPerSecond != 1.0 {
+		t.Fatalf("skeleton speed = %f, want 1.0", skeleton.SpeedTilesPerSecond)
 	}
 	if skeleton.SanctumDamage != 1 {
 		t.Fatalf("skeleton Sanctum damage = %d, want 1", skeleton.SanctumDamage)

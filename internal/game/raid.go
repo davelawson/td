@@ -4,8 +4,6 @@ const (
 	firstRaidEnemyCount = 5
 	raidEnemyGrowth     = 2
 	raidSpawnInterval   = 45
-	raidEnemySpeed      = 3.0
-	raidEnemySpeedTiles = raidEnemySpeed / plotBaseTileSize
 )
 
 type raidState struct {
@@ -101,7 +99,7 @@ func (s *State) spawnRaidEnemy() {
 func (s *State) updateRaidEnemies() {
 	survivors := s.raid.enemies[:0]
 	for _, enemy := range s.raid.enemies {
-		enemy.position.Y -= raidEnemySpeedTiles
+		enemy.position.Y -= raidEnemyMovementStep(enemy, gameUpdateSeconds)
 		if raidEnemyReachedSanctum(enemy) {
 			if s.applySanctumContact() {
 				continue
@@ -111,6 +109,14 @@ func (s *State) updateRaidEnemies() {
 		survivors = append(survivors, enemy)
 	}
 	s.raid.enemies = survivors
+}
+
+// raidEnemyMovementStep returns the enemy's movement distance in Tiles.
+func raidEnemyMovementStep(enemy raidEnemy, deltaSeconds float64) float64 {
+	if enemy.template == nil || enemy.template.SpeedTilesPerSecond <= 0 || deltaSeconds <= 0 {
+		return 0
+	}
+	return enemy.template.SpeedTilesPerSecond * deltaSeconds
 }
 
 // applySanctumContact removes a reaching enemy or breaches the Sanctum.
