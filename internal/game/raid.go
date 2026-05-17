@@ -84,15 +84,24 @@ func (s *State) spawnRaidEnemy() {
 		return
 	}
 
+	template := s.nextRaidEnemyTemplate()
 	s.raid.enemies = append(s.raid.enemies, raidEnemy{
 		id:       s.raid.nextEnemyID,
-		template: &s.enemyCatalog.SkeletonSwordShield,
+		template: template,
 		position: raidEnemySpawnPosition(),
-		health:   s.enemyCatalog.SkeletonSwordShield.MaxHealth,
+		health:   template.MaxHealth,
 	})
 	s.raid.nextEnemyID++
 	s.raid.pendingEnemies--
 	s.raid.spawnCountdown = raidSpawnInterval
+}
+
+// nextRaidEnemyTemplate returns the template for the next deterministic spawn.
+func (s *State) nextRaidEnemyTemplate() *EnemyTemplate {
+	if s.raid.number == 1 && s.raid.nextEnemyID%2 == 1 {
+		return &s.enemyCatalog.Zombie
+	}
+	return &s.enemyCatalog.SkeletonSwordShield
 }
 
 // updateRaidEnemies moves active enemies and applies Sanctum contact rules.

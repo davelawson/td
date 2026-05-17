@@ -20,8 +20,8 @@ func TestSpawnRaidEnemyAssignsHealthAndStableIDs(t *testing.T) {
 	if first.health != state.enemyCatalog.SkeletonSwordShield.MaxHealth {
 		t.Fatalf("first enemy health = %d, want %d", first.health, state.enemyCatalog.SkeletonSwordShield.MaxHealth)
 	}
-	if second.health != state.enemyCatalog.SkeletonSwordShield.MaxHealth {
-		t.Fatalf("second enemy health = %d, want %d", second.health, state.enemyCatalog.SkeletonSwordShield.MaxHealth)
+	if second.health != second.template.MaxHealth {
+		t.Fatalf("second enemy health = %d, want %d", second.health, second.template.MaxHealth)
 	}
 }
 

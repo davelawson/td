@@ -73,11 +73,60 @@ func TestRaidSpawnsEnemiesOnStagger(t *testing.T) {
 	if len(state.raid.enemies) != 2 {
 		t.Fatalf("active enemies after stagger = %d, want 2", len(state.raid.enemies))
 	}
-	if state.raid.enemies[1].template != &state.enemyCatalog.SkeletonSwordShield {
-		t.Fatal("expected staggered enemy to reference the skeleton sword-and-shield template")
+	if state.raid.enemies[1].template != &state.enemyCatalog.Zombie {
+		t.Fatal("expected second first-Raid enemy to reference the zombie template")
 	}
 	if state.raid.enemies[1].template.Sprite == nil {
-		t.Fatal("expected staggered enemy to reference the skeleton sprite")
+		t.Fatal("expected staggered enemy to reference the zombie sprite")
+	}
+}
+
+// TestFirstRaidAlternatesZombiesOnEverySecondSpawn verifies Raid 1 composition.
+func TestFirstRaidAlternatesZombiesOnEverySecondSpawn(t *testing.T) {
+	state := newRaidTestState(t)
+	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
+	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
+
+	state.startNextRaid()
+	advanceRaidUpdates(state, raidSpawnInterval*(firstRaidEnemyCount-1))
+
+	want := []*EnemyTemplate{
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.Zombie,
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.Zombie,
+		&state.enemyCatalog.SkeletonSwordShield,
+	}
+	if len(state.raid.enemies) != len(want) {
+		t.Fatalf("active enemies = %d, want %d", len(state.raid.enemies), len(want))
+	}
+	for i, template := range want {
+		if state.raid.enemies[i].template != template {
+			t.Fatalf("enemy %d template = %q, want %q", i, state.raid.enemies[i].template.Name, template.Name)
+		}
+		if state.raid.enemies[i].health != template.MaxHealth {
+			t.Fatalf("enemy %d health = %d, want %d", i, state.raid.enemies[i].health, template.MaxHealth)
+		}
+	}
+}
+
+// TestLaterRaidsRemainSkeletonOnly verifies zombie alternation is limited to Raid 1.
+func TestLaterRaidsRemainSkeletonOnly(t *testing.T) {
+	state := newRaidTestState(t)
+	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
+	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
+	state.raid.number = 1
+
+	state.startNextRaid()
+	advanceRaidUpdates(state, raidSpawnInterval*2)
+
+	if state.raid.number != 2 {
+		t.Fatalf("raid number = %d, want 2", state.raid.number)
+	}
+	for i, enemy := range state.raid.enemies {
+		if enemy.template != &state.enemyCatalog.SkeletonSwordShield {
+			t.Fatalf("enemy %d template = %q, want skeleton", i, enemy.template.Name)
+		}
 	}
 }
 

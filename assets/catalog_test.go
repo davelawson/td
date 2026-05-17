@@ -19,6 +19,23 @@ func TestNewCatalogLoadsSkeletonSwordShieldSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsZombieSprite verifies the required zombie sprite is embedded.
+func TestNewCatalogLoadsZombieSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	zombie := catalog.Sprite.Enemy.Zombie
+	if zombie == nil {
+		t.Fatal("expected zombie sprite to load")
+	}
+	width, height := zombie.Bounds().Dx(), zombie.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("zombie sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsBowTowerProjectileSprite verifies the required projectile sprite is embedded.
 func TestNewCatalogLoadsBowTowerProjectileSprite(t *testing.T) {
 	catalog, err := NewCatalog()

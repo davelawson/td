@@ -37,3 +37,35 @@ func TestNewEnemyCatalogIncludesSkeletonSwordShield(t *testing.T) {
 		t.Fatal("expected skeleton sprite to reference the loaded asset catalog sprite")
 	}
 }
+
+// TestNewEnemyCatalogIncludesZombie verifies the zombie enemy template values.
+func TestNewEnemyCatalogIncludesZombie(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog := NewEnemyCatalog(assetCatalog)
+	zombie := catalog.Zombie
+
+	if zombie.Name != "Zombie" {
+		t.Fatalf("zombie name = %q, want %q", zombie.Name, "Zombie")
+	}
+	if zombie.MaxHealth != 75 {
+		t.Fatalf("zombie max health = %d, want 75", zombie.MaxHealth)
+	}
+	if zombie.SpeedTilesPerSecond != 0.7 {
+		t.Fatalf("zombie speed = %f, want 0.7", zombie.SpeedTilesPerSecond)
+	}
+	if zombie.SanctumDamage != 1 {
+		t.Fatalf("zombie Sanctum damage = %d, want 1", zombie.SanctumDamage)
+	}
+	if zombie.SpriteKey != "zombie" {
+		t.Fatalf("zombie sprite key = %q, want %q", zombie.SpriteKey, "zombie")
+	}
+	if zombie.Sprite == nil {
+		t.Fatal("expected zombie sprite to be assigned")
+	}
+	if zombie.Sprite != assetCatalog.Sprite.Enemy.Zombie {
+		t.Fatal("expected zombie sprite to reference the loaded asset catalog sprite")
+	}
+}

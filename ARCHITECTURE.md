@@ -2,7 +2,7 @@
 
 `ARCHITECTURE.md` helps contributors answer where code belongs and which boundaries should stay intact while `td` grows from a local prototype into a playable PC game.
 
-The repository contains an early runtime shell: a Go module, a small Ebitengine executable, an asset catalog package that loads runtime sprites, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, Sanctum-centered world coordinates, camera state, home Plot projection and rendering, deterministic placeholder Raid state with sprite-backed skeleton enemies, first-pass tower projectile combat, and in-game overlay menu.
+The repository contains an early runtime shell: a Go module, a small Ebitengine executable, an asset catalog package that loads runtime sprites, a menu package that owns the current menu flow, and a game package that owns the first logical game state, prototype map state, Sanctum-centered world coordinates, camera state, home Plot projection and rendering, deterministic placeholder Raid state with sprite-backed skeleton and zombie enemies, first-pass tower projectile combat, and in-game overlay menu.
 
 ## System Overview
 
@@ -50,7 +50,7 @@ Do not create packages before they have a clear responsibility. `internal/menu/`
 4. `cmd/td` polls mouse-wheel input and held `W`, `A`, `S`, and `D` keys, then passes those values to `internal/game`.
 5. The game package updates a private camera for map inspection. Mouse-wheel input changes zoom around the scene viewport center, and `WASD` changes the camera center. The camera has a tiny minimum zoom for technical safety but no maximum zoom and no pan bounds.
 6. The game package renders a top bar with prototype Chapter, Day, resources, phase, and Sanctum barricade status, plus a bottom-left `Next Raid` button and a debug logical update counter in screen space so camera changes affect only the map scene.
-7. While unpaused, each Ebitengine update advances the logical update counter by one. If a Raid is active, the game package advances deterministic skeleton spawning, tower targeting and projectile combat, and enemy movement along the fixed north road. Enemies store Sanctum-centered world coordinates in Tile units, read Tiles-per-second movement speed from their enemy template, have health, and render from the skeleton sprite in the active asset catalog. Combat towers store timing stats in seconds, track cooldowns as seconds remaining, launch projectiles at in-range enemies, and damage enemies on projectile impact. Enemies that reach the Sanctum spend Barricade charges and are removed, or breach the Sanctum when no charges remain.
+7. While unpaused, each Ebitengine update advances the logical update counter by one. If a Raid is active, the game package advances deterministic enemy spawning, tower targeting and projectile combat, and enemy movement along the fixed north road. Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, while later placeholder Raids remain skeleton-only. Enemies store Sanctum-centered world coordinates in Tile units, read Tiles-per-second movement speed from their enemy template, have health, and render from their template sprite in the active asset catalog. Combat towers store timing stats in seconds, track cooldowns as seconds remaining, launch projectiles at in-range enemies, and damage enemies on projectile impact. Enemies that reach the Sanctum spend Barricade charges and are removed, or breach the Sanctum when no charges remain.
 8. Clicking `Next Raid` while no Raid is active and the Sanctum is not breached starts the next deterministic placeholder Raid immediately. The button is disabled during an active Raid and after breach.
 9. When the user presses SPACE, `cmd/td` passes pause input to `internal/game`, which toggles pause without incrementing the counter on that frame.
 10. While paused, the game renders a `PAUSED` label and does not increment the logical update counter or advance Raid or combat simulation, but camera input still updates so the map can be inspected.
@@ -99,7 +99,7 @@ There is no application configuration system yet. If configuration becomes neces
 
 ### Assets
 
-The first runtime sprites are the 64x64 Sanctum, Bow Tower, Flame Bolt Tower, and tower projectile PNGs under `assets/sprites/structures/`, the skeleton enemy PNG under `assets/sprites/enemies/`, and pine tree PNGs under `assets/sprites/terrains/`. The `assets` package embeds and loads required runtime assets into a typed catalog. Early prototypes may still draw simple shapes and text directly when no sprite exists, but gameplay rules should not decode files or know asset paths.
+The first runtime sprites are the 64x64 Sanctum, Bow Tower, Flame Bolt Tower, and tower projectile PNGs under `assets/sprites/structures/`, the skeleton and zombie enemy PNGs under `assets/sprites/enemies/`, and pine tree PNGs under `assets/sprites/terrains/`. The `assets` package embeds and loads required runtime assets into a typed catalog. Early prototypes may still draw simple shapes and text directly when no sprite exists, but gameplay rules should not decode files or know asset paths.
 
 ### Testing
 
