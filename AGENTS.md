@@ -54,6 +54,13 @@ Current and expected layout:
 
 Keep the layout simple. Do not create a scene framework, ECS, asset pipeline, save system, campaign system, or packaging setup until a plan shows why it is needed.
 
+## File Ownership
+
+All files and directories in this repository should be owned by `dave:dave`. If a coding agent or command creates or modifies files as another user, normalize ownership before finishing the change:
+
+- `chown -R dave:dave /home/dave/dev/ai/td`
+- `find . -xdev ! -user dave -printf '%u:%g %p\n'` should print nothing when run from the repository root.
+
 ## Build, Test, and Development Commands
 
 Use these commands from the repository root:
