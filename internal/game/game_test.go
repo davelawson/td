@@ -273,10 +273,10 @@ func TestCameraPanInputMovesCenter(t *testing.T) {
 		wantX float64
 		wantY float64
 	}{
-		{name: "up", input: Input{PanUp: true}, wantX: 0, wantY: cameraPanSpeed / plotBaseTileSize},
-		{name: "down", input: Input{PanDown: true}, wantX: 0, wantY: -cameraPanSpeed / plotBaseTileSize},
-		{name: "left", input: Input{PanLeft: true}, wantX: -cameraPanSpeed / plotBaseTileSize, wantY: 0},
-		{name: "right", input: Input{PanRight: true}, wantX: cameraPanSpeed / plotBaseTileSize, wantY: 0},
+		{name: "up", input: inputWithPan(true, false, false, false), wantX: 0, wantY: cameraPanSpeed / plotBaseTileSize},
+		{name: "down", input: inputWithPan(false, true, false, false), wantX: 0, wantY: -cameraPanSpeed / plotBaseTileSize},
+		{name: "left", input: inputWithPan(false, false, true, false), wantX: -cameraPanSpeed / plotBaseTileSize, wantY: 0},
+		{name: "right", input: inputWithPan(false, false, false, true), wantX: cameraPanSpeed / plotBaseTileSize, wantY: 0},
 	}
 
 	for _, tt := range tests {
@@ -306,7 +306,7 @@ func TestCameraPanSpeedDividesByZoom(t *testing.T) {
 	state.camera.zoom = 2
 	startX := state.camera.centerX
 
-	state.Update(Input{PanRight: true})
+	state.Update(inputWithPan(false, false, false, true))
 
 	if got, want := state.camera.centerX-startX, cameraPanSpeed/(plotBaseTileSize*2); !almostEqual(got, want) {
 		t.Fatalf("camera x delta = %f, want %f", got, want)
@@ -323,7 +323,7 @@ func TestCameraInputWorksWhilePaused(t *testing.T) {
 	state.Update(Input{TogglePause: true})
 	startX := state.camera.centerX
 	startZoom := state.camera.zoom
-	state.Update(Input{WheelY: 1, PanRight: true})
+	state.Update(inputWithWheelAndPan(1, false, false, false, true))
 
 	if state.camera.centerX <= startX {
 		t.Fatalf("camera center x = %f, want greater than %f", state.camera.centerX, startX)
@@ -345,7 +345,7 @@ func TestIngameMenuBlocksCameraInput(t *testing.T) {
 
 	state.Update(Input{ToggleMenu: true})
 	startCamera := state.camera
-	state.Update(Input{WheelY: 1, PanRight: true, PanDown: true})
+	state.Update(inputWithWheelAndPan(1, false, true, false, true))
 
 	if state.camera != startCamera {
 		t.Fatalf("camera = %+v, want unchanged %+v", state.camera, startCamera)
@@ -360,12 +360,29 @@ func TestCameraChangesDoNotChangeHomePlot(t *testing.T) {
 	}
 	initial := state.gameMap
 
-	state.Update(Input{WheelY: 2, PanUp: true, PanLeft: true})
-	state.Update(Input{WheelY: -4, PanDown: true, PanRight: true})
+	state.Update(inputWithWheelAndPan(2, true, false, true, false))
+	state.Update(inputWithWheelAndPan(-4, false, true, false, true))
 
 	if state.gameMap != initial {
 		t.Fatal("expected camera changes to leave the prototype map unchanged")
 	}
+}
+
+// inputWithPan creates Input with directional camera pan flags.
+func inputWithPan(up, down, left, right bool) Input {
+	var input Input
+	input.Pan.Up = up
+	input.Pan.Down = down
+	input.Pan.Left = left
+	input.Pan.Right = right
+	return input
+}
+
+// inputWithWheelAndPan creates Input with zoom and directional camera pan flags.
+func inputWithWheelAndPan(wheelY float64, up, down, left, right bool) Input {
+	input := inputWithPan(up, down, left, right)
+	input.WheelY = wheelY
+	return input
 }
 
 // TestStateFormatsCalmTopBar verifies initial top-bar text.

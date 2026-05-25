@@ -8,11 +8,11 @@ func TestTileWorldCenterUsesSanctumOrigin(t *testing.T) {
 		name string
 		x    int
 		y    int
-		want worldPosition
+		want coord
 	}{
-		{name: "sanctum", x: homePlotCenter, y: homePlotCenter, want: worldPosition{X: 0, Y: 0}},
-		{name: "north road", x: homePlotCenter, y: homePlotCenter - 1, want: worldPosition{X: 0, Y: 1}},
-		{name: "east", x: homePlotCenter + 1, y: homePlotCenter, want: worldPosition{X: 1, Y: 0}},
+		{name: "sanctum", x: homePlotCenter, y: homePlotCenter, want: coord{X: 0, Y: 0}},
+		{name: "north road", x: homePlotCenter, y: homePlotCenter - 1, want: coord{X: 0, Y: 1}},
+		{name: "east", x: homePlotCenter + 1, y: homePlotCenter, want: coord{X: 1, Y: 0}},
 	}
 
 	for _, tt := range tests {

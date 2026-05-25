@@ -24,7 +24,7 @@ type tileCoordinate struct {
 // combatProjectile describes one active projectile tracking an original target.
 type combatProjectile struct {
 	targetID            int
-	position            worldPosition
+	position            coord
 	damage              int
 	speedTilesPerSecond float64
 	sprite              *ebiten.Image
@@ -110,7 +110,7 @@ func (t StructureTemplate) canFireProjectiles() bool {
 }
 
 // findTowerTarget chooses the in-range enemy closest to the Sanctum.
-func (s *State) findTowerTarget(towerPosition worldPosition, rangeTiles float64) (raidEnemy, bool) {
+func (s *State) findTowerTarget(towerPosition coord, rangeTiles float64) (raidEnemy, bool) {
 	rangeSquared := rangeTiles * rangeTiles
 	var target raidEnemy
 	found := false
@@ -119,7 +119,7 @@ func (s *State) findTowerTarget(towerPosition worldPosition, rangeTiles float64)
 		if enemy.health <= 0 || distanceSquared(towerPosition, enemy.position) > rangeSquared {
 			continue
 		}
-		sanctumDistance := distanceSquared(worldPosition{}, enemy.position)
+		sanctumDistance := distanceSquared(coord{}, enemy.position)
 		if !found || sanctumDistance < bestSanctumDistance || (sanctumDistance == bestSanctumDistance && enemy.id < target.id) {
 			target = enemy
 			bestSanctumDistance = sanctumDistance
@@ -177,12 +177,12 @@ func (s *State) damageEnemy(index int, damage int) {
 }
 
 // distance returns the Euclidean distance between two world positions.
-func distance(a, b worldPosition) float64 {
+func distance(a, b coord) float64 {
 	return math.Sqrt(distanceSquared(a, b))
 }
 
 // distanceSquared returns the squared Euclidean distance between two world positions.
-func distanceSquared(a, b worldPosition) float64 {
+func distanceSquared(a, b coord) float64 {
 	dx := a.X - b.X
 	dy := a.Y - b.Y
 	return dx*dx + dy*dy

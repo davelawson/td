@@ -1,14 +1,14 @@
 package game
 
-// worldPosition is a Sanctum-centered position in Tile units, with positive Y north.
-type worldPosition struct {
+// coord is a Sanctum-centered position in Tile units, with positive Y north.
+type coord struct {
 	X float64
 	Y float64
 }
 
 // tileWorldCenter returns the world-space center of a Plot Tile.
-func tileWorldCenter(x, y int) worldPosition {
-	return worldPosition{
+func tileWorldCenter(x, y int) coord {
+	return coord{
 		X: float64(x - homePlotCenter),
 		Y: float64(homePlotCenter - y),
 	}

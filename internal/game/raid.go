@@ -19,7 +19,7 @@ type raidState struct {
 type raidEnemy struct {
 	id       int
 	template *EnemyTemplate
-	position worldPosition
+	position coord
 	health   int
 }
 
@@ -158,8 +158,8 @@ func (s *State) raidEnemiesRemaining() int {
 }
 
 // raidEnemySpawnPosition returns the current north-road enemy spawn point.
-func raidEnemySpawnPosition() worldPosition {
-	return worldPosition{X: 0, Y: float64(homePlotCenter)}
+func raidEnemySpawnPosition() coord {
+	return coord{X: 0, Y: float64(homePlotCenter)}
 }
 
 // raidEnemyReachedSanctum reports whether the enemy has contacted the Sanctum.

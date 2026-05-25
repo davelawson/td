@@ -29,7 +29,7 @@ func TestSpawnRaidEnemyAssignsHealthAndStableIDs(t *testing.T) {
 func TestBowTowerDoesNotFireOutsideRange(t *testing.T) {
 	state := newRaidTestState(t)
 	removeStartingFlameBoltTower(state)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 7}, 20)}
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 7}, 20)}
 
 	state.updateCombat()
 
@@ -42,7 +42,7 @@ func TestBowTowerDoesNotFireOutsideRange(t *testing.T) {
 func TestBowTowerFiresAtEnemyInRangeAndStartsCooldown(t *testing.T) {
 	state := newRaidTestState(t)
 	removeStartingFlameBoltTower(state)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 20)}
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 
 	state.updateCombat()
 
@@ -69,7 +69,7 @@ func TestBowTowerFiresAtEnemyInRangeAndStartsCooldown(t *testing.T) {
 func TestFlameBoltTowerFiresAtEnemyInRange(t *testing.T) {
 	state := newRaidTestState(t)
 	removeStartingBowTower(state)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 20)}
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 
 	state.updateCombat()
 
@@ -94,8 +94,8 @@ func TestBowTowerTargetPriorityUsesClosestEnemyToSanctum(t *testing.T) {
 	state := newRaidTestState(t)
 	removeStartingFlameBoltTower(state)
 	state.raid.enemies = []raidEnemy{
-		combatTestEnemy(0, worldPosition{X: 0, Y: 3}, 20),
-		combatTestEnemy(1, worldPosition{X: 0, Y: 1}, 20),
+		combatTestEnemy(0, coord{X: 0, Y: 3}, 20),
+		combatTestEnemy(1, coord{X: 0, Y: 1}, 20),
 	}
 
 	state.updateCombat()
@@ -111,10 +111,10 @@ func TestBowTowerTargetPriorityUsesClosestEnemyToSanctum(t *testing.T) {
 // TestProjectileHitDamagesEnemy verifies impact applies Bow Tower damage.
 func TestProjectileHitDamagesEnemy(t *testing.T) {
 	state := newRaidTestState(t)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 20)}
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 	state.combat.projectiles = []combatProjectile{{
 		targetID:            0,
-		position:            worldPosition{X: 0, Y: 2},
+		position:            coord{X: 0, Y: 2},
 		damage:              10,
 		speedTilesPerSecond: 9.0,
 	}}
@@ -132,10 +132,10 @@ func TestProjectileHitDamagesEnemy(t *testing.T) {
 // TestProjectileHitRemovesDefeatedEnemy verifies health reaching zero defeats the enemy.
 func TestProjectileHitRemovesDefeatedEnemy(t *testing.T) {
 	state := newRaidTestState(t)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 10)}
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 10)}
 	state.combat.projectiles = []combatProjectile{{
 		targetID:            0,
-		position:            worldPosition{X: 0, Y: 2},
+		position:            coord{X: 0, Y: 2},
 		damage:              10,
 		speedTilesPerSecond: 9.0,
 	}}
@@ -152,7 +152,7 @@ func TestProjectileDisappearsWhenTargetIsGone(t *testing.T) {
 	state := newRaidTestState(t)
 	state.combat.projectiles = []combatProjectile{{
 		targetID:            99,
-		position:            worldPosition{X: 0, Y: 2},
+		position:            coord{X: 0, Y: 2},
 		damage:              10,
 		speedTilesPerSecond: 9.0,
 	}}
@@ -168,7 +168,7 @@ func TestProjectileDisappearsWhenTargetIsGone(t *testing.T) {
 func TestCombatDoesNotAdvanceWhilePaused(t *testing.T) {
 	state := newRaidTestState(t)
 	state.raid.active = true
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 20)}
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 	state.Update(Input{TogglePause: true})
 
 	state.Update(Input{})
@@ -182,7 +182,7 @@ func TestCombatDoesNotAdvanceWhilePaused(t *testing.T) {
 func TestCombatDoesNotAdvanceWhileIngameMenuOpen(t *testing.T) {
 	state := newRaidTestState(t)
 	state.raid.active = true
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, worldPosition{X: 0, Y: 2}, 20)}
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 	state.Update(Input{ToggleMenu: true})
 
 	state.Update(Input{})
@@ -193,7 +193,7 @@ func TestCombatDoesNotAdvanceWhileIngameMenuOpen(t *testing.T) {
 }
 
 // combatTestEnemy creates a targetable enemy for focused combat tests.
-func combatTestEnemy(id int, position worldPosition, health int) raidEnemy {
+func combatTestEnemy(id int, position coord, health int) raidEnemy {
 	return raidEnemy{
 		id:       id,
 		position: position,

@@ -49,16 +49,16 @@ func (s *State) applyCameraInput(input Input) {
 	}
 
 	distance := cameraPanSpeed / (plotBaseTileSize * s.camera.zoom)
-	if input.PanUp {
+	if input.Pan.Up {
 		s.camera.centerY += distance
 	}
-	if input.PanDown {
+	if input.Pan.Down {
 		s.camera.centerY -= distance
 	}
-	if input.PanLeft {
+	if input.Pan.Left {
 		s.camera.centerX -= distance
 	}
-	if input.PanRight {
+	if input.Pan.Right {
 		s.camera.centerX += distance
 	}
 }

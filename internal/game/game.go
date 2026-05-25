@@ -17,13 +17,15 @@ type Input struct {
 	TogglePause bool
 	ToggleMenu  bool
 	WheelY      float64
-	PanUp       bool
-	PanDown     bool
-	PanLeft     bool
-	PanRight    bool
-	CursorX     int
-	CursorY     int
-	Clicked     bool
+	Pan         struct {
+		Up    bool
+		Down  bool
+		Left  bool
+		Right bool
+	}
+	CursorX int
+	CursorY int
+	Clicked bool
 }
 
 // State owns the current game state and logical update rules.

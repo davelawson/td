@@ -152,7 +152,7 @@ func TestRaidEnemyMovementUsesTemplateSpeed(t *testing.T) {
 	template := &EnemyTemplate{SpeedTilesPerSecond: 2.5}
 	state.raid = raidState{
 		active:  true,
-		enemies: []raidEnemy{{template: template, position: worldPosition{X: 0, Y: 5}}},
+		enemies: []raidEnemy{{template: template, position: coord{X: 0, Y: 5}}},
 	}
 
 	state.updateRaidEnemies()
@@ -168,8 +168,8 @@ func TestRaidEnemyWithoutPositiveSpeedDoesNotMove(t *testing.T) {
 	state.raid = raidState{
 		active: true,
 		enemies: []raidEnemy{
-			{position: worldPosition{X: 0, Y: 5}},
-			{template: &EnemyTemplate{SpeedTilesPerSecond: -1}, position: worldPosition{X: 0, Y: 4}},
+			{position: coord{X: 0, Y: 5}},
+			{template: &EnemyTemplate{SpeedTilesPerSecond: -1}, position: coord{X: 0, Y: 4}},
 		},
 	}
 
@@ -212,7 +212,7 @@ func TestRaidEnemyAtSanctumSpendsBarricade(t *testing.T) {
 	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	state.raid = raidState{
 		active:  true,
-		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: worldPosition{X: 0, Y: step}}},
+		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: step}}},
 	}
 	state.status.phase = phaseRaid
 
@@ -233,7 +233,7 @@ func TestRaidBreachClearsRaidAndDisablesStarts(t *testing.T) {
 	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	state.raid = raidState{
 		active:  true,
-		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: worldPosition{X: 0, Y: step}}},
+		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: step}}},
 	}
 	state.status.phase = phaseRaid
 

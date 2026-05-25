@@ -93,18 +93,20 @@ func (a *app) updateMenu() error {
 func (a *app) updateGame() error {
 	cursorX, cursorY := ebiten.CursorPosition()
 	_, wheelY := ebiten.Wheel()
-	switch action := a.gameState.Update(game.Input{
+	input := game.Input{
 		TogglePause: inpututil.IsKeyJustPressed(ebiten.KeySpace),
 		ToggleMenu:  inpututil.IsKeyJustPressed(ebiten.KeyEscape),
 		WheelY:      wheelY,
-		PanUp:       ebiten.IsKeyPressed(ebiten.KeyW),
-		PanDown:     ebiten.IsKeyPressed(ebiten.KeyS),
-		PanLeft:     ebiten.IsKeyPressed(ebiten.KeyA),
-		PanRight:    ebiten.IsKeyPressed(ebiten.KeyD),
 		CursorX:     cursorX,
 		CursorY:     cursorY,
 		Clicked:     inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft),
-	}); action {
+	}
+	input.Pan.Up = ebiten.IsKeyPressed(ebiten.KeyW)
+	input.Pan.Down = ebiten.IsKeyPressed(ebiten.KeyS)
+	input.Pan.Left = ebiten.IsKeyPressed(ebiten.KeyA)
+	input.Pan.Right = ebiten.IsKeyPressed(ebiten.KeyD)
+
+	switch action := a.gameState.Update(input); action {
 	case game.ActionSurrender:
 		a.returnToMainMenu()
 	}
