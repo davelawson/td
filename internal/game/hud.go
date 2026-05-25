@@ -86,18 +86,18 @@ func (s *State) resourcesAndBarricadeText() string {
 
 // drawTopBar renders the game status bar at the top of the screen.
 func (s *State) drawTopBar(screen *ebiten.Image) {
-	vector.FillRect(screen, 0, 0, float32(s.ui.width), topBarHeight, topBarColor, false)
-	vector.StrokeLine(screen, 0, topBarHeight-2, float32(s.ui.width), topBarHeight-2, 3, topBarEdgeColor, false)
+	vector.FillRect(screen, 0, 0, float32(s.ui.width), topBarHeight, colors.topBar, false)
+	vector.StrokeLine(screen, 0, topBarHeight-2, float32(s.ui.width), topBarHeight-2, 3, colors.topBarEdge, false)
 
 	left := s.chapterDayText()
 	center := s.phaseText()
 	right := s.resourcesAndBarricadeText()
 
-	ui.DrawText(screen, left, s.ui.hudFace, topBarMargin, 29, textColor)
+	ui.DrawText(screen, left, s.ui.hudFace, topBarMargin, 29, colors.text)
 
 	centerWidth, _ := text.Measure(center, s.ui.hudFace, s.ui.hudFace.Size)
-	ui.DrawText(screen, center, s.ui.hudFace, (float64(s.ui.width)-centerWidth)/2, 29, pauseColor)
+	ui.DrawText(screen, center, s.ui.hudFace, (float64(s.ui.width)-centerWidth)/2, 29, colors.pause)
 
 	rightWidth, _ := text.Measure(right, s.ui.hudFace, s.ui.hudFace.Size)
-	ui.DrawText(screen, right, s.ui.hudFace, float64(s.ui.width)-rightWidth-topBarMargin, 29, textColor)
+	ui.DrawText(screen, right, s.ui.hudFace, float64(s.ui.width)-rightWidth-topBarMargin, 29, colors.text)
 }

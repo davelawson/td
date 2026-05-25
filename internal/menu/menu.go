@@ -64,23 +64,6 @@ type Input struct {
 	Backspace bool
 }
 
-var (
-	backgroundColor         = ui.CharcoalBlack
-	backdropBandColor       = ui.DarkCharcoalGreen
-	panelColor              = ui.PineGreen
-	panelEdgeColor          = ui.Bronze
-	textColor               = ui.Parchment
-	mutedTextColor          = ui.MutedParchment
-	hoverColor              = ui.LightBronze
-	buttonColor             = ui.MossGreen
-	disabledColor           = ui.DarkMossGreen
-	disabledButtonEdgeColor = ui.MossGreen
-	accentColor             = ui.Purple
-	transparentAccentColor  = ui.TransparentPurple
-	transparentEdgeColor    = ui.TransparentBronze
-	nameFieldColor          = ui.DarkCharcoalGreen
-)
-
 // Menu owns the menu screen state, input routing, and rendering.
 type Menu struct {
 	width              int
@@ -204,7 +187,7 @@ func (m *Menu) WizardNameFocused() bool {
 
 // Draw renders the current menu screen.
 func (m *Menu) Draw(screen *ebiten.Image) {
-	screen.Fill(backgroundColor)
+	screen.Fill(colors.background)
 	m.drawBackdrop(screen)
 	switch m.screen {
 	case ScreenNewGame:
@@ -272,13 +255,13 @@ func (m *Menu) layoutButtons() {
 
 // drawBackdrop paints simple fantasy accents behind the menu.
 func (m *Menu) drawBackdrop(screen *ebiten.Image) {
-	vector.FillRect(screen, 0, 0, float32(m.width), 82, backdropBandColor, false)
-	vector.FillRect(screen, 0, float32(m.height-82), float32(m.width), 82, backdropBandColor, false)
+	vector.FillRect(screen, 0, 0, float32(m.width), 82, colors.backdropBand, false)
+	vector.FillRect(screen, 0, float32(m.height-82), float32(m.width), 82, colors.backdropBand, false)
 
 	for i := 0; i < 6; i++ {
 		x := float32(m.width/2 - 395 + i*145)
-		vector.StrokeRect(screen, x, 102, 46, 46, 2, transparentAccentColor, true)
-		vector.StrokeRect(screen, x+9, 111, 28, 28, 2, transparentEdgeColor, true)
+		vector.StrokeRect(screen, x, 102, 46, 46, 2, colors.transparentAccent, true)
+		vector.StrokeRect(screen, x+9, 111, 28, 28, 2, colors.transparentEdge, true)
 	}
 }
 
@@ -299,27 +282,27 @@ func (m *Menu) drawMenuPanel(screen *ebiten.Image) {
 	panelW := float32(mainPanelWidth)
 	panelH := float32(mainPanelHeight)
 
-	vector.FillRect(screen, panelX, panelY, panelW, panelH, panelColor, false)
-	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
-	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
+	vector.FillRect(screen, panelX, panelY, panelW, panelH, colors.panel, false)
+	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, colors.panelEdge, false)
+	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, colors.accent, false)
 
-	ui.DrawCenteredText(screen, m.width, "td", m.titleFace, float64(m.mainPanelY()+40), textColor)
-	ui.DrawCenteredText(screen, m.width, "Arcane defenses await their first command.", m.bodyFace, float64(m.mainPanelY()+132), mutedTextColor)
+	ui.DrawCenteredText(screen, m.width, "td", m.titleFace, float64(m.mainPanelY()+40), colors.text)
+	ui.DrawCenteredText(screen, m.width, "Arcane defenses await their first command.", m.bodyFace, float64(m.mainPanelY()+132), colors.mutedText)
 }
 
 // drawButtons renders menu buttons with hover feedback.
 func (m *Menu) drawButtons(screen *ebiten.Image, buttons []Button) {
 	for _, button := range buttons {
-		fill := buttonColor
-		edge := panelEdgeColor
-		labelColor := textColor
+		fill := colors.button
+		edge := colors.panelEdge
+		labelColor := colors.text
 		if button.Disabled {
-			fill = disabledColor
-			edge = disabledButtonEdgeColor
-			labelColor = mutedTextColor
+			fill = colors.disabled
+			edge = colors.disabledButtonEdge
+			labelColor = colors.mutedText
 		} else if m.hoverAction != ActionNone && m.hoverAction == button.Action {
-			fill = hoverColor
-			edge = textColor
+			fill = colors.hover
+			edge = colors.text
 		}
 
 		vector.FillRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), fill, false)
@@ -335,9 +318,9 @@ func (m *Menu) drawSettingsPanel(screen *ebiten.Image) {
 	panelW := float32(screenPanelWidth)
 	panelH := float32(screenPanelHeight)
 
-	vector.FillRect(screen, panelX, panelY, panelW, panelH, panelColor, false)
-	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
-	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
+	vector.FillRect(screen, panelX, panelY, panelW, panelH, colors.panel, false)
+	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, colors.panelEdge, false)
+	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, colors.accent, false)
 
-	ui.DrawCenteredText(screen, m.width, "Settings", m.titleFace, float64(m.screenPanelY()+86), textColor)
+	ui.DrawCenteredText(screen, m.width, "Settings", m.titleFace, float64(m.screenPanelY()+86), colors.text)
 }

@@ -93,37 +93,37 @@ func (m *Menu) drawNewGamePanel(screen *ebiten.Image) {
 	panelW := float32(screenPanelWidth)
 	panelH := float32(screenPanelHeight)
 
-	vector.FillRect(screen, panelX, panelY, panelW, panelH, panelColor, false)
-	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, panelEdgeColor, false)
-	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, accentColor, false)
+	vector.FillRect(screen, panelX, panelY, panelW, panelH, colors.panel, false)
+	vector.StrokeRect(screen, panelX, panelY, panelW, panelH, 4, colors.panelEdge, false)
+	vector.StrokeRect(screen, panelX+12, panelY+12, panelW-24, panelH-24, 1.5, colors.accent, false)
 
-	ui.DrawCenteredText(screen, m.width, "New Game", m.titleFace, float64(m.screenPanelY()+30), textColor)
-	ui.DrawText(screen, "Wizard Name", m.bodyFace, float64(m.width/2-nameFieldWidth/2), float64(m.screenPanelY()+120), mutedTextColor)
+	ui.DrawCenteredText(screen, m.width, "New Game", m.titleFace, float64(m.screenPanelY()+30), colors.text)
+	ui.DrawText(screen, "Wizard Name", m.bodyFace, float64(m.width/2-nameFieldWidth/2), float64(m.screenPanelY()+120), colors.mutedText)
 	m.drawWizardNameField(screen)
 }
 
 // drawWizardNameField renders the editable Wizard name field.
 func (m *Menu) drawWizardNameField(screen *ebiten.Image) {
 	fieldX, fieldY, fieldW, fieldH := m.wizardNameFieldBounds()
-	edge := panelEdgeColor
+	edge := colors.panelEdge
 	if m.wizardNameFocused {
-		edge = textColor
+		edge = colors.text
 	}
 
-	vector.FillRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), nameFieldColor, false)
+	vector.FillRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), colors.nameField, false)
 	vector.StrokeRect(screen, float32(fieldX), float32(fieldY), float32(fieldW), float32(fieldH), 3, edge, false)
 
 	value := m.wizardName
-	labelColor := textColor
+	labelColor := colors.text
 	if value == "" {
 		value = "Enter name"
-		labelColor = mutedTextColor
+		labelColor = colors.mutedText
 	}
 	ui.DrawText(screen, value, m.nameFace, float64(fieldX+18), float64(fieldY+15), labelColor)
 
 	if m.wizardNameFocused {
 		textWidth, _ := text.Measure(m.wizardName, m.nameFace, m.nameFace.Size)
 		caretX := float32(fieldX + 19 + int(textWidth))
-		vector.StrokeLine(screen, caretX, float32(fieldY+12), caretX, float32(fieldY+42), 2, textColor, false)
+		vector.StrokeLine(screen, caretX, float32(fieldY+12), caretX, float32(fieldY+42), 2, colors.text, false)
 	}
 }

@@ -13,8 +13,8 @@ func (s *State) drawHomePlot(screen *ebiten.Image) {
 	margin := 18 / plotBaseTileSize
 	size := float64(plotSize)
 	backdrop := s.projectRect(viewport, -size/2-margin, size/2+margin, size+margin*2, size+margin*2)
-	vector.FillRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, plotBackdropColor, false)
-	vector.StrokeRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, 3, fieldEdgeColor, false)
+	vector.FillRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, colors.plotBackdrop, false)
+	vector.StrokeRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, 3, colors.fieldEdge, false)
 
 	for y := 0; y < plotSize; y++ {
 		for x := 0; x < plotSize; x++ {
@@ -28,15 +28,15 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	worldWest, worldNorth, worldW, worldH := tileWorldRect(x, y)
 	rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
 
-	tileColor := emptyTileColor
+	tileColor := colors.emptyTile
 	switch tile.Terrain {
 	case terrainRoad:
-		tileColor = roadTileColor
+		tileColor = colors.roadTile
 	case terrainForest:
-		tileColor = forestTileColor
+		tileColor = colors.forestTile
 	}
 	vector.FillRect(screen, rect.x, rect.y, rect.w, rect.h, tileColor, false)
-	vector.StrokeRect(screen, rect.x, rect.y, rect.w, rect.h, 1, tileGridColor, false)
+	vector.StrokeRect(screen, rect.x, rect.y, rect.w, rect.h, 1, colors.tileGrid, false)
 
 	if tile.Terrain == terrainForest {
 		s.drawPineTree(screen, rect.x, rect.y, rect.w, tile)

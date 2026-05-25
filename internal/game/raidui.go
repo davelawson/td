@@ -51,16 +51,16 @@ func (s *State) nextRaidButtonContains(x, y int) bool {
 // drawRaidControls renders the bottom-left Raid UI button.
 func (s *State) drawRaidControls(screen *ebiten.Image) {
 	button := s.nextRaidButton()
-	fill := clearingColor
-	edge := fieldEdgeColor
-	labelColor := textColor
+	fill := colors.clearing
+	edge := colors.fieldEdge
+	labelColor := colors.text
 	if button.Disabled {
-		fill = plotBackdropColor
-		edge = tileGridColor
-		labelColor = mutedTextColor
+		fill = colors.plotBackdrop
+		edge = colors.tileGrid
+		labelColor = colors.mutedText
 	} else if s.ui.nextRaidHover {
-		fill = pauseColor
-		edge = textColor
+		fill = colors.pause
+		edge = colors.text
 	}
 
 	vector.FillRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), fill, false)
@@ -98,8 +98,8 @@ func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enem
 			radius*2,
 			radius*2,
 		)
-		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, raidEnemyColor, false)
-		vector.StrokeCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, 2, textColor, false)
+		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, colors.raidEnemy, false)
+		vector.StrokeCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, 2, colors.text, false)
 		s.drawRaidEnemyHealthBar(screen, rect, enemy)
 		return
 	}
@@ -209,7 +209,7 @@ func (s *State) drawProjectile(screen *ebiten.Image, viewport sceneViewport, pro
 		return
 	}
 	if projectile.sprite == nil {
-		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/3, textColor, false)
+		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/3, colors.text, false)
 		return
 	}
 

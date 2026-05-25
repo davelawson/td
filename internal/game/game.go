@@ -142,7 +142,7 @@ func (s *State) Update(input Input) Action {
 
 // Draw renders the current game screen.
 func (s *State) Draw(screen *ebiten.Image) {
-	screen.Fill(backgroundColor)
+	screen.Fill(colors.background)
 	s.drawHomePlot(screen)
 	s.drawRaidEnemies(screen)
 	s.drawProjectiles(screen)
@@ -177,10 +177,10 @@ func (s *State) drawCounter(screen *ebiten.Image) {
 	value := fmt.Sprintf("Updates: %d", s.updates)
 	width, _ := text.Measure(value, s.ui.bodyFace, s.ui.bodyFace.Size)
 	x := float64(s.ui.width) - width - 48
-	ui.DrawText(screen, value, s.ui.bodyFace, x, float64(s.ui.height)-58, mutedTextColor)
+	ui.DrawText(screen, value, s.ui.bodyFace, x, float64(s.ui.height)-58, colors.mutedText)
 
 	if s.paused {
 		pauseWidth, _ := text.Measure("PAUSED", s.ui.bodyFace, s.ui.bodyFace.Size)
-		ui.DrawText(screen, "PAUSED", s.ui.bodyFace, float64(s.ui.width)-pauseWidth-48, float64(s.ui.height)-94, pauseColor)
+		ui.DrawText(screen, "PAUSED", s.ui.bodyFace, float64(s.ui.width)-pauseWidth-48, float64(s.ui.height)-94, colors.pause)
 	}
 }

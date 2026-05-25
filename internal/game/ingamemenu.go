@@ -120,7 +120,7 @@ func (s *State) drawIngameMenu(screen *ebiten.Image) {
 		return
 	}
 
-	vector.FillRect(screen, 0, 0, float32(s.ui.width), float32(s.ui.height), overlayColor, false)
+	vector.FillRect(screen, 0, 0, float32(s.ui.width), float32(s.ui.height), colors.overlay, false)
 	s.drawIngameMenuPanel(screen)
 	s.drawIngameMenuButtons(screen)
 }
@@ -130,23 +130,23 @@ func (s *State) drawIngameMenuPanel(screen *ebiten.Image) {
 	panelX := float32(s.ui.width/2 - ingameMenuPanelWidth/2)
 	panelY := float32(s.ui.height/2 - ingameMenuPanelHeight/2)
 
-	vector.FillRect(screen, panelX, panelY, ingameMenuPanelWidth, ingameMenuPanelHeight, fieldColor, false)
-	vector.StrokeRect(screen, panelX, panelY, ingameMenuPanelWidth, ingameMenuPanelHeight, 4, fieldEdgeColor, false)
-	vector.StrokeRect(screen, panelX+12, panelY+12, ingameMenuPanelWidth-24, ingameMenuPanelHeight-24, 1.5, fieldAccentColor, false)
+	vector.FillRect(screen, panelX, panelY, ingameMenuPanelWidth, ingameMenuPanelHeight, colors.field, false)
+	vector.StrokeRect(screen, panelX, panelY, ingameMenuPanelWidth, ingameMenuPanelHeight, 4, colors.fieldEdge, false)
+	vector.StrokeRect(screen, panelX+12, panelY+12, ingameMenuPanelWidth-24, ingameMenuPanelHeight-24, 1.5, colors.fieldAccent, false)
 
 	titleWidth, _ := text.Measure("Paused", s.ui.menu.titleFace, s.ui.menu.titleFace.Size)
 	titleX := (float64(s.ui.width) - titleWidth) / 2
-	ui.DrawText(screen, "Paused", s.ui.menu.titleFace, titleX, float64(panelY)+42, textColor)
+	ui.DrawText(screen, "Paused", s.ui.menu.titleFace, titleX, float64(panelY)+42, colors.text)
 }
 
 // drawIngameMenuButtons renders overlay buttons with hover feedback.
 func (s *State) drawIngameMenuButtons(screen *ebiten.Image) {
 	for i, button := range s.ui.menu.buttons {
-		fill := clearingColor
-		edge := fieldEdgeColor
+		fill := colors.clearing
+		edge := colors.fieldEdge
 		if s.ui.menu.hover == i {
-			fill = pauseColor
-			edge = textColor
+			fill = colors.pause
+			edge = colors.text
 		}
 
 		vector.FillRect(screen, float32(button.X), float32(button.Y), float32(button.W), float32(button.H), fill, false)
@@ -154,6 +154,6 @@ func (s *State) drawIngameMenuButtons(screen *ebiten.Image) {
 
 		labelWidth, _ := text.Measure(button.Label, s.ui.menu.buttonFace, s.ui.menu.buttonFace.Size)
 		labelX := float64(button.X) + (float64(button.W)-labelWidth)/2
-		ui.DrawText(screen, button.Label, s.ui.menu.buttonFace, labelX, float64(button.Y+10), textColor)
+		ui.DrawText(screen, button.Label, s.ui.menu.buttonFace, labelX, float64(button.Y+10), colors.text)
 	}
 }
