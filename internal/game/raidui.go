@@ -98,20 +98,17 @@ func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enem
 			radius*2,
 			radius*2,
 		)
-		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, colors.raidEnemy, false)
+		fill := colors.raidEnemy
+		if s.selectedRaider(enemy.id) {
+			fill = colors.pause
+		}
+		vector.FillCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, fill, false)
 		vector.StrokeCircle(screen, rect.x+rect.w/2, rect.y+rect.h/2, rect.w/2, 2, colors.text, false)
 		s.drawRaidEnemyHealthBar(screen, rect, enemy)
 		return
 	}
 
-	size := raidEnemySpriteSize / plotBaseTileSize
-	rect := s.projectRect(
-		viewport,
-		enemy.position.X-size/2,
-		enemy.position.Y+size/2,
-		size,
-		size,
-	)
+	rect := s.raidEnemyProjectedRect(viewport, enemy)
 	spriteWidth := float64(sprite.Bounds().Dx())
 	spriteHeight := float64(sprite.Bounds().Dy())
 	if spriteWidth <= 0 || spriteHeight <= 0 || rect.w <= 0 || rect.h <= 0 {
@@ -125,6 +122,9 @@ func (s *State) drawRaidEnemy(screen *ebiten.Image, viewport sceneViewport, enem
 		float64(rect.x)+(float64(rect.w)-spriteWidth*scale)/2,
 		float64(rect.y)+(float64(rect.h)-spriteHeight*scale)/2,
 	)
+	if s.selectedRaider(enemy.id) {
+		brightenDrawOptions(options)
+	}
 	screen.DrawImage(sprite, options)
 	s.drawRaidEnemyHealthBar(screen, rect, enemy)
 }

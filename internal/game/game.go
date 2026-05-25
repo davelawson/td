@@ -42,6 +42,7 @@ type State struct {
 	status           gameStatus
 	raid             raidState
 	combat           combatState
+	selection        selectedItem
 	ui               gameUI
 }
 
@@ -158,6 +159,7 @@ func (s *State) Update(input Input) Action {
 		return ActionNone
 	}
 	s.applyCameraInput(input)
+	s.updateSelection(input)
 	if input.TogglePause {
 		s.paused = !s.paused
 		return ActionNone
@@ -167,6 +169,7 @@ func (s *State) Update(input Input) Action {
 		return ActionNone
 	}
 	s.updateRaid()
+	s.clearMissingSelectedRaider()
 	s.updates++
 	return ActionNone
 }

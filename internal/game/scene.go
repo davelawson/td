@@ -5,7 +5,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
-const treeHorizontalFlipMask uint16 = 0x8000
+const (
+	treeHorizontalFlipMask   uint16 = 0x8000
+	selectedSpriteBrightness        = 1.65
+)
 
 // drawHomePlot renders the static home Plot from map state.
 func (s *State) drawHomePlot(screen *ebiten.Image) {
@@ -41,14 +44,15 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	if tile.Terrain == terrainForest {
 		s.drawPineTree(screen, rect.x, rect.y, rect.w, tile)
 	}
+	selected := s.selectedStructure(x, y)
 	if tile.Feature == featureSanctum {
-		s.drawSanctum(screen, rect.x, rect.y, rect.w)
+		s.drawSanctum(screen, rect.x, rect.y, rect.w, selected)
 	}
 	if tile.Feature == featureBowTower {
-		s.drawStructureSprite(screen, s.structureCatalog.BowTower.Sprite, rect.x, rect.y, rect.w)
+		s.drawStructureSprite(screen, s.structureCatalog.BowTower.Sprite, rect.x, rect.y, rect.w, selected)
 	}
 	if tile.Feature == featureFlameBoltTower {
-		s.drawStructureSprite(screen, s.structureCatalog.FlameBoltTower.Sprite, rect.x, rect.y, rect.w)
+		s.drawStructureSprite(screen, s.structureCatalog.FlameBoltTower.Sprite, rect.x, rect.y, rect.w, selected)
 	}
 }
 
@@ -96,7 +100,7 @@ func treeSpriteFlipped(tweak uint16) bool {
 }
 
 // drawSanctum renders the centered Sanctum feature.
-func (s *State) drawSanctum(screen *ebiten.Image, tileX, tileY, tileSize float32) {
+func (s *State) drawSanctum(screen *ebiten.Image, tileX, tileY, tileSize float32, selected bool) {
 	sanctum := s.assetCatalog.Sprite.Structure.Sanctum
 	if sanctum == nil || tileSize <= 0 {
 		return
@@ -112,11 +116,14 @@ func (s *State) drawSanctum(screen *ebiten.Image, tileX, tileY, tileSize float32
 		float64(tileX)+(float64(tileSize)-spriteWidth*scale)/2,
 		float64(tileY)+(float64(tileSize)-spriteHeight*scale)/2,
 	)
+	if selected {
+		brightenDrawOptions(options)
+	}
 	screen.DrawImage(sanctum, options)
 }
 
 // drawStructureSprite renders a centered authored structure feature.
-func (s *State) drawStructureSprite(screen *ebiten.Image, sprite *ebiten.Image, tileX, tileY, tileSize float32) {
+func (s *State) drawStructureSprite(screen *ebiten.Image, sprite *ebiten.Image, tileX, tileY, tileSize float32, selected bool) {
 	if sprite == nil || tileSize <= 0 {
 		return
 	}
@@ -131,5 +138,13 @@ func (s *State) drawStructureSprite(screen *ebiten.Image, sprite *ebiten.Image, 
 		float64(tileX)+(float64(tileSize)-spriteWidth*scale)/2,
 		float64(tileY)+(float64(tileSize)-spriteHeight*scale)/2,
 	)
+	if selected {
+		brightenDrawOptions(options)
+	}
 	screen.DrawImage(sprite, options)
+}
+
+// brightenDrawOptions applies the selected-object brightness treatment to a sprite draw.
+func brightenDrawOptions(options *ebiten.DrawImageOptions) {
+	options.ColorScale.Scale(selectedSpriteBrightness, selectedSpriteBrightness, selectedSpriteBrightness, 1)
 }

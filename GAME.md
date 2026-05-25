@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -57,7 +57,9 @@ Exploration should give the player information and access. It may reveal terrain
 
 During the calm phase, the wizard can spend resources to explore another Plot adjacent to the current Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and defend along a longer path.
 
-Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, select Tiles, gather resources, or move a wizard character.
+Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
+
+The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. This selection currently has no command panel, upgrades, placement action, or gameplay effect; it exists to establish readable object targeting for later inspection and command workflows.
 
 Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
 
