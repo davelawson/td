@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies and first-pass projectile combat. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, basic camera zoom and pan, pause behavior, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -133,7 +133,7 @@ Open decisions include how many charges the barrier has, whether charges can be 
 
 ### Tower Defense
 
-Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible combat results. The first Raid slice uses simple fixed paths with skeleton and zombie enemies. The first combat slice adds one automated Bow Tower with testable targeting, projectile travel, and damage rules without replacing the simple Raid lifecycle.
+Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible and audible combat results. The first Raid slice uses simple fixed paths with skeleton and zombie enemies. The first combat slice adds automated Bow and Flame Bolt Towers with testable targeting, projectile travel, damage rules, and a prototype sound effect for tower-damage defeats without replacing the simple Raid lifecycle.
 
 Open decisions include enemy families, additional tower targeting modes, win and loss conditions beyond the first breach state, damage types, and upgrade rules.
 
@@ -155,7 +155,7 @@ The first Raid slice stores each active enemy's current world position directly.
 
 The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
-If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists.
+If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats for this sound.
 
 Open decisions include enemy archetypes, whether a Raid can include multiple waves or paths, how Raid difficulty scales with Domain expansion, whether towers or resources can remove enemies before they reach the Sanctum, and what longer-term recovery or loss flow follows a breached Sanctum.
 
@@ -195,7 +195,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
 - The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, and a pine-tree border around the Plot edge except at the road opening.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
-- The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, and reaching enemies spend Barricade charges until the Sanctum is breached.
+- The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, tower-damage defeats play a short prototype sound, and reaching enemies spend Barricade charges until the Sanctum is breached.
 
 ## Open Game Design Questions
 

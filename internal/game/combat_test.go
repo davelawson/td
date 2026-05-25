@@ -111,6 +111,8 @@ func TestBowTowerTargetPriorityUsesClosestEnemyToSanctum(t *testing.T) {
 // TestProjectileHitDamagesEnemy verifies impact applies Bow Tower damage.
 func TestProjectileHitDamagesEnemy(t *testing.T) {
 	state := newRaidTestState(t)
+	sink := &recordingSoundSink{}
+	state.SetSoundSink(sink)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 	state.combat.projectiles = []combatProjectile{{
 		targetID:            0,
@@ -127,11 +129,16 @@ func TestProjectileHitDamagesEnemy(t *testing.T) {
 	if len(state.combat.projectiles) != 0 {
 		t.Fatalf("projectiles = %d, want 0", len(state.combat.projectiles))
 	}
+	if sink.raiderDefeated != 0 {
+		t.Fatalf("raider defeated sounds = %d, want 0", sink.raiderDefeated)
+	}
 }
 
 // TestProjectileHitRemovesDefeatedEnemy verifies health reaching zero defeats the enemy.
 func TestProjectileHitRemovesDefeatedEnemy(t *testing.T) {
 	state := newRaidTestState(t)
+	sink := &recordingSoundSink{}
+	state.SetSoundSink(sink)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 10)}
 	state.combat.projectiles = []combatProjectile{{
 		targetID:            0,
@@ -144,6 +151,26 @@ func TestProjectileHitRemovesDefeatedEnemy(t *testing.T) {
 
 	if len(state.raid.enemies) != 0 {
 		t.Fatalf("active enemies = %d, want 0", len(state.raid.enemies))
+	}
+	if sink.raiderDefeated != 1 {
+		t.Fatalf("raider defeated sounds = %d, want 1", sink.raiderDefeated)
+	}
+}
+
+// TestSanctumContactDoesNotPlayDefeatSound verifies Barricade removal is not a combat defeat.
+func TestSanctumContactDoesNotPlayDefeatSound(t *testing.T) {
+	state := newRaidTestState(t)
+	sink := &recordingSoundSink{}
+	state.SetSoundSink(sink)
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 0}, 10)}
+
+	state.updateRaidEnemies()
+
+	if len(state.raid.enemies) != 0 {
+		t.Fatalf("active enemies = %d, want 0", len(state.raid.enemies))
+	}
+	if sink.raiderDefeated != 0 {
+		t.Fatalf("raider defeated sounds = %d, want 0", sink.raiderDefeated)
 	}
 }
 
@@ -209,4 +236,13 @@ func removeStartingBowTower(state *State) {
 // removeStartingFlameBoltTower removes the default Flame Bolt Tower from focused combat tests.
 func removeStartingFlameBoltTower(state *State) {
 	state.gameMap.Home.Tiles[5][homePlotCenter-1].Feature = featureNone
+}
+
+type recordingSoundSink struct {
+	raiderDefeated int
+}
+
+// PlayRaiderDefeated records one raider-defeated sound event.
+func (s *recordingSoundSink) PlayRaiderDefeated() {
+	s.raiderDefeated++
 }

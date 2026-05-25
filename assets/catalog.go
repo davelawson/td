@@ -13,9 +13,18 @@ import (
 //go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
+//go:embed audio/raider-defeated.wav
+var audioFiles embed.FS
+
 // Catalog groups all loaded runtime assets by type and subtype.
 type Catalog struct {
 	Sprite SpriteCatalog
+	Audio  AudioCatalog
+}
+
+// AudioCatalog groups loaded audio effect bytes by game-domain event.
+type AudioCatalog struct {
+	RaiderDefeated []byte
 }
 
 // SpriteCatalog groups loaded image sprites by game-domain subtype.
@@ -52,6 +61,10 @@ type TerrainSprites struct {
 
 // NewCatalog loads the runtime assets required by a new game.
 func NewCatalog() (Catalog, error) {
+	audioCatalog, err := NewAudioCatalog()
+	if err != nil {
+		return Catalog{}, err
+	}
 	skeletonSwordShield, err := loadSprite("sprites/enemies/skeleton-sword-shield.png")
 	if err != nil {
 		return Catalog{}, err
@@ -89,6 +102,7 @@ func NewCatalog() (Catalog, error) {
 		}
 	}
 	return Catalog{
+		Audio: audioCatalog,
 		Sprite: SpriteCatalog{
 			Enemy: EnemySprites{
 				SkeletonSwordShield: skeletonSwordShield,
@@ -110,6 +124,17 @@ func NewCatalog() (Catalog, error) {
 	}, nil
 }
 
+// NewAudioCatalog loads embedded audio assets required by runtime sound playback.
+func NewAudioCatalog() (AudioCatalog, error) {
+	raiderDefeated, err := loadAudio("audio/raider-defeated.wav")
+	if err != nil {
+		return AudioCatalog{}, err
+	}
+	return AudioCatalog{
+		RaiderDefeated: raiderDefeated,
+	}, nil
+}
+
 // loadSprite decodes an embedded image file and converts it for Ebitengine drawing.
 func loadSprite(path string) (*ebiten.Image, error) {
 	data, err := spriteFiles.ReadFile(path)
@@ -121,4 +146,13 @@ func loadSprite(path string) (*ebiten.Image, error) {
 		return nil, fmt.Errorf("decode sprite %q: %w", path, err)
 	}
 	return ebiten.NewImageFromImage(img), nil
+}
+
+// loadAudio reads embedded audio bytes for later decoding by the sound package.
+func loadAudio(path string) ([]byte, error) {
+	data, err := audioFiles.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read audio %q: %w", path, err)
+	}
+	return data, nil
 }

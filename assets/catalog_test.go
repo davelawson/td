@@ -1,6 +1,11 @@
 package assets
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+
+	"github.com/hajimehoshi/ebiten/v2/audio/wav"
+)
 
 // TestNewCatalogLoadsSkeletonSwordShieldSprite verifies the required enemy sprite is embedded.
 func TestNewCatalogLoadsSkeletonSwordShieldSprite(t *testing.T) {
@@ -136,5 +141,20 @@ func TestNewCatalogLoadsPineTreeSprites(t *testing.T) {
 		if width != 64 || height != 64 {
 			t.Fatalf("pine tree sprite %d size = %dx%d, want 64x64", i+1, width, height)
 		}
+	}
+}
+
+// TestNewCatalogLoadsRaiderDefeatedAudio verifies the required defeat sound is embedded.
+func TestNewCatalogLoadsRaiderDefeatedAudio(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(catalog.Audio.RaiderDefeated) == 0 {
+		t.Fatal("expected raider defeated audio bytes to load")
+	}
+	if _, err := wav.DecodeF32(bytes.NewReader(catalog.Audio.RaiderDefeated)); err != nil {
+		t.Fatalf("decode raider defeated audio: %v", err)
 	}
 }

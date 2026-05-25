@@ -24,7 +24,7 @@ The secondary user is the developer maintaining the prototype. Success for this 
 
 ## Current Phase
 
-The current phase is still early prototype foundation, but the repository now has a more complete runnable shell than the first menu slice. It can build, test, and run a 1920x1080 Go/Ebitengine desktop app with a resizable pixel-sized layout, a main menu, a New Game configuration screen for entering a Wizard name, a placeholder Settings screen, disabled Load option, a first static tree-bordered home Plot scene with a visible automated Bow Tower beside the road, prototype map state, mouse-wheel map zoom, `WASD` camera panning, a prototype top-bar HUD, deterministic placeholder Raids on the fixed north road, first-pass Bow Tower projectile combat, a debug logical update counter, SPACE pause behavior, an ESC in-game overlay menu with surrender-to-menu behavior, and a clean quit path.
+The current phase is still early prototype foundation, but the repository now has a more complete runnable shell than the first menu slice. It can build, test, and run a 1920x1080 Go/Ebitengine desktop app with a resizable pixel-sized layout, a main menu, a New Game configuration screen for entering a Wizard name, a placeholder Settings screen, disabled Load option, a first static tree-bordered home Plot scene with a visible automated Bow Tower beside the road, prototype map state, mouse-wheel map zoom, `WASD` camera panning, a prototype top-bar HUD, deterministic placeholder Raids on the fixed north road, first-pass Bow Tower projectile combat, a short sound when tower damage defeats a raider, a debug logical update counter, SPACE pause behavior, an ESC in-game overlay menu with surrender-to-menu behavior, and a clean quit path.
 
 The immediate product goal is not to make a full tower-defense encounter. The next work should extend the basic Raid baseline with one observable gameplay-facing slice at a time while preserving the small, testable codebase.
 
@@ -38,7 +38,7 @@ The completed foundation plans have established the runnable app, expanded menu 
 
 ## Later Opportunities
 
-Later roadmap opportunities include larger exploration spaces, resource nodes, base-building placement rules, magical tower archetypes, richer enemy waves, combat resolution, UI panels, art assets, audio, progression, and eventually platform packaging.
+Later roadmap opportunities include larger exploration spaces, resource nodes, base-building placement rules, magical tower archetypes, richer enemy waves, combat resolution, UI panels, art assets, broader audio such as music and volume controls, progression, and eventually platform packaging.
 
 Campaign structure and save/load may become important after the prototype has enough systems to preserve meaningful progress. They are intentionally not part of the first phase.
 

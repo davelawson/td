@@ -33,6 +33,7 @@ type State struct {
 	wizardName       string
 	updates          int
 	paused           bool
+	sound            SoundSink
 	assetCatalog     assets.Catalog
 	enemyCatalog     EnemyCatalog
 	structureCatalog StructureCatalog
@@ -43,6 +44,16 @@ type State struct {
 	combat           combatState
 	ui               gameUI
 }
+
+// SoundSink receives gameplay sound events from game state.
+type SoundSink interface {
+	PlayRaiderDefeated()
+}
+
+type silentSoundSink struct{}
+
+// PlayRaiderDefeated ignores raider-defeated events when no runtime sound sink is attached.
+func (silentSoundSink) PlayRaiderDefeated() {}
 
 type gameUI struct {
 	width         int
@@ -67,6 +78,7 @@ func New(wizardName string, width, height int) (*State, error) {
 
 	state := &State{
 		wizardName:       wizardName,
+		sound:            silentSoundSink{},
 		assetCatalog:     assetCatalog,
 		enemyCatalog:     NewEnemyCatalog(assetCatalog),
 		structureCatalog: NewStructureCatalog(assetCatalog),
@@ -77,6 +89,23 @@ func New(wizardName string, width, height int) (*State, error) {
 	state.setPrototypeGameStatus()
 	state.layoutIngameMenu()
 	return state, nil
+}
+
+// SetSoundSink attaches a runtime sound sink for gameplay sound events.
+func (s *State) SetSoundSink(sink SoundSink) {
+	if sink == nil {
+		s.sound = silentSoundSink{}
+		return
+	}
+	s.sound = sink
+}
+
+// playRaiderDefeatedSound reports a raider-defeated event when a sink is available.
+func (s *State) playRaiderDefeatedSound() {
+	if s.sound == nil {
+		return
+	}
+	s.sound.PlayRaiderDefeated()
 }
 
 // newGameUI creates render-facing state for the current drawable size.

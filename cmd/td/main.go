@@ -4,8 +4,10 @@ import (
 	"errors"
 	"log"
 
+	"td/assets"
 	"td/internal/game"
 	"td/internal/menu"
+	"td/internal/sound"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -22,6 +24,12 @@ type app struct {
 	height    int
 	mainMenu  *menu.Menu
 	gameState *game.State
+	sound     appSound
+}
+
+type appSound interface {
+	game.SoundSink
+	Update()
 }
 
 type appMode int
@@ -37,7 +45,7 @@ func main() {
 	ebiten.SetWindowSize(defaultWindowWidth, defaultWindowHeight)
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 
-	app, err := newApp()
+	app, err := newRuntimeApp()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +55,26 @@ func main() {
 }
 
 // newApp creates the app state used by Ebitengine callbacks.
+// Only exists for the purposes of launching tests
 func newApp() (*app, error) {
+	return newAppWithSound(nil)
+}
+
+// newRuntimeApp creates app state with the runtime sound manager attached.
+func newRuntimeApp() (*app, error) {
+	audioCatalog, err := assets.NewAudioCatalog()
+	if err != nil {
+		return nil, err
+	}
+	soundManager, err := sound.NewManager(audioCatalog)
+	if err != nil {
+		return nil, err
+	}
+	return newAppWithSound(soundManager)
+}
+
+// newAppWithSound creates app state with an optional runtime sound sink.
+func newAppWithSound(sound appSound) (*app, error) {
 	mainMenu, err := menu.New(defaultWindowWidth, defaultWindowHeight)
 	if err != nil {
 		return nil, err
@@ -57,11 +84,15 @@ func newApp() (*app, error) {
 		width:    defaultWindowWidth,
 		height:   defaultWindowHeight,
 		mainMenu: mainMenu,
+		sound:    sound,
 	}, nil
 }
 
 // Update routes Ebitengine input to the active app mode.
 func (a *app) Update() error {
+	if a.sound != nil {
+		a.sound.Update()
+	}
 	switch a.mode {
 	case appModeGame:
 		return a.updateGame()
@@ -145,6 +176,9 @@ func (a *app) startGame(wizardName string) error {
 	gameState, err := game.New(wizardName, a.width, a.height)
 	if err != nil {
 		return err
+	}
+	if a.sound != nil {
+		gameState.SetSoundSink(a.sound)
 	}
 	a.mode = appModeGame
 	a.gameState = gameState
