@@ -59,7 +59,7 @@ During the calm phase, the wizard can spend resources to explore another Plot ad
 
 Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
-The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. This selection currently has no command panel, upgrades, placement action, or gameplay effect; it exists to establish readable object targeting for later inspection and command workflows.
+The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, and the Sanctum shows only its name. Selection currently has no command buttons, upgrades, placement action, or gameplay effect; it exists to establish readable object targeting for later inspection and command workflows.
 
 Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
 

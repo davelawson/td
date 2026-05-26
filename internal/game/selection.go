@@ -16,7 +16,9 @@ type selectedItem struct {
 
 // updateSelection applies one left-click selection update for map objects.
 func (s *State) updateSelection(input Input) {
-	if !input.Clicked || s.nextRaidButtonContains(input.CursorX, input.CursorY) {
+	if !input.Clicked ||
+		s.nextRaidButtonContains(input.CursorX, input.CursorY) ||
+		s.selectionPanelContains(input.CursorX, input.CursorY) {
 		return
 	}
 

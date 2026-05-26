@@ -21,12 +21,14 @@ type screenshotApp struct {
 }
 
 type screenshotTarget struct {
-	screen     menu.Screen
-	wizardName string
-	paused     bool
-	ingameMenu bool
-	activeRaid bool
-	path       string
+	screen         menu.Screen
+	wizardName     string
+	paused         bool
+	ingameMenu     bool
+	activeRaid     bool
+	selectedTower  bool
+	selectedRaider bool
+	path           string
 }
 
 // TestStartGameSwitchesToGameMode verifies app-level game startup.
@@ -87,14 +89,16 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "22-zombie-enemy", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "25-selection-panel", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
+			{wizardName: "Merlin", selectedTower: true, path: filepath.Join(basePath, "selected-tower.png")},
 			{wizardName: "Merlin", activeRaid: true, path: filepath.Join(basePath, "active-raid.png")},
+			{wizardName: "Merlin", activeRaid: true, selectedRaider: true, path: filepath.Join(basePath, "selected-raider.png")},
 			{wizardName: "Merlin", paused: true, path: filepath.Join(basePath, "paused-game.png")},
 			{wizardName: "Merlin", ingameMenu: true, path: filepath.Join(basePath, "ingame-menu.png")},
 		},
@@ -130,6 +134,20 @@ func (a *screenshotApp) Update() error {
 			for i := 0; i < 45; i++ {
 				a.app.gameState.Update(game.Input{})
 			}
+		}
+		if target.selectedTower {
+			a.app.gameState.Update(game.Input{
+				CursorX: defaultWindowWidth/2 + 54,
+				CursorY: topOfGameScene() + defaultGameSceneHeight()/2 - 108,
+				Clicked: true,
+			})
+		}
+		if target.selectedRaider {
+			a.app.gameState.Update(game.Input{
+				CursorX: defaultWindowWidth / 2,
+				CursorY: topOfGameScene() + 160,
+				Clicked: true,
+			})
 		}
 		if target.paused {
 			a.app.gameState.Update(game.Input{TogglePause: true})
@@ -190,4 +208,14 @@ func stateCenterX(_ *game.State) int {
 // stateCenterY returns the top in-game button vertical center.
 func stateCenterY(_ *game.State) int {
 	return defaultWindowHeight/2 + 8
+}
+
+// topOfGameScene returns the default screenshot top edge below the game HUD.
+func topOfGameScene() int {
+	return 86
+}
+
+// defaultGameSceneHeight returns the default screenshot map viewport height.
+func defaultGameSceneHeight() int {
+	return defaultWindowHeight - topOfGameScene()
 }

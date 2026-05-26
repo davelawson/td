@@ -183,6 +183,7 @@ func (s *State) Draw(screen *ebiten.Image) {
 	s.drawTopBar(screen)
 	s.drawRaidControls(screen)
 	s.drawCounter(screen)
+	s.drawSelectionPanel(screen)
 	s.drawIngameMenu(screen)
 }
 
@@ -211,10 +212,14 @@ func (s *State) drawCounter(screen *ebiten.Image) {
 	value := fmt.Sprintf("Updates: %d", s.updates)
 	width, _ := text.Measure(value, s.ui.bodyFace, s.ui.bodyFace.Size)
 	x := float64(s.ui.width) - width - 48
-	ui.DrawText(screen, value, s.ui.bodyFace, x, float64(s.ui.height)-58, colors.mutedText)
+	y := float64(s.ui.height) - 58
+	if panel, ok := s.selectionPanelBounds(); ok {
+		y = float64(panel.Y - 36)
+	}
+	ui.DrawText(screen, value, s.ui.bodyFace, x, y, colors.mutedText)
 
 	if s.paused {
 		pauseWidth, _ := text.Measure("PAUSED", s.ui.bodyFace, s.ui.bodyFace.Size)
-		ui.DrawText(screen, "PAUSED", s.ui.bodyFace, float64(s.ui.width)-pauseWidth-48, float64(s.ui.height)-94, colors.pause)
+		ui.DrawText(screen, "PAUSED", s.ui.bodyFace, float64(s.ui.width)-pauseWidth-48, y-36, colors.pause)
 	}
 }
