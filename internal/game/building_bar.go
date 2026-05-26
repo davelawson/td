@@ -18,7 +18,7 @@ const (
 	buildDragIconSize         = buildingBarItemSize / 2
 	buildingBarCostGap        = 4
 	buildingBarCostTextHeight = 18
-	buildingBarCostItemGap    = 6
+	buildingBarCostItemGap    = 5
 	buildingBarItemGap        = 12
 	buildingBarSpriteInset    = 8
 )

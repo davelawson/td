@@ -195,6 +195,10 @@ func TestBuildingBarHoverClearsWhenIngameMenuOpens(t *testing.T) {
 func TestBuildingBarHoveredCostFitsIcon(t *testing.T) {
 	state := newRaidTestState(t)
 
+	if state.ui.costBoldFace.Size != state.ui.costFace.Size {
+		t.Fatalf("hovered cost font size = %.1f, want normal cost font size %.1f", state.ui.costBoldFace.Size, state.ui.costFace.Size)
+	}
+
 	for _, item := range state.buildingBarItems() {
 		costItems := buildingBarCostItems(item.Cost)
 		width := state.buildingBarCostWidth(costItems, true)
