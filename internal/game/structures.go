@@ -49,7 +49,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		BowTower: StructureTemplate{
 			Name:                          "Bow Tower",
 			Sprite:                        assetCatalog.Sprite.Structure.BowTower,
-			Cost:                          Resources{Wood: 30, Stone: 10, Metal: 10},
+			Cost:                          Resources{Wood: 30, Stone: 10},
 			RangeTiles:                    3.0,
 			Damage:                        10,
 			FireIntervalSeconds:           1.0,
