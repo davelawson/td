@@ -10,7 +10,7 @@ import (
 type StructureTemplate struct {
 	Name                          string
 	Sprite                        *ebiten.Image
-	Cost                          ResourceCost
+	Cost                          Resources
 	RangeTiles                    float64
 	Damage                        int
 	FireIntervalSeconds           float64
@@ -18,8 +18,8 @@ type StructureTemplate struct {
 	ProjectileSprite              *ebiten.Image
 }
 
-// ResourceCost describes the resources required to construct a structure.
-type ResourceCost struct {
+// Resources describes the resources required to construct a structure.
+type Resources struct {
 	Wood  int
 	Stone int
 	Metal int
@@ -49,7 +49,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		BowTower: StructureTemplate{
 			Name:                          "Bow Tower",
 			Sprite:                        assetCatalog.Sprite.Structure.BowTower,
-			Cost:                          ResourceCost{Wood: 30, Stone: 10, Metal: 10},
+			Cost:                          Resources{Wood: 30, Stone: 10, Metal: 10},
 			RangeTiles:                    3.0,
 			Damage:                        10,
 			FireIntervalSeconds:           1.0,
@@ -59,7 +59,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		FlameBoltTower: StructureTemplate{
 			Name:                          "Flame Bolt Tower",
 			Sprite:                        assetCatalog.Sprite.Structure.FlameBoltTower,
-			Cost:                          ResourceCost{Stone: 30, Metal: 20},
+			Cost:                          Resources{Stone: 30, Metal: 20},
 			RangeTiles:                    2.5,
 			Damage:                        20,
 			FireIntervalSeconds:           1.5,

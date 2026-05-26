@@ -46,7 +46,7 @@ func TestNewStructureCatalogIncludesBowTower(t *testing.T) {
 	if bowTower.Sprite != assetCatalog.Sprite.Structure.BowTower {
 		t.Fatal("expected Bow Tower sprite to reference the loaded asset catalog sprite")
 	}
-	if bowTower.Cost != (ResourceCost{Wood: 30, Stone: 10, Metal: 10}) {
+	if bowTower.Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
 		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", bowTower.Cost)
 	}
 	if bowTower.RangeTiles != 3.0 {
@@ -85,7 +85,7 @@ func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
 	if flameBoltTower.Sprite != assetCatalog.Sprite.Structure.FlameBoltTower {
 		t.Fatal("expected Flame Bolt Tower sprite to reference the loaded asset catalog sprite")
 	}
-	if flameBoltTower.Cost != (ResourceCost{Stone: 30, Metal: 20}) {
+	if flameBoltTower.Cost != (Resources{Stone: 30, Metal: 20}) {
 		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", flameBoltTower.Cost)
 	}
 	if flameBoltTower.RangeTiles != 2.5 {

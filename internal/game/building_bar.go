@@ -28,7 +28,7 @@ var buildingBarCostShadow = color.RGBA{R: 8, G: 10, B: 8, A: 220}
 type buildingBarItem struct {
 	Name   string
 	Sprite *ebiten.Image
-	Cost   ResourceCost
+	Cost   Resources
 	Bounds ui.Button[int]
 }
 
@@ -96,7 +96,7 @@ func (s *State) buildingBarContains(x, y int) bool {
 }
 
 // canAffordBuildingCost reports whether current resources cover a structure cost.
-func (s *State) canAffordBuildingCost(cost ResourceCost) bool {
+func (s *State) canAffordBuildingCost(cost Resources) bool {
 	return s.status.resources.wood >= cost.Wood &&
 		s.status.resources.stone >= cost.Stone &&
 		s.status.resources.metal >= cost.Metal
@@ -233,7 +233,7 @@ func buildingFeatureForItemIndex(index int) (tileFeature, bool) {
 }
 
 // deductBuildingCost spends the resources required to build a tower.
-func (s *State) deductBuildingCost(cost ResourceCost) {
+func (s *State) deductBuildingCost(cost Resources) {
 	s.status.resources.wood -= cost.Wood
 	s.status.resources.stone -= cost.Stone
 	s.status.resources.metal -= cost.Metal
@@ -361,7 +361,7 @@ func (s *State) buildingBarCostFace(hovered bool) *text.GoTextFace {
 }
 
 // buildingBarCostItems returns non-zero costs in Wood, Stone, Metal order.
-func buildingBarCostItems(cost ResourceCost) []buildingBarCostItem {
+func buildingBarCostItems(cost Resources) []buildingBarCostItem {
 	items := []buildingBarCostItem{}
 	if cost.Wood > 0 {
 		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Wood), Color: colors.resourceWood})

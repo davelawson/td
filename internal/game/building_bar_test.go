@@ -39,13 +39,13 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 	if items[0].Sprite != state.structureCatalog.BowTower.Sprite {
 		t.Fatal("expected first item to use Bow Tower sprite")
 	}
-	if items[0].Cost != (ResourceCost{Wood: 30, Stone: 10, Metal: 10}) {
+	if items[0].Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
 		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[0].Cost)
 	}
 	if items[1].Sprite != state.structureCatalog.FlameBoltTower.Sprite {
 		t.Fatal("expected second item to use Flame Bolt Tower sprite")
 	}
-	if items[1].Cost != (ResourceCost{Stone: 30, Metal: 20}) {
+	if items[1].Cost != (Resources{Stone: 30, Metal: 20}) {
 		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[1].Cost)
 	}
 	firstBlockBottom := items[0].Bounds.Y + items[0].Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
@@ -56,7 +56,7 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 
 // TestBuildingBarCostItems verifies non-zero tower costs render in resource order.
 func TestBuildingBarCostItems(t *testing.T) {
-	items := buildingBarCostItems(ResourceCost{Wood: 30, Stone: 10, Metal: 10})
+	items := buildingBarCostItems(Resources{Wood: 30, Stone: 10, Metal: 10})
 	if len(items) != 3 {
 		t.Fatalf("cost items = %d, want 3", len(items))
 	}
@@ -64,7 +64,7 @@ func TestBuildingBarCostItems(t *testing.T) {
 	assertCostItem(t, items[1], "10", colors.resourceStone)
 	assertCostItem(t, items[2], "10", colors.resourceMetal)
 
-	items = buildingBarCostItems(ResourceCost{Stone: 30, Metal: 20})
+	items = buildingBarCostItems(Resources{Stone: 30, Metal: 20})
 	if len(items) != 2 {
 		t.Fatalf("cost items = %d, want 2", len(items))
 	}
