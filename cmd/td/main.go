@@ -131,6 +131,8 @@ func (a *app) updateGame() error {
 		CursorX:     cursorX,
 		CursorY:     cursorY,
 		Clicked:     inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft),
+		MouseDown:   ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft),
+		Released:    inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft),
 	}
 	input.Pan.Up = ebiten.IsKeyPressed(ebiten.KeyW)
 	input.Pan.Down = ebiten.IsKeyPressed(ebiten.KeyS)

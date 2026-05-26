@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a visual-only building bar showing those two tower types and their prototype construction costs, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a building bar showing those two tower types and their prototype construction costs, first calm-phase tower drag placement with resource spending, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource gathering, broader base-building, upgrade, and reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -59,7 +59,7 @@ During the calm phase, the wizard can spend resources to explore another Plot ad
 
 Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
-The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, and the Sanctum shows only its name. Selection currently has no command buttons, upgrades, placement action, or gameplay effect; it exists to establish readable object targeting for later inspection and command workflows.
+The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
 
 Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
 
@@ -121,9 +121,9 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a visual-only building bar on the left side of the playable scene. It shows Bow Tower and Flame Bolt Tower icons using the existing tower sprites, with colour-coded prototype construction costs beneath each icon. It does not yet select a build intent, place structures, spend resources, preview placement, validate buildable terrain, or represent affordability.
+The first build-facing UI is a building bar on the left side of the playable scene. It shows Bow Tower and Flame Bolt Tower icons using the existing tower sprites, with colour-coded prototype construction costs beneath each icon. Hovering an affordable icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an affordable tower icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that tower and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
 
-Open decisions include what counts as buildable terrain, whether structures block paths, how much rebuilding is allowed between attacks, how the player enters and leaves placement mode, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
+Open decisions include richer build rules for future terrain types, whether structures block paths beyond the current fixed road rejection, how much rebuilding is allowed between attacks, whether later placement needs previews or range indicators, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
 ### Sanctum
 
@@ -197,9 +197,10 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a visual-only building bar listing the Bow Tower and Flame Bolt Tower as future build options with prototype construction costs.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a building bar listing the Bow Tower and Flame Bolt Tower with prototype construction costs and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, tower-damage defeats play a short prototype sound, and reaching enemies spend Barricade charges until the Sanctum is breached.
+- The first tower placement slice lets the player left-drag affordable tower icons from the building bar during calm play, release over empty grass-like Tiles to place towers, and spend the displayed Wood, Stone, and Metal costs. With default resources, Bow Tower is affordable and Flame Bolt Tower is not.
 
 ## Open Game Design Questions
 
@@ -259,7 +260,7 @@ Record game design decisions here when they become durable enough to guide imple
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Metal for the Bow Tower, and 30 Stone and 20 Metal for the Flame Bolt Tower.
-  Rationale: These costs make both current tower options visible in the resource economy without implementing placement or resource spending yet.
+  Rationale: These costs make both current tower options visible in the resource economy and now drive the first limited tower placement action.
   Date/Author: 2026-05-26 / Codex
 
 - Decision: Use second-based Bow Tower combat stats for the first automated tower slice: 3.0-Tile range, 10 damage, 1.0-second fire interval, and 9.0-Tiles-per-second projectile speed.

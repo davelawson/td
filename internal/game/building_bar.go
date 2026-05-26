@@ -15,6 +15,7 @@ const (
 	buildingBarWidth          = 96
 	buildingBarPadding        = 16
 	buildingBarItemSize       = 64
+	buildDragIconSize         = buildingBarItemSize / 2
 	buildingBarCostGap        = 4
 	buildingBarCostTextHeight = 18
 	buildingBarCostItemGap    = 6
@@ -36,6 +37,13 @@ type buildingBarCostItem struct {
 	Color color.Color
 }
 
+type buildDragState struct {
+	active    bool
+	itemIndex int
+	cursorX   int
+	cursorY   int
+}
+
 // buildingBarBounds returns the screen-space building bar rectangle.
 func (s *State) buildingBarBounds() ui.Button[int] {
 	return ui.Button[int]{
@@ -46,7 +54,7 @@ func (s *State) buildingBarBounds() ui.Button[int] {
 	}
 }
 
-// buildingBarItems returns the visual-only tower choices shown in the building bar.
+// buildingBarItems returns the tower choices shown in the building bar.
 func (s *State) buildingBarItems() []buildingBarItem {
 	bar := s.buildingBarBounds()
 	x := bar.X + (bar.W-buildingBarItemSize)/2
@@ -99,6 +107,42 @@ func (s *State) updateBuildingBarHover(input Input) {
 	s.ui.buildBarHover = s.buildingBarItemIndexAt(input.CursorX, input.CursorY)
 }
 
+// updateBuildDrag starts, tracks, completes, or cancels tower build drags.
+func (s *State) updateBuildDrag(input Input) {
+	if s.buildDrag.active {
+		s.buildDrag.cursorX = input.CursorX
+		s.buildDrag.cursorY = input.CursorY
+		if input.Released {
+			s.placeDraggedBuilding(input.CursorX, input.CursorY)
+			s.buildDrag = buildDragState{}
+			return
+		}
+		if !input.MouseDown {
+			s.buildDrag = buildDragState{}
+		}
+		return
+	}
+
+	if !input.Clicked {
+		return
+	}
+
+	index := s.buildingBarItemIndexAt(input.CursorX, input.CursorY)
+	if index < 0 {
+		return
+	}
+	item := s.buildingBarItems()[index]
+	if !s.canAffordBuildingCost(item.Cost) || !s.canBuildTowersNow() {
+		return
+	}
+	s.buildDrag = buildDragState{
+		active:    true,
+		itemIndex: index,
+		cursorX:   input.CursorX,
+		cursorY:   input.CursorY,
+	}
+}
+
 // buildingBarItemIndexAt returns the tower icon index at a point, or -1.
 func (s *State) buildingBarItemIndexAt(x, y int) int {
 	for i, item := range s.buildingBarItems() {
@@ -109,7 +153,93 @@ func (s *State) buildingBarItemIndexAt(x, y int) int {
 	return -1
 }
 
-// drawBuildingBar renders the visual-only tower picker at the left edge of the scene.
+// canBuildTowersNow reports whether the current game phase allows tower placement.
+func (s *State) canBuildTowersNow() bool {
+	return s.status.phase == phaseCalm && !s.raid.active && !s.raid.breached
+}
+
+// placeDraggedBuilding attempts to build the active dragged tower at a screen point.
+func (s *State) placeDraggedBuilding(x, y int) {
+	item, ok := s.draggedBuildingItem()
+	if !ok || !s.canAffordBuildingCost(item.Cost) || !s.canBuildTowersNow() || s.buildDropBlockedByUI(x, y) {
+		return
+	}
+	tile, ok := s.homePlotTileAtScreenPosition(x, y)
+	if !ok || !s.canBuildOnTile(tile) {
+		return
+	}
+	feature, ok := buildingFeatureForItemIndex(s.buildDrag.itemIndex)
+	if !ok {
+		return
+	}
+
+	s.deductBuildingCost(item.Cost)
+	s.gameMap.Home.Tiles[tile.Y][tile.X].Feature = feature
+}
+
+// buildDropBlockedByUI reports whether a drop point is on screen-space game UI.
+func (s *State) buildDropBlockedByUI(x, y int) bool {
+	return s.buildingBarContains(x, y) ||
+		s.nextRaidButtonContains(x, y) ||
+		s.selectionPanelContains(x, y)
+}
+
+// draggedBuildingItem returns the building-bar item currently attached to the cursor.
+func (s *State) draggedBuildingItem() (buildingBarItem, bool) {
+	if !s.buildDrag.active {
+		return buildingBarItem{}, false
+	}
+	items := s.buildingBarItems()
+	if s.buildDrag.itemIndex < 0 || s.buildDrag.itemIndex >= len(items) {
+		return buildingBarItem{}, false
+	}
+	return items[s.buildDrag.itemIndex], true
+}
+
+// homePlotTileAtScreenPosition returns the home Plot Tile under a screen point.
+func (s *State) homePlotTileAtScreenPosition(x, y int) (tileCoordinate, bool) {
+	viewport := s.sceneViewport()
+	for tileY := 0; tileY < plotSize; tileY++ {
+		for tileX := 0; tileX < plotSize; tileX++ {
+			worldWest, worldNorth, worldW, worldH := tileWorldRect(tileX, tileY)
+			rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
+			if rectContainsPoint(rect, x, y) {
+				return tileCoordinate{X: tileX, Y: tileY}, true
+			}
+		}
+	}
+	return tileCoordinate{}, false
+}
+
+// canBuildOnTile reports whether a Tile can receive a new tower.
+func (s *State) canBuildOnTile(tile tileCoordinate) bool {
+	if tile.X < 0 || tile.Y < 0 || tile.X >= plotSize || tile.Y >= plotSize {
+		return false
+	}
+	target := s.gameMap.Home.Tiles[tile.Y][tile.X]
+	return target.Terrain == terrainEmpty && target.Feature == featureNone
+}
+
+// buildingFeatureForItemIndex maps building-bar choices to placed Tile features.
+func buildingFeatureForItemIndex(index int) (tileFeature, bool) {
+	switch index {
+	case 0:
+		return featureBowTower, true
+	case 1:
+		return featureFlameBoltTower, true
+	default:
+		return featureNone, false
+	}
+}
+
+// deductBuildingCost spends the resources required to build a tower.
+func (s *State) deductBuildingCost(cost ResourceCost) {
+	s.status.resources.wood -= cost.Wood
+	s.status.resources.stone -= cost.Stone
+	s.status.resources.metal -= cost.Metal
+}
+
+// drawBuildingBar renders the tower picker at the left edge of the scene.
 func (s *State) drawBuildingBar(screen *ebiten.Image) {
 	bar := s.buildingBarBounds()
 	if bar.H <= 0 {
@@ -122,6 +252,28 @@ func (s *State) drawBuildingBar(screen *ebiten.Image) {
 	for i, item := range s.buildingBarItems() {
 		s.drawBuildingBarItem(screen, item, s.buildingBarItemHighlighted(i, item))
 	}
+}
+
+// drawBuildDrag renders the active tower icon attached to the cursor.
+func (s *State) drawBuildDrag(screen *ebiten.Image) {
+	item, ok := s.draggedBuildingItem()
+	if !ok || item.Sprite == nil {
+		return
+	}
+	spriteWidth := float64(item.Sprite.Bounds().Dx())
+	spriteHeight := float64(item.Sprite.Bounds().Dy())
+	if spriteWidth <= 0 || spriteHeight <= 0 {
+		return
+	}
+
+	scale := float64(buildDragIconSize) / spriteWidth
+	options := &ebiten.DrawImageOptions{}
+	options.GeoM.Scale(scale, scale)
+	options.GeoM.Translate(
+		float64(s.buildDrag.cursorX)-spriteWidth*scale/2,
+		float64(s.buildDrag.cursorY)-spriteHeight*scale/2,
+	)
+	screen.DrawImage(item.Sprite, options)
 }
 
 // buildingBarItemHighlighted reports whether an item should receive hover emphasis.

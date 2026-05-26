@@ -24,9 +24,11 @@ type Input struct {
 		Left  bool
 		Right bool
 	}
-	CursorX int
-	CursorY int
-	Clicked bool
+	CursorX   int
+	CursorY   int
+	Clicked   bool
+	MouseDown bool
+	Released  bool
 }
 
 // State owns the current game state and logical update rules.
@@ -44,6 +46,7 @@ type State struct {
 	raid             raidState
 	combat           combatState
 	selection        selectedItem
+	buildDrag        buildDragState
 	ui               gameUI
 }
 
@@ -176,6 +179,7 @@ func (s *State) Update(input Input) Action {
 		return ActionNone
 	}
 	s.updateBuildingBarHover(input)
+	s.updateBuildDrag(input)
 	s.applyCameraInput(input)
 	s.updateSelection(input)
 	if input.TogglePause {
@@ -200,6 +204,7 @@ func (s *State) Draw(screen *ebiten.Image) {
 	s.drawProjectiles(screen)
 	s.drawTopBar(screen)
 	s.drawBuildingBar(screen)
+	s.drawBuildDrag(screen)
 	s.drawRaidControls(screen)
 	s.drawCounter(screen)
 	s.drawSelectionPanel(screen)
