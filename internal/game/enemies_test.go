@@ -27,6 +27,9 @@ func TestNewEnemyCatalogIncludesSkeletonSwordShield(t *testing.T) {
 	if skeleton.SanctumDamage != 1 {
 		t.Fatalf("skeleton Sanctum damage = %d, want 1", skeleton.SanctumDamage)
 	}
+	if skeleton.Resources != (Resources{Wood: 5, Stone: 2}) {
+		t.Fatalf("skeleton resources = %+v, want Wood 5 Stone 2", skeleton.Resources)
+	}
 	if skeleton.SpriteKey != "skeleton-sword-shield" {
 		t.Fatalf("skeleton sprite key = %q, want %q", skeleton.SpriteKey, "skeleton-sword-shield")
 	}
@@ -58,6 +61,9 @@ func TestNewEnemyCatalogIncludesZombie(t *testing.T) {
 	}
 	if zombie.SanctumDamage != 1 {
 		t.Fatalf("zombie Sanctum damage = %d, want 1", zombie.SanctumDamage)
+	}
+	if zombie.Resources != (Resources{Wood: 4, Stone: 3, Metal: 1}) {
+		t.Fatalf("zombie resources = %+v, want Wood 4 Stone 3 Metal 1", zombie.Resources)
 	}
 	if zombie.SpriteKey != "zombie" {
 		t.Fatalf("zombie sprite key = %q, want %q", zombie.SpriteKey, "zombie")

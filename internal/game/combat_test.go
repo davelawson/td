@@ -113,7 +113,8 @@ func TestProjectileHitDamagesEnemy(t *testing.T) {
 	state := newRaidTestState(t)
 	sink := &recordingSoundSink{}
 	state.SetSoundSink(sink)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
+	state.raid.enemies = []raidEnemy{combatTestEnemyWithTemplate(0, coord{X: 0, Y: 2}, 20, &state.enemyCatalog.SkeletonSwordShield)}
+	startingResources := state.status.resources
 	state.combat.projectiles = []combatProjectile{{
 		targetID:            0,
 		position:            coord{X: 0, Y: 2},
@@ -132,6 +133,9 @@ func TestProjectileHitDamagesEnemy(t *testing.T) {
 	if sink.raiderDefeated != 0 {
 		t.Fatalf("raider defeated sounds = %d, want 0", sink.raiderDefeated)
 	}
+	if state.status.resources != startingResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, startingResources)
+	}
 }
 
 // TestProjectileHitRemovesDefeatedEnemy verifies health reaching zero defeats the enemy.
@@ -139,7 +143,8 @@ func TestProjectileHitRemovesDefeatedEnemy(t *testing.T) {
 	state := newRaidTestState(t)
 	sink := &recordingSoundSink{}
 	state.SetSoundSink(sink)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 10)}
+	state.raid.enemies = []raidEnemy{combatTestEnemyWithTemplate(0, coord{X: 0, Y: 2}, 10, &state.enemyCatalog.SkeletonSwordShield)}
+	startingResources := state.status.resources
 	state.combat.projectiles = []combatProjectile{{
 		targetID:            0,
 		position:            coord{X: 0, Y: 2},
@@ -155,14 +160,23 @@ func TestProjectileHitRemovesDefeatedEnemy(t *testing.T) {
 	if sink.raiderDefeated != 1 {
 		t.Fatalf("raider defeated sounds = %d, want 1", sink.raiderDefeated)
 	}
+	wantResources := resourceCounts{
+		wood:  startingResources.wood + state.enemyCatalog.SkeletonSwordShield.Resources.Wood,
+		stone: startingResources.stone + state.enemyCatalog.SkeletonSwordShield.Resources.Stone,
+		metal: startingResources.metal + state.enemyCatalog.SkeletonSwordShield.Resources.Metal,
+	}
+	if state.status.resources != wantResources {
+		t.Fatalf("resources = %+v, want %+v", state.status.resources, wantResources)
+	}
 }
 
-// TestSanctumContactDoesNotPlayDefeatSound verifies Barricade removal is not a combat defeat.
-func TestSanctumContactDoesNotPlayDefeatSound(t *testing.T) {
+// TestSanctumContactDoesNotGrantDefeatEffects verifies Barricade removal is not a combat defeat.
+func TestSanctumContactDoesNotGrantDefeatEffects(t *testing.T) {
 	state := newRaidTestState(t)
 	sink := &recordingSoundSink{}
 	state.SetSoundSink(sink)
-	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 0}, 10)}
+	state.raid.enemies = []raidEnemy{combatTestEnemyWithTemplate(0, coord{X: 0, Y: 0}, 10, &state.enemyCatalog.SkeletonSwordShield)}
+	startingResources := state.status.resources
 
 	state.updateRaidEnemies()
 
@@ -171,6 +185,9 @@ func TestSanctumContactDoesNotPlayDefeatSound(t *testing.T) {
 	}
 	if sink.raiderDefeated != 0 {
 		t.Fatalf("raider defeated sounds = %d, want 0", sink.raiderDefeated)
+	}
+	if state.status.resources != startingResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, startingResources)
 	}
 }
 
@@ -226,6 +243,13 @@ func combatTestEnemy(id int, position coord, health int) raidEnemy {
 		position: position,
 		health:   health,
 	}
+}
+
+// combatTestEnemyWithTemplate creates a targetable enemy with reward-bearing template data.
+func combatTestEnemyWithTemplate(id int, position coord, health int, template *EnemyTemplate) raidEnemy {
+	enemy := combatTestEnemy(id, position, health)
+	enemy.template = template
+	return enemy
 }
 
 // removeStartingBowTower removes the default Bow Tower from focused combat tests.

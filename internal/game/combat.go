@@ -172,9 +172,20 @@ func (s *State) damageEnemy(index int, damage int) {
 	if s.raid.enemies[index].health > 0 {
 		return
 	}
+	s.grantEnemyResources(s.raid.enemies[index])
 	s.playRaiderDefeatedSound()
 	copy(s.raid.enemies[index:], s.raid.enemies[index+1:])
 	s.raid.enemies = s.raid.enemies[:len(s.raid.enemies)-1]
+}
+
+// grantEnemyResources awards the template resources for a combat-defeated enemy.
+func (s *State) grantEnemyResources(enemy raidEnemy) {
+	if enemy.template == nil {
+		return
+	}
+	s.status.resources.wood += enemy.template.Resources.Wood
+	s.status.resources.stone += enemy.template.Resources.Stone
+	s.status.resources.metal += enemy.template.Resources.Metal
 }
 
 // distance returns the Euclidean distance between two world positions.

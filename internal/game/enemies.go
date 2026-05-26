@@ -12,6 +12,7 @@ type EnemyTemplate struct {
 	MaxHealth           int
 	SpeedTilesPerSecond float64
 	SanctumDamage       int
+	Resources           Resources
 	SpriteKey           string
 	Sprite              *ebiten.Image
 }
@@ -30,6 +31,7 @@ func NewEnemyCatalog(assetCatalog assets.Catalog) EnemyCatalog {
 			MaxHealth:           50,
 			SpeedTilesPerSecond: 1.0,
 			SanctumDamage:       1,
+			Resources:           Resources{Wood: 5, Stone: 2},
 			SpriteKey:           "skeleton-sword-shield",
 			Sprite:              assetCatalog.Sprite.Enemy.SkeletonSwordShield,
 		},
@@ -38,6 +40,7 @@ func NewEnemyCatalog(assetCatalog assets.Catalog) EnemyCatalog {
 			MaxHealth:           75,
 			SpeedTilesPerSecond: 0.7,
 			SanctumDamage:       1,
+			Resources:           Resources{Wood: 4, Stone: 3, Metal: 1},
 			SpriteKey:           "zombie",
 			Sprite:              assetCatalog.Sprite.Enemy.Zombie,
 		},
