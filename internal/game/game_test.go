@@ -398,9 +398,6 @@ func TestStateFormatsCalmTopBar(t *testing.T) {
 	if value := state.phaseText(); value != "Raid in 02:00" {
 		t.Fatalf("phaseText = %q", value)
 	}
-	if value := state.resourcesAndBarricadeText(); value != "Wood 80  Stone 45  Metal 12 | Barricade 3" {
-		t.Fatalf("resourcesAndBarricadeText = %q", value)
-	}
 }
 
 // TestStateFormatsRaidTopBar verifies raid-specific top-bar text.

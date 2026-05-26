@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/audio/wav"
 )
 
@@ -38,6 +39,32 @@ func TestNewCatalogLoadsZombieSprite(t *testing.T) {
 	width, height := zombie.Bounds().Dx(), zombie.Bounds().Dy()
 	if width != 64 || height != 64 {
 		t.Fatalf("zombie sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
+// TestNewCatalogLoadsResourceIconSprites verifies the required HUD icon sprites are embedded.
+func TestNewCatalogLoadsResourceIconSprites(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name string
+		icon *ebiten.Image
+	}{
+		{name: "wood", icon: catalog.Sprite.Icon.Wood},
+		{name: "stone", icon: catalog.Sprite.Icon.Stone},
+		{name: "metal", icon: catalog.Sprite.Icon.Metal},
+	}
+	for _, test := range tests {
+		if test.icon == nil {
+			t.Fatalf("expected %s icon sprite to load", test.name)
+		}
+		width, height := test.icon.Bounds().Dx(), test.icon.Bounds().Dy()
+		if width != 64 || height != 64 {
+			t.Fatalf("%s icon sprite size = %dx%d, want 64x64", test.name, width, height)
+		}
 	}
 }
 

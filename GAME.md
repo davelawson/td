@@ -113,7 +113,7 @@ The initial resources are:
 
 Open decisions include whether resources are gathered manually or passively, whether resources persist across encounters, whether additional resources are needed, and how resource nodes are discovered or depleted.
 
-The in-game top bar should show the current Wood, Stone, and Metal counts once the economy exists. Prototype HUD values may be fixed until resource gathering and spending systems are implemented.
+The in-game top bar should show the current Wood, Stone, and Metal counts as resource icons plus numbers once the economy exists. Prototype HUD values may be fixed until resource gathering and spending systems are implemented.
 
 ### Base-Building
 

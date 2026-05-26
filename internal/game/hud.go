@@ -11,8 +11,12 @@ import (
 )
 
 const (
-	topBarHeight = 86
-	topBarMargin = 42
+	topBarHeight             = 86
+	topBarMargin             = 42
+	resourceIconDisplaySize  = 28
+	resourceIconTextGap      = 7
+	resourceHUDItemGap       = 22
+	resourceBarricadeTextGap = 24
 )
 
 type phase int
@@ -35,6 +39,12 @@ type gameStatus struct {
 	calmTime  int
 	barricade int
 	resources resourceCounts
+}
+
+type resourceHUDItem struct {
+	Name   string
+	Count  int
+	Sprite *ebiten.Image
 }
 
 // setPrototypeGameStatus initializes fixed state shown before gameplay systems exist.
@@ -73,15 +83,18 @@ func (s *State) phaseText() string {
 	}
 }
 
-// resourcesAndBarricadeText formats economy and Sanctum defense status.
-func (s *State) resourcesAndBarricadeText() string {
-	return fmt.Sprintf(
-		"Wood %d  Stone %d  Metal %d | Barricade %d",
-		s.status.resources.wood,
-		s.status.resources.stone,
-		s.status.resources.metal,
-		s.status.barricade,
-	)
+// resourceHUDItems returns the resources shown in the top bar from left to right.
+func (s *State) resourceHUDItems() []resourceHUDItem {
+	return []resourceHUDItem{
+		{Name: "Wood", Count: s.status.resources.wood, Sprite: s.assetCatalog.Sprite.Icon.Wood},
+		{Name: "Stone", Count: s.status.resources.stone, Sprite: s.assetCatalog.Sprite.Icon.Stone},
+		{Name: "Metal", Count: s.status.resources.metal, Sprite: s.assetCatalog.Sprite.Icon.Metal},
+	}
+}
+
+// barricadeText formats Sanctum defense status for the top bar.
+func (s *State) barricadeText() string {
+	return fmt.Sprintf("| Barricade %d", s.status.barricade)
 }
 
 // drawTopBar renders the game status bar at the top of the screen.
@@ -91,13 +104,69 @@ func (s *State) drawTopBar(screen *ebiten.Image) {
 
 	left := s.chapterDayText()
 	center := s.phaseText()
-	right := s.resourcesAndBarricadeText()
 
 	ui.DrawText(screen, left, s.ui.hudFace, topBarMargin, 29, colors.text)
 
 	centerWidth, _ := text.Measure(center, s.ui.hudFace, s.ui.hudFace.Size)
 	ui.DrawText(screen, center, s.ui.hudFace, (float64(s.ui.width)-centerWidth)/2, 29, colors.pause)
 
-	rightWidth, _ := text.Measure(right, s.ui.hudFace, s.ui.hudFace.Size)
-	ui.DrawText(screen, right, s.ui.hudFace, float64(s.ui.width)-rightWidth-topBarMargin, 29, colors.text)
+	s.drawResourceStatus(screen)
+}
+
+// drawResourceStatus renders resource icons, counts, and Barricade status.
+func (s *State) drawResourceStatus(screen *ebiten.Image) {
+	items := s.resourceHUDItems()
+	barricade := s.barricadeText()
+	totalWidth := s.resourceStatusWidth(items, barricade)
+	x := float64(s.ui.width) - totalWidth - topBarMargin
+
+	for i, item := range items {
+		itemWidth := s.resourceHUDItemWidth(item)
+		s.drawResourceHUDItem(screen, item, x)
+		x += itemWidth
+		if i < len(items)-1 {
+			x += resourceHUDItemGap
+		}
+	}
+
+	x += resourceBarricadeTextGap
+	ui.DrawText(screen, barricade, s.ui.hudFace, x, 29, colors.text)
+}
+
+// resourceStatusWidth measures the full right-side HUD group.
+func (s *State) resourceStatusWidth(items []resourceHUDItem, barricade string) float64 {
+	total := 0.0
+	for i, item := range items {
+		total += s.resourceHUDItemWidth(item)
+		if i < len(items)-1 {
+			total += resourceHUDItemGap
+		}
+	}
+	barricadeWidth, _ := text.Measure(barricade, s.ui.hudFace, s.ui.hudFace.Size)
+	return total + resourceBarricadeTextGap + barricadeWidth
+}
+
+// resourceHUDItemWidth measures one resource icon and count pair.
+func (s *State) resourceHUDItemWidth(item resourceHUDItem) float64 {
+	count := fmt.Sprintf("%d", item.Count)
+	countWidth, _ := text.Measure(count, s.ui.hudFace, s.ui.hudFace.Size)
+	return resourceIconDisplaySize + resourceIconTextGap + countWidth
+}
+
+// drawResourceHUDItem renders one resource icon and count pair.
+func (s *State) drawResourceHUDItem(screen *ebiten.Image, item resourceHUDItem, x float64) {
+	if item.Sprite != nil {
+		spriteWidth := float64(item.Sprite.Bounds().Dx())
+		spriteHeight := float64(item.Sprite.Bounds().Dy())
+		if spriteWidth > 0 && spriteHeight > 0 {
+			scale := float64(resourceIconDisplaySize) / spriteWidth
+			options := &ebiten.DrawImageOptions{}
+			options.GeoM.Scale(scale, scale)
+			options.GeoM.Translate(x, float64(topBarHeight-resourceIconDisplaySize)/2)
+			screen.DrawImage(item.Sprite, options)
+		}
+	}
+
+	count := fmt.Sprintf("%d", item.Count)
+	ui.DrawText(screen, count, s.ui.hudFace, x+resourceIconDisplaySize+resourceIconTextGap, 29, colors.text)
 }
