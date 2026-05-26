@@ -1,24 +1,37 @@
 package game
 
 import (
+	"fmt"
+	"image/color"
+
 	"td/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 const (
-	buildingBarWidth       = 96
-	buildingBarPadding     = 16
-	buildingBarItemSize    = 64
-	buildingBarItemGap     = 14
-	buildingBarSpriteInset = 8
+	buildingBarWidth          = 96
+	buildingBarPadding        = 16
+	buildingBarItemSize       = 64
+	buildingBarCostGap        = 4
+	buildingBarCostTextHeight = 18
+	buildingBarCostItemGap    = 6
+	buildingBarItemGap        = 12
+	buildingBarSpriteInset    = 8
 )
 
 type buildingBarItem struct {
 	Name   string
 	Sprite *ebiten.Image
+	Cost   ResourceCost
 	Bounds ui.Button[int]
+}
+
+type buildingBarCostItem struct {
+	Value string
+	Color color.Color
 }
 
 // buildingBarBounds returns the screen-space building bar rectangle.
@@ -36,10 +49,12 @@ func (s *State) buildingBarItems() []buildingBarItem {
 	bar := s.buildingBarBounds()
 	x := bar.X + (bar.W-buildingBarItemSize)/2
 	y := bar.Y + buildingBarPadding
+	nextY := y + buildingBarItemSize + buildingBarCostGap + buildingBarCostTextHeight + buildingBarItemGap
 	return []buildingBarItem{
 		{
 			Name:   s.structureCatalog.BowTower.Name,
 			Sprite: s.structureCatalog.BowTower.Sprite,
+			Cost:   s.structureCatalog.BowTower.Cost,
 			Bounds: ui.Button[int]{
 				Label:  s.structureCatalog.BowTower.Name,
 				X:      x,
@@ -52,10 +67,11 @@ func (s *State) buildingBarItems() []buildingBarItem {
 		{
 			Name:   s.structureCatalog.FlameBoltTower.Name,
 			Sprite: s.structureCatalog.FlameBoltTower.Sprite,
+			Cost:   s.structureCatalog.FlameBoltTower.Cost,
 			Bounds: ui.Button[int]{
 				Label:  s.structureCatalog.FlameBoltTower.Name,
 				X:      x,
-				Y:      y + buildingBarItemSize + buildingBarItemGap,
+				Y:      nextY,
 				W:      buildingBarItemSize,
 				H:      buildingBarItemSize,
 				Action: 1,
@@ -91,11 +107,13 @@ func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem) 
 	vector.StrokeRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), 2, colors.fieldEdge, false)
 
 	if item.Sprite == nil {
+		s.drawBuildingBarCost(screen, item)
 		return
 	}
 	spriteWidth := float64(item.Sprite.Bounds().Dx())
 	spriteHeight := float64(item.Sprite.Bounds().Dy())
 	if spriteWidth <= 0 || spriteHeight <= 0 {
+		s.drawBuildingBarCost(screen, item)
 		return
 	}
 
@@ -108,4 +126,53 @@ func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem) 
 		float64(bounds.Y)+(float64(bounds.H)-spriteHeight*scale)/2,
 	)
 	screen.DrawImage(item.Sprite, options)
+	s.drawBuildingBarCost(screen, item)
+}
+
+// drawBuildingBarCost renders non-zero resource costs below one tower icon.
+func (s *State) drawBuildingBarCost(screen *ebiten.Image, item buildingBarItem) {
+	costItems := buildingBarCostItems(item.Cost)
+	if len(costItems) == 0 {
+		return
+	}
+
+	totalWidth := s.buildingBarCostWidth(costItems)
+	x := float64(item.Bounds.X) + (float64(item.Bounds.W)-totalWidth)/2
+	y := float64(item.Bounds.Y + item.Bounds.H + buildingBarCostGap)
+	for i, costItem := range costItems {
+		width, _ := text.Measure(costItem.Value, s.ui.costFace, s.ui.costFace.Size)
+		ui.DrawText(screen, costItem.Value, s.ui.costFace, x, y, costItem.Color)
+		x += width
+		if i < len(costItems)-1 {
+			x += buildingBarCostItemGap
+		}
+	}
+}
+
+// buildingBarCostWidth measures the full inline cost row width.
+func (s *State) buildingBarCostWidth(items []buildingBarCostItem) float64 {
+	total := 0.0
+	for i, item := range items {
+		width, _ := text.Measure(item.Value, s.ui.costFace, s.ui.costFace.Size)
+		total += width
+		if i < len(items)-1 {
+			total += buildingBarCostItemGap
+		}
+	}
+	return total
+}
+
+// buildingBarCostItems returns non-zero costs in Wood, Stone, Metal order.
+func buildingBarCostItems(cost ResourceCost) []buildingBarCostItem {
+	items := []buildingBarCostItem{}
+	if cost.Wood > 0 {
+		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Wood), Color: colors.resourceWood})
+	}
+	if cost.Stone > 0 {
+		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Stone), Color: colors.resourceStone})
+	}
+	if cost.Metal > 0 {
+		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Metal), Color: colors.resourceMetal})
+	}
+	return items
 }

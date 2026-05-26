@@ -64,6 +64,7 @@ type gameUI struct {
 	titleFace     *text.GoTextFace
 	bodyFace      *text.GoTextFace
 	hudFace       *text.GoTextFace
+	costFace      *text.GoTextFace
 }
 
 // New creates the initial game state for a Wizard name.
@@ -125,6 +126,10 @@ func newGameUI(source *text.GoTextFaceSource, width, height int) gameUI {
 		hudFace: &text.GoTextFace{
 			Source: source,
 			Size:   22,
+		},
+		costFace: &text.GoTextFace{
+			Source: source,
+			Size:   16,
 		},
 		menu: ingameMenu{
 			titleFace: &text.GoTextFace{

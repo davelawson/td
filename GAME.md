@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a visual-only building bar showing those two tower types, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a visual-only building bar showing those two tower types and their prototype construction costs, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -121,7 +121,7 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a visual-only building bar on the left side of the playable scene. It shows Bow Tower and Flame Bolt Tower icons using the existing tower sprites. It does not yet select a build intent, place structures, spend resources, show costs, preview placement, or validate buildable terrain.
+The first build-facing UI is a visual-only building bar on the left side of the playable scene. It shows Bow Tower and Flame Bolt Tower icons using the existing tower sprites, with colour-coded prototype construction costs beneath each icon. It does not yet select a build intent, place structures, spend resources, preview placement, validate buildable terrain, or represent affordability.
 
 Open decisions include what counts as buildable terrain, whether structures block paths, how much rebuilding is allowed between attacks, how the player enters and leaves placement mode, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
@@ -167,10 +167,10 @@ Open decisions include enemy archetypes, whether a Raid can include multiple wav
 
 Tower types define the defensive structures the wizard can build in the Domain.
 
-- `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. It costs only Wood to build. The Bow Tower is a general-purpose tower that deals moderate damage at moderate range. The first prototype Bow Tower has 3.0-Tile range, deals 10 damage per hit, fires every 1.0 second, and launches projectiles that travel at 9.0 Tiles per second.
-- `Flame Bolt Tower`: a magical tower that hurls bolts of flame at enemies within range. It is a shorter-range, slower-firing damage tower than the Bow Tower in the first prototype. The first prototype Flame Bolt Tower has 2.5-Tile range, deals 20 damage per hit, fires every 1.5 seconds, and launches projectiles that travel at 7.0 Tiles per second.
+- `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. The first prototype Bow Tower costs 30 Wood, 10 Stone, and 10 Metal to build. It is a general-purpose tower that deals moderate damage at moderate range. The first prototype Bow Tower has 3.0-Tile range, deals 10 damage per hit, fires every 1.0 second, and launches projectiles that travel at 9.0 Tiles per second.
+- `Flame Bolt Tower`: a magical tower that hurls bolts of flame at enemies within range. The first prototype Flame Bolt Tower costs 30 Stone and 20 Metal to build. It is a shorter-range, slower-firing damage tower than the Bow Tower in the first prototype. The first prototype Flame Bolt Tower has 2.5-Tile range, deals 20 damage per hit, fires every 1.5 seconds, and launches projectiles that travel at 7.0 Tiles per second.
 
-Open decisions include exact tower costs, upgrade paths, specialized targeting modes, and what other tower types exist.
+Open decisions include upgrade paths, specialized targeting modes, what other tower types exist, and whether these first prototype costs remain balanced once resource gathering and spending exist.
 
 ### Chapters
 
@@ -197,7 +197,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a visual-only building bar listing the Bow Tower and Flame Bolt Tower as future build options.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a visual-only building bar listing the Bow Tower and Flame Bolt Tower as future build options with prototype construction costs.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, tower-damage defeats play a short prototype sound, and reaching enemies spend Barricade charges until the Sanctum is breached.
 
@@ -255,8 +255,12 @@ Record game design decisions here when they become durable enough to guide imple
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Use the Bow Tower as the first defined tower type.
-  Rationale: A wood-only, moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
+  Rationale: A moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Metal for the Bow Tower, and 30 Stone and 20 Metal for the Flame Bolt Tower.
+  Rationale: These costs make both current tower options visible in the resource economy without implementing placement or resource spending yet.
+  Date/Author: 2026-05-26 / Codex
 
 - Decision: Use second-based Bow Tower combat stats for the first automated tower slice: 3.0-Tile range, 10 damage, 1.0-second fire interval, and 9.0-Tiles-per-second projectile speed.
   Rationale: Real-time units keep structure stats independent of frame or update counts, and the chosen values made then-current 20-health skeletons die in two hits while keeping projectile travel visible.

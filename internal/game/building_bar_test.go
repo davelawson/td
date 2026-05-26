@@ -1,6 +1,9 @@
 package game
 
-import "testing"
+import (
+	"image/color"
+	"testing"
+)
 
 // TestBuildingBarBoundsFillPlayableLeftEdge verifies the bar covers the scene edge below the HUD.
 func TestBuildingBarBoundsFillPlayableLeftEdge(t *testing.T) {
@@ -36,12 +39,37 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 	if items[0].Sprite != state.structureCatalog.BowTower.Sprite {
 		t.Fatal("expected first item to use Bow Tower sprite")
 	}
+	if items[0].Cost != (ResourceCost{Wood: 30, Stone: 10, Metal: 10}) {
+		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[0].Cost)
+	}
 	if items[1].Sprite != state.structureCatalog.FlameBoltTower.Sprite {
 		t.Fatal("expected second item to use Flame Bolt Tower sprite")
 	}
-	if items[1].Bounds.Y <= items[0].Bounds.Y {
-		t.Fatalf("second item Y = %d, want below first item Y %d", items[1].Bounds.Y, items[0].Bounds.Y)
+	if items[1].Cost != (ResourceCost{Stone: 30, Metal: 20}) {
+		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[1].Cost)
 	}
+	firstBlockBottom := items[0].Bounds.Y + items[0].Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
+	if items[1].Bounds.Y <= firstBlockBottom {
+		t.Fatalf("second item Y = %d, want below first item cost bottom %d", items[1].Bounds.Y, firstBlockBottom)
+	}
+}
+
+// TestBuildingBarCostItems verifies non-zero tower costs render in resource order.
+func TestBuildingBarCostItems(t *testing.T) {
+	items := buildingBarCostItems(ResourceCost{Wood: 30, Stone: 10, Metal: 10})
+	if len(items) != 3 {
+		t.Fatalf("cost items = %d, want 3", len(items))
+	}
+	assertCostItem(t, items[0], "30", colors.resourceWood)
+	assertCostItem(t, items[1], "10", colors.resourceStone)
+	assertCostItem(t, items[2], "10", colors.resourceMetal)
+
+	items = buildingBarCostItems(ResourceCost{Stone: 30, Metal: 20})
+	if len(items) != 2 {
+		t.Fatalf("cost items = %d, want 2", len(items))
+	}
+	assertCostItem(t, items[0], "30", colors.resourceStone)
+	assertCostItem(t, items[1], "20", colors.resourceMetal)
 }
 
 // TestBuildingBarClickDoesNotClearSelection verifies bar clicks are blocked as UI input.
@@ -89,8 +117,20 @@ func assertBuildingBarItem(t *testing.T, state *State, item buildingBarItem, nam
 		t.Fatalf("item size = %dx%d, want %dx%d", item.Bounds.W, item.Bounds.H, buildingBarItemSize, buildingBarItemSize)
 	}
 	bar := state.buildingBarBounds()
+	itemBottom := item.Bounds.Y + item.Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
 	if !bar.Contains(item.Bounds.X, item.Bounds.Y) ||
-		!bar.Contains(item.Bounds.X+item.Bounds.W-1, item.Bounds.Y+item.Bounds.H-1) {
+		!bar.Contains(item.Bounds.X+item.Bounds.W-1, itemBottom-1) {
 		t.Fatalf("item bounds %+v should fit inside bar %+v", item.Bounds, bar)
+	}
+}
+
+// assertCostItem verifies one resource-cost display item.
+func assertCostItem(t *testing.T, item buildingBarCostItem, value string, clr color.Color) {
+	t.Helper()
+	if item.Value != value {
+		t.Fatalf("cost item value = %q, want %q", item.Value, value)
+	}
+	if item.Color != clr {
+		t.Fatalf("cost item color = %#v, want %#v", item.Color, clr)
 	}
 }
