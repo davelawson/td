@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"image/color"
 
 	"td/internal/ui"
 
@@ -45,6 +46,7 @@ type resourceHUDItem struct {
 	Name   string
 	Count  int
 	Sprite *ebiten.Image
+	Color  color.Color
 }
 
 // setPrototypeGameStatus initializes fixed state shown before gameplay systems exist.
@@ -86,9 +88,9 @@ func (s *State) phaseText() string {
 // resourceHUDItems returns the resources shown in the top bar from left to right.
 func (s *State) resourceHUDItems() []resourceHUDItem {
 	return []resourceHUDItem{
-		{Name: "Wood", Count: s.status.resources.wood, Sprite: s.assetCatalog.Sprite.Icon.Wood},
-		{Name: "Stone", Count: s.status.resources.stone, Sprite: s.assetCatalog.Sprite.Icon.Stone},
-		{Name: "Metal", Count: s.status.resources.metal, Sprite: s.assetCatalog.Sprite.Icon.Metal},
+		{Name: "Wood", Count: s.status.resources.wood, Sprite: s.assetCatalog.Sprite.Icon.Wood, Color: colors.resourceWood},
+		{Name: "Stone", Count: s.status.resources.stone, Sprite: s.assetCatalog.Sprite.Icon.Stone, Color: colors.resourceStone},
+		{Name: "Metal", Count: s.status.resources.metal, Sprite: s.assetCatalog.Sprite.Icon.Metal, Color: colors.resourceMetal},
 	}
 }
 
@@ -168,5 +170,5 @@ func (s *State) drawResourceHUDItem(screen *ebiten.Image, item resourceHUDItem, 
 	}
 
 	count := fmt.Sprintf("%d", item.Count)
-	ui.DrawText(screen, count, s.ui.hudFace, x+resourceIconDisplaySize+resourceIconTextGap, 29, colors.text)
+	ui.DrawText(screen, count, s.ui.hudFace, x+resourceIconDisplaySize+resourceIconTextGap, 29, item.Color)
 }

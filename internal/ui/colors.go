@@ -14,6 +14,9 @@ var (
 	Parchment         = color.RGBA{R: 238, G: 224, B: 188, A: 255}
 	MutedParchment    = color.RGBA{R: 184, G: 172, B: 139, A: 255}
 	Purple            = color.RGBA{R: 98, G: 90, B: 145, A: 255}
+	ResourceWood      = color.RGBA{R: 196, G: 157, B: 111, A: 255}
+	ResourceStone     = color.RGBA{R: 200, G: 204, B: 199, A: 255}
+	ResourceMetal     = color.RGBA{R: 166, G: 202, B: 222, A: 255}
 	TransparentBlack  = color.RGBA{R: 0, G: 0, B: 0, A: 128}
 	TransparentPurple = color.RGBA{R: 98, G: 90, B: 145, A: 130}
 	TransparentBronze = color.RGBA{R: 134, G: 114, B: 65, A: 115}

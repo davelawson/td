@@ -23,6 +23,9 @@ var colors = struct {
 	raidEnemy      color.Color
 	topBar         color.Color
 	topBarEdge     color.Color
+	resourceWood   color.Color
+	resourceStone  color.Color
+	resourceMetal  color.Color
 	selectionPanel color.Color
 	overlay        color.Color
 }{
@@ -42,6 +45,9 @@ var colors = struct {
 	raidEnemy:      ui.Purple,
 	topBar:         ui.DarkCharcoalGreen,
 	topBarEdge:     ui.Bronze,
+	resourceWood:   ui.ResourceWood,
+	resourceStone:  ui.ResourceStone,
+	resourceMetal:  ui.ResourceMetal,
 	selectionPanel: color.RGBA{R: 26, G: 31, B: 24, A: 232},
 	overlay:        ui.TransparentBlack,
 }

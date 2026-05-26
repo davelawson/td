@@ -1,6 +1,9 @@
 package game
 
-import "testing"
+import (
+	"image/color"
+	"testing"
+)
 
 // TestStateResourceHUDItems verifies the top bar resource icon order and counts.
 func TestStateResourceHUDItems(t *testing.T) {
@@ -16,10 +19,11 @@ func TestStateResourceHUDItems(t *testing.T) {
 	tests := []struct {
 		name  string
 		count int
+		color color.Color
 	}{
-		{name: "Wood", count: 80},
-		{name: "Stone", count: 45},
-		{name: "Metal", count: 12},
+		{name: "Wood", count: 80, color: colors.resourceWood},
+		{name: "Stone", count: 45, color: colors.resourceStone},
+		{name: "Metal", count: 12, color: colors.resourceMetal},
 	}
 	for i, test := range tests {
 		item := items[i]
@@ -31,6 +35,9 @@ func TestStateResourceHUDItems(t *testing.T) {
 		}
 		if item.Sprite == nil {
 			t.Fatalf("resource item %s sprite is nil", item.Name)
+		}
+		if item.Color != test.color {
+			t.Fatalf("resource item %s color = %#v, want %#v", item.Name, item.Color, test.color)
 		}
 	}
 }
