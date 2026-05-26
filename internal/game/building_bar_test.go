@@ -94,6 +94,26 @@ func TestBuildingBarHoverTracksIconBounds(t *testing.T) {
 	}
 }
 
+// TestBuildingBarHighlightRequiresAffordableCost verifies hover emphasis follows resources.
+func TestBuildingBarHighlightRequiresAffordableCost(t *testing.T) {
+	state := newRaidTestState(t)
+	items := state.buildingBarItems()
+
+	state.ui.buildBarHover = 0
+	if !state.buildingBarItemHighlighted(0, items[0]) {
+		t.Fatal("expected default resources to highlight affordable Bow Tower")
+	}
+	state.ui.buildBarHover = 1
+	if state.buildingBarItemHighlighted(1, items[1]) {
+		t.Fatal("expected default resources not to highlight unaffordable Flame Bolt Tower")
+	}
+
+	state.status.resources.metal = 20
+	if !state.buildingBarItemHighlighted(1, items[1]) {
+		t.Fatal("expected Flame Bolt Tower to highlight after resources cover its cost")
+	}
+}
+
 // TestBuildingBarHoverIgnoresCostsAndEmptyBar verifies costs do not trigger icon hover.
 func TestBuildingBarHoverIgnoresCostsAndEmptyBar(t *testing.T) {
 	state := newRaidTestState(t)

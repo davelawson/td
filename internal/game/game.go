@@ -141,7 +141,7 @@ func newGameUI(source, boldSource *text.GoTextFaceSource, width, height int) gam
 		},
 		costBoldFace: &text.GoTextFace{
 			Source: boldSource,
-			Size:   16,
+			Size:   15,
 		},
 		menu: ingameMenu{
 			titleFace: &text.GoTextFace{

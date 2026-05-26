@@ -87,6 +87,13 @@ func (s *State) buildingBarContains(x, y int) bool {
 	return s.buildingBarBounds().Contains(x, y)
 }
 
+// canAffordBuildingCost reports whether current resources cover a structure cost.
+func (s *State) canAffordBuildingCost(cost ResourceCost) bool {
+	return s.status.resources.wood >= cost.Wood &&
+		s.status.resources.stone >= cost.Stone &&
+		s.status.resources.metal >= cost.Metal
+}
+
 // updateBuildingBarHover records which tower icon, if any, is under the cursor.
 func (s *State) updateBuildingBarHover(input Input) {
 	s.ui.buildBarHover = s.buildingBarItemIndexAt(input.CursorX, input.CursorY)
@@ -113,8 +120,13 @@ func (s *State) drawBuildingBar(screen *ebiten.Image) {
 	vector.StrokeLine(screen, float32(bar.X+bar.W-2), float32(bar.Y), float32(bar.X+bar.W-2), float32(bar.Y+bar.H), 3, colors.fieldEdge, false)
 
 	for i, item := range s.buildingBarItems() {
-		s.drawBuildingBarItem(screen, item, s.ui.buildBarHover == i)
+		s.drawBuildingBarItem(screen, item, s.buildingBarItemHighlighted(i, item))
 	}
+}
+
+// buildingBarItemHighlighted reports whether an item should receive hover emphasis.
+func (s *State) buildingBarItemHighlighted(index int, item buildingBarItem) bool {
+	return s.ui.buildBarHover == index && s.canAffordBuildingCost(item.Cost)
 }
 
 // drawBuildingBarItem renders one tower icon slot.
