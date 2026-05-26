@@ -9,6 +9,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"golang.org/x/image/font/gofont/gobold"
 	"golang.org/x/image/font/gofont/goregular"
 )
 
@@ -61,15 +62,21 @@ type gameUI struct {
 	height        int
 	menu          ingameMenu
 	nextRaidHover bool
+	buildBarHover int
 	titleFace     *text.GoTextFace
 	bodyFace      *text.GoTextFace
 	hudFace       *text.GoTextFace
 	costFace      *text.GoTextFace
+	costBoldFace  *text.GoTextFace
 }
 
 // New creates the initial game state for a Wizard name.
 func New(wizardName string, width, height int) (*State, error) {
 	source, err := text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
+	if err != nil {
+		return nil, err
+	}
+	boldSource, err := text.NewGoTextFaceSource(bytes.NewReader(gobold.TTF))
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +93,7 @@ func New(wizardName string, width, height int) (*State, error) {
 		structureCatalog: NewStructureCatalog(assetCatalog),
 		gameMap:          NewDefaultMap(),
 		camera:           newCamera(),
-		ui:               newGameUI(source, width, height),
+		ui:               newGameUI(source, boldSource, width, height),
 	}
 	state.setPrototypeGameStatus()
 	state.layoutIngameMenu()
@@ -111,10 +118,11 @@ func (s *State) playRaiderDefeatedSound() {
 }
 
 // newGameUI creates render-facing state for the current drawable size.
-func newGameUI(source *text.GoTextFaceSource, width, height int) gameUI {
+func newGameUI(source, boldSource *text.GoTextFaceSource, width, height int) gameUI {
 	return gameUI{
-		width:  width,
-		height: height,
+		width:         width,
+		height:        height,
+		buildBarHover: -1,
 		titleFace: &text.GoTextFace{
 			Source: source,
 			Size:   34,
@@ -129,6 +137,10 @@ func newGameUI(source *text.GoTextFaceSource, width, height int) gameUI {
 		},
 		costFace: &text.GoTextFace{
 			Source: source,
+			Size:   16,
+		},
+		costBoldFace: &text.GoTextFace{
+			Source: boldSource,
 			Size:   16,
 		},
 		menu: ingameMenu{
@@ -163,6 +175,7 @@ func (s *State) Update(input Input) Action {
 		s.openIngameMenu()
 		return ActionNone
 	}
+	s.updateBuildingBarHover(input)
 	s.applyCameraInput(input)
 	s.updateSelection(input)
 	if input.TogglePause {

@@ -72,6 +72,82 @@ func TestBuildingBarCostItems(t *testing.T) {
 	assertCostItem(t, items[1], "20", colors.resourceMetal)
 }
 
+// TestBuildingBarHoverTracksIconBounds verifies only icon rectangles receive hover state.
+func TestBuildingBarHoverTracksIconBounds(t *testing.T) {
+	state := newRaidTestState(t)
+	items := state.buildingBarItems()
+
+	state.updateBuildingBarHover(Input{
+		CursorX: items[0].Bounds.X + items[0].Bounds.W/2,
+		CursorY: items[0].Bounds.Y + items[0].Bounds.H/2,
+	})
+	if state.ui.buildBarHover != 0 {
+		t.Fatalf("building bar hover = %d, want first item", state.ui.buildBarHover)
+	}
+
+	state.updateBuildingBarHover(Input{
+		CursorX: items[1].Bounds.X + items[1].Bounds.W/2,
+		CursorY: items[1].Bounds.Y + items[1].Bounds.H/2,
+	})
+	if state.ui.buildBarHover != 1 {
+		t.Fatalf("building bar hover = %d, want second item", state.ui.buildBarHover)
+	}
+}
+
+// TestBuildingBarHoverIgnoresCostsAndEmptyBar verifies costs do not trigger icon hover.
+func TestBuildingBarHoverIgnoresCostsAndEmptyBar(t *testing.T) {
+	state := newRaidTestState(t)
+	item := state.buildingBarItems()[0]
+
+	state.updateBuildingBarHover(Input{
+		CursorX: item.Bounds.X + item.Bounds.W/2,
+		CursorY: item.Bounds.Y + item.Bounds.H + buildingBarCostGap + buildingBarCostTextHeight/2,
+	})
+	if state.ui.buildBarHover != -1 {
+		t.Fatalf("building bar hover = %d, want none over cost row", state.ui.buildBarHover)
+	}
+
+	state.updateBuildingBarHover(Input{
+		CursorX: 1,
+		CursorY: topBarHeight + 1,
+	})
+	if state.ui.buildBarHover != -1 {
+		t.Fatalf("building bar hover = %d, want none over empty bar", state.ui.buildBarHover)
+	}
+}
+
+// TestBuildingBarHoverClearsWhenIngameMenuOpens verifies overlay state drops icon hover.
+func TestBuildingBarHoverClearsWhenIngameMenuOpens(t *testing.T) {
+	state := newRaidTestState(t)
+	item := state.buildingBarItems()[0]
+
+	state.Update(Input{
+		CursorX: item.Bounds.X + item.Bounds.W/2,
+		CursorY: item.Bounds.Y + item.Bounds.H/2,
+	})
+	if state.ui.buildBarHover != 0 {
+		t.Fatalf("building bar hover = %d, want first item", state.ui.buildBarHover)
+	}
+
+	state.Update(Input{ToggleMenu: true})
+	if state.ui.buildBarHover != -1 {
+		t.Fatalf("building bar hover = %d, want none after menu opens", state.ui.buildBarHover)
+	}
+}
+
+// TestBuildingBarHoveredCostFitsIcon verifies bold hover costs keep the compact row.
+func TestBuildingBarHoveredCostFitsIcon(t *testing.T) {
+	state := newRaidTestState(t)
+
+	for _, item := range state.buildingBarItems() {
+		costItems := buildingBarCostItems(item.Cost)
+		width := state.buildingBarCostWidth(costItems, true)
+		if width > float64(item.Bounds.W) {
+			t.Fatalf("%s hovered cost width = %.2f, want <= %d", item.Name, width, item.Bounds.W)
+		}
+	}
+}
+
 // TestBuildingBarClickDoesNotClearSelection verifies bar clicks are blocked as UI input.
 func TestBuildingBarClickDoesNotClearSelection(t *testing.T) {
 	state := newRaidTestState(t)
