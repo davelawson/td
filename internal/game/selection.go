@@ -18,6 +18,7 @@ type selectedItem struct {
 func (s *State) updateSelection(input Input) {
 	if !input.Clicked ||
 		s.nextRaidButtonContains(input.CursorX, input.CursorY) ||
+		s.buildingBarContains(input.CursorX, input.CursorY) ||
 		s.selectionPanelContains(input.CursorX, input.CursorY) {
 		return
 	}

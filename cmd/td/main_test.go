@@ -89,7 +89,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "25-selection-panel", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "26-building-bar", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -127,7 +127,7 @@ func (a *screenshotApp) Update() error {
 		a.app.gameState.Update(game.Input{})
 		if target.activeRaid {
 			a.app.gameState.Update(game.Input{
-				CursorX: 137,
+				CursorX: 233,
 				CursorY: defaultWindowHeight - 68,
 				Clicked: true,
 			})

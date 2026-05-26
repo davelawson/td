@@ -181,6 +181,7 @@ func (s *State) Draw(screen *ebiten.Image) {
 	s.drawRaidEnemies(screen)
 	s.drawProjectiles(screen)
 	s.drawTopBar(screen)
+	s.drawBuildingBar(screen)
 	s.drawRaidControls(screen)
 	s.drawCounter(screen)
 	s.drawSelectionPanel(screen)

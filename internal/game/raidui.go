@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	nextRaidButtonX      = 42
+	nextRaidButtonX      = buildingBarWidth + 42
 	nextRaidButtonW      = 190
 	nextRaidButtonH      = 52
 	nextRaidMarginY      = 42

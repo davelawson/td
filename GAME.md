@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a visual-only building bar showing those two tower types, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound when tower damage defeats a raider. The actual exploration, resource, base-building, placement, upgrade, and reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -121,7 +121,9 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-Open decisions include what counts as buildable terrain, whether structures block paths, how much rebuilding is allowed between attacks, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
+The first build-facing UI is a visual-only building bar on the left side of the playable scene. It shows Bow Tower and Flame Bolt Tower icons using the existing tower sprites. It does not yet select a build intent, place structures, spend resources, show costs, preview placement, or validate buildable terrain.
+
+Open decisions include what counts as buildable terrain, whether structures block paths, how much rebuilding is allowed between attacks, how the player enters and leaves placement mode, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
 ### Sanctum
 
@@ -195,7 +197,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, and a pine-tree border around the Plot edge except at the road opening.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a visual-only building bar listing the Bow Tower and Flame Bolt Tower as future build options.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, tower-damage defeats play a short prototype sound, and reaching enemies spend Barricade charges until the Sanctum is breached.
 
