@@ -23,11 +23,12 @@ type tileCoordinate struct {
 
 // combatProjectile describes one active projectile tracking an original target.
 type combatProjectile struct {
-	targetID            int
-	position            coord
-	damage              int
-	speedTilesPerSecond float64
-	sprite              *ebiten.Image
+	targetID                     int
+	position                     coord
+	damage                       int
+	speedTilesPerSecond          float64
+	sprite                       *ebiten.Image
+	damageAllEnemiesInTargetTile bool
 }
 
 // resetCombatForRaid clears transient combat state for a newly started Raid.
@@ -81,11 +82,12 @@ func (s *State) fireCombatTowers() {
 				continue
 			}
 			s.combat.projectiles = append(s.combat.projectiles, combatProjectile{
-				targetID:            target.id,
-				position:            towerPosition,
-				damage:              template.Damage,
-				speedTilesPerSecond: template.ProjectileSpeedTilesPerSecond,
-				sprite:              template.ProjectileSprite,
+				targetID:                     target.id,
+				position:                     towerPosition,
+				damage:                       template.Damage,
+				speedTilesPerSecond:          template.ProjectileSpeedTilesPerSecond,
+				sprite:                       template.ProjectileSprite,
+				damageAllEnemiesInTargetTile: template.DamageAllEnemiesInTargetTile,
 			})
 			s.combat.towerCooldowns[key] = template.FireIntervalSeconds
 		}
@@ -99,6 +101,8 @@ func (s *State) combatTowerTemplate(feature tileFeature) (StructureTemplate, boo
 		return s.structureCatalog.BowTower, true
 	case featureFlameBoltTower:
 		return s.structureCatalog.FlameBoltTower, true
+	case featureCatapultTower:
+		return s.structureCatalog.CatapultTower, true
 	default:
 		return StructureTemplate{}, false
 	}
@@ -142,7 +146,11 @@ func (s *State) updateProjectiles(deltaSeconds float64) {
 		distance := distance(projectile.position, target)
 		step := projectile.speedTilesPerSecond * deltaSeconds
 		if step >= distance {
-			s.damageEnemy(enemyIndex, projectile.damage)
+			if projectile.damageAllEnemiesInTargetTile {
+				s.damageEnemiesInTargetTile(target, projectile.damage)
+			} else {
+				s.damageEnemy(enemyIndex, projectile.damage)
+			}
 			continue
 		}
 
@@ -151,6 +159,34 @@ func (s *State) updateProjectiles(deltaSeconds float64) {
 		survivors = append(survivors, projectile)
 	}
 	s.combat.projectiles = survivors
+}
+
+// damageEnemiesInTargetTile applies damage to every living enemy in the target's current Tile.
+func (s *State) damageEnemiesInTargetTile(targetPosition coord, damage int) {
+	targetTile, ok := tileAtWorldPosition(targetPosition)
+	if !ok {
+		return
+	}
+	for i := 0; i < len(s.raid.enemies); {
+		if enemyTile, ok := tileAtWorldPosition(s.raid.enemies[i].position); ok && enemyTile == targetTile {
+			previousCount := len(s.raid.enemies)
+			s.damageEnemy(i, damage)
+			if len(s.raid.enemies) < previousCount {
+				continue
+			}
+		}
+		i++
+	}
+}
+
+// tileAtWorldPosition returns the home Plot Tile containing a world position.
+func tileAtWorldPosition(position coord) (tileCoordinate, bool) {
+	x := int(math.Floor(position.X + homePlotCenter + 0.5))
+	y := int(math.Floor(homePlotCenter - position.Y + 0.5))
+	if x < 0 || y < 0 || x >= plotSize || y >= plotSize {
+		return tileCoordinate{}, false
+	}
+	return tileCoordinate{X: x, Y: y}, true
 }
 
 // enemyIndexByID returns the active enemy slice index for an enemy ID.

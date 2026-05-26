@@ -31,11 +31,12 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 
 	items := state.buildingBarItems()
 
-	if len(items) != 2 {
-		t.Fatalf("building bar items = %d, want 2", len(items))
+	if len(items) != 3 {
+		t.Fatalf("building bar items = %d, want 3", len(items))
 	}
 	assertBuildingBarItem(t, state, items[0], "Bow Tower")
 	assertBuildingBarItem(t, state, items[1], "Flame Bolt Tower")
+	assertBuildingBarItem(t, state, items[2], "Catapult Tower")
 	if items[0].Sprite != state.structureCatalog.BowTower.Sprite {
 		t.Fatal("expected first item to use Bow Tower sprite")
 	}
@@ -48,9 +49,19 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 	if items[1].Cost != (Resources{Stone: 30, Metal: 20}) {
 		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[1].Cost)
 	}
+	if items[2].Sprite != state.structureCatalog.CatapultTower.Sprite {
+		t.Fatal("expected third item to use Catapult Tower sprite")
+	}
+	if items[2].Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
+		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", items[2].Cost)
+	}
 	firstBlockBottom := items[0].Bounds.Y + items[0].Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
 	if items[1].Bounds.Y <= firstBlockBottom {
 		t.Fatalf("second item Y = %d, want below first item cost bottom %d", items[1].Bounds.Y, firstBlockBottom)
+	}
+	secondBlockBottom := items[1].Bounds.Y + items[1].Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
+	if items[2].Bounds.Y <= secondBlockBottom {
+		t.Fatalf("third item Y = %d, want below second item cost bottom %d", items[2].Bounds.Y, secondBlockBottom)
 	}
 }
 
@@ -70,6 +81,14 @@ func TestBuildingBarCostItems(t *testing.T) {
 	}
 	assertCostItem(t, items[0], "30", colors.resourceStone)
 	assertCostItem(t, items[1], "20", colors.resourceMetal)
+
+	items = buildingBarCostItems(Resources{Wood: 40, Stone: 60, Metal: 25})
+	if len(items) != 3 {
+		t.Fatalf("cost items = %d, want 3", len(items))
+	}
+	assertCostItem(t, items[0], "40", colors.resourceWood)
+	assertCostItem(t, items[1], "60", colors.resourceStone)
+	assertCostItem(t, items[2], "25", colors.resourceMetal)
 }
 
 // TestBuildingBarHoverTracksIconBounds verifies only icon rectangles receive hover state.
@@ -92,6 +111,14 @@ func TestBuildingBarHoverTracksIconBounds(t *testing.T) {
 	if state.ui.buildBarHover != 1 {
 		t.Fatalf("building bar hover = %d, want second item", state.ui.buildBarHover)
 	}
+
+	state.updateBuildingBarHover(Input{
+		CursorX: items[2].Bounds.X + items[2].Bounds.W/2,
+		CursorY: items[2].Bounds.Y + items[2].Bounds.H/2,
+	})
+	if state.ui.buildBarHover != 2 {
+		t.Fatalf("building bar hover = %d, want third item", state.ui.buildBarHover)
+	}
 }
 
 // TestBuildingBarHighlightRequiresAffordableCost verifies hover emphasis follows resources.
@@ -111,6 +138,15 @@ func TestBuildingBarHighlightRequiresAffordableCost(t *testing.T) {
 	state.status.resources.metal = 20
 	if !state.buildingBarItemHighlighted(1, items[1]) {
 		t.Fatal("expected Flame Bolt Tower to highlight after resources cover its cost")
+	}
+
+	state.ui.buildBarHover = 2
+	if state.buildingBarItemHighlighted(2, items[2]) {
+		t.Fatal("expected default resources not to highlight unaffordable Catapult Tower")
+	}
+	state.status.resources = resourceCounts{wood: 80, stone: 80, metal: 30}
+	if !state.buildingBarItemHighlighted(2, items[2]) {
+		t.Fatal("expected Catapult Tower to highlight after resources cover its cost")
 	}
 }
 

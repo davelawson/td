@@ -16,6 +16,7 @@ type StructureTemplate struct {
 	FireIntervalSeconds           float64
 	ProjectileSpeedTilesPerSecond float64
 	ProjectileSprite              *ebiten.Image
+	DamageAllEnemiesInTargetTile  bool
 }
 
 // Resources describes the resources required to construct a structure.
@@ -37,6 +38,7 @@ type StructureCatalog struct {
 	Sanctum        StructureTemplate
 	BowTower       StructureTemplate
 	FlameBoltTower StructureTemplate
+	CatapultTower  StructureTemplate
 }
 
 // NewStructureCatalog creates the default structure template catalog.
@@ -49,7 +51,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		BowTower: StructureTemplate{
 			Name:                          "Bow Tower",
 			Sprite:                        assetCatalog.Sprite.Structure.BowTower,
-			Cost:                          Resources{Wood: 30, Stone: 10},
+			Cost:                          Resources{Wood: 30, Stone: 10, Metal: 10},
 			RangeTiles:                    3.0,
 			Damage:                        10,
 			FireIntervalSeconds:           1.0,
@@ -65,6 +67,17 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			FireIntervalSeconds:           1.5,
 			ProjectileSpeedTilesPerSecond: 7.0,
 			ProjectileSprite:              assetCatalog.Sprite.Projectile.FlameBoltTowerProjectile,
+		},
+		CatapultTower: StructureTemplate{
+			Name:                          "Catapult Tower",
+			Sprite:                        assetCatalog.Sprite.Structure.CatapultTower,
+			Cost:                          Resources{Wood: 40, Stone: 60, Metal: 25},
+			RangeTiles:                    5.0,
+			Damage:                        75,
+			FireIntervalSeconds:           3.0,
+			ProjectileSpeedTilesPerSecond: 3.0,
+			ProjectileSprite:              assetCatalog.Sprite.Projectile.CatapultTowerProjectile,
+			DamageAllEnemiesInTargetTile:  true,
 		},
 	}
 }

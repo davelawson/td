@@ -64,6 +64,26 @@ func TestSelectedFlameBoltTowerPanelRows(t *testing.T) {
 	assertPanelRow(t, panel, "Damage", "20")
 }
 
+// TestSelectedCatapultTowerPanelRows verifies Catapult Tower selection exposes tower stats.
+func TestSelectedCatapultTowerPanelRows(t *testing.T) {
+	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureCatapultTower
+	state.selection = selectedItem{
+		kind: selectedItemStructure,
+		tile: tileCoordinate{X: homePlotCenter + 2, Y: 5},
+	}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected Catapult Tower panel")
+	}
+
+	assertPanelRow(t, panel, "Tower Type", "Catapult Tower")
+	assertPanelRow(t, panel, "Range", "5.0 tiles")
+	assertPanelRow(t, panel, "Attack Speed", "every 3.0s")
+	assertPanelRow(t, panel, "Damage", "75")
+}
+
 // TestSelectedSanctumPanelRows verifies Sanctum selection exposes only basic structure identity.
 func TestSelectedSanctumPanelRows(t *testing.T) {
 	state := newRaidTestState(t)

@@ -89,6 +89,35 @@ func TestFlameBoltTowerFiresAtEnemyInRange(t *testing.T) {
 	}
 }
 
+// TestCatapultTowerFiresAtEnemyInRange verifies the authored Catapult Tower combat stats.
+func TestCatapultTowerFiresAtEnemyInRange(t *testing.T) {
+	state := newRaidTestState(t)
+	removeStartingBowTower(state)
+	removeStartingFlameBoltTower(state)
+	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureCatapultTower
+	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 100)}
+
+	state.updateCombat()
+
+	if len(state.combat.projectiles) != 1 {
+		t.Fatalf("projectiles = %d, want 1", len(state.combat.projectiles))
+	}
+	projectile := state.combat.projectiles[0]
+	if projectile.damage != 75 {
+		t.Fatalf("projectile damage = %d, want 75", projectile.damage)
+	}
+	if projectile.speedTilesPerSecond != 3.0 {
+		t.Fatalf("projectile speed = %f, want 3.0", projectile.speedTilesPerSecond)
+	}
+	if !projectile.damageAllEnemiesInTargetTile {
+		t.Fatal("expected Catapult projectile to damage all enemies in its target Tile")
+	}
+	key := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	if got, want := state.combat.towerCooldowns[key], 3.0; math.Abs(got-want) > 0.000001 {
+		t.Fatalf("cooldown seconds = %f, want %f", got, want)
+	}
+}
+
 // TestBowTowerTargetPriorityUsesClosestEnemyToSanctum verifies urgent targets are chosen first.
 func TestBowTowerTargetPriorityUsesClosestEnemyToSanctum(t *testing.T) {
 	state := newRaidTestState(t)
@@ -167,6 +196,64 @@ func TestProjectileHitRemovesDefeatedEnemy(t *testing.T) {
 	}
 	if state.status.resources != wantResources {
 		t.Fatalf("resources = %+v, want %+v", state.status.resources, wantResources)
+	}
+}
+
+// TestCatapultProjectileHitDamagesEnemiesInTargetTile verifies Catapult area impact.
+func TestCatapultProjectileHitDamagesEnemiesInTargetTile(t *testing.T) {
+	state := newRaidTestState(t)
+	state.raid.enemies = []raidEnemy{
+		combatTestEnemy(0, coord{X: 0, Y: 2}, 100),
+		combatTestEnemy(1, coord{X: 0.2, Y: 2.2}, 100),
+		combatTestEnemy(2, coord{X: 0, Y: 1}, 100),
+	}
+	state.combat.projectiles = []combatProjectile{{
+		targetID:                     0,
+		position:                     coord{X: 0, Y: 2},
+		damage:                       75,
+		speedTilesPerSecond:          3.0,
+		damageAllEnemiesInTargetTile: true,
+	}}
+
+	state.updateProjectiles(gameUpdateSeconds)
+
+	if got, want := state.raid.enemies[0].health, 25; got != want {
+		t.Fatalf("target enemy health = %d, want %d", got, want)
+	}
+	if got, want := state.raid.enemies[1].health, 25; got != want {
+		t.Fatalf("same-Tile enemy health = %d, want %d", got, want)
+	}
+	if got, want := state.raid.enemies[2].health, 100; got != want {
+		t.Fatalf("adjacent-Tile enemy health = %d, want %d", got, want)
+	}
+	if len(state.combat.projectiles) != 0 {
+		t.Fatalf("projectiles = %d, want 0", len(state.combat.projectiles))
+	}
+}
+
+// TestCatapultProjectileHitRemovesDefeatedEnemiesInTargetTile verifies area defeats are removed.
+func TestCatapultProjectileHitRemovesDefeatedEnemiesInTargetTile(t *testing.T) {
+	state := newRaidTestState(t)
+	state.raid.enemies = []raidEnemy{
+		combatTestEnemy(0, coord{X: 0, Y: 2}, 75),
+		combatTestEnemy(1, coord{X: 0.2, Y: 2.2}, 75),
+		combatTestEnemy(2, coord{X: 0, Y: 1}, 75),
+	}
+	state.combat.projectiles = []combatProjectile{{
+		targetID:                     0,
+		position:                     coord{X: 0, Y: 2},
+		damage:                       75,
+		speedTilesPerSecond:          3.0,
+		damageAllEnemiesInTargetTile: true,
+	}}
+
+	state.updateProjectiles(gameUpdateSeconds)
+
+	if len(state.raid.enemies) != 1 {
+		t.Fatalf("active enemies = %d, want 1", len(state.raid.enemies))
+	}
+	if state.raid.enemies[0].id != 2 {
+		t.Fatalf("remaining enemy ID = %d, want adjacent-Tile enemy 2", state.raid.enemies[0].id)
 	}
 }
 

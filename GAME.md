@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a building bar showing those two tower types and their prototype construction costs, first calm-phase tower drag placement with resource spending, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, and a short prototype sound plus small resource rewards when tower damage defeats a raider. The actual exploration, resource gathering, broader base-building, upgrade, and broader reward systems have not been implemented.
+The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a building bar showing Bow Tower, Flame Bolt Tower, and Catapult Tower types and their prototype construction costs, first calm-phase tower drag placement with resource spending, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, Catapult Tile-area impact, and a short prototype sound plus small resource rewards when tower damage defeats a raider. The actual exploration, resource gathering, broader base-building, upgrade, and broader reward systems have not been implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -121,7 +121,7 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a building bar on the left side of the playable scene. It shows Bow Tower and Flame Bolt Tower icons using the existing tower sprites, with colour-coded prototype construction costs beneath each icon. Hovering an affordable icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an affordable tower icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that tower and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
+The first build-facing UI is a building bar on the left side of the playable scene. It shows Bow Tower, Flame Bolt Tower, and Catapult Tower icons using the existing tower sprites, with colour-coded prototype construction costs beneath each icon. Hovering an affordable icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an affordable tower icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that tower and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
 
 Open decisions include richer build rules for future terrain types, whether structures block paths beyond the current fixed road rejection, how much rebuilding is allowed between attacks, whether later placement needs previews or range indicators, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
@@ -137,7 +137,7 @@ Open decisions include how many charges the barrier has, whether charges can be 
 
 ### Tower Defense
 
-Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible and audible combat results. The first Raid slice uses simple fixed paths with skeleton and zombie enemies. The first combat slice adds automated Bow and Flame Bolt Towers with testable targeting, projectile travel, damage rules, and a prototype sound effect for tower-damage defeats without replacing the simple Raid lifecycle.
+Tower-defense encounters should use clear enemy movement, clear defensive coverage, and visible and audible combat results. The first Raid slice uses simple fixed paths with skeleton and zombie enemies. The first combat slice adds automated Bow, Flame Bolt, and Catapult Towers with testable targeting, projectile travel, damage rules, Catapult Tile-area impact, and a prototype sound effect for tower-damage defeats without replacing the simple Raid lifecycle.
 
 Open decisions include enemy families, additional tower targeting modes, win and loss conditions beyond the first breach state, damage types, and upgrade rules.
 
@@ -157,7 +157,7 @@ The first implemented Raid behavior is deliberately deterministic. A `Next Raid`
 
 The first Raid slice stores each active enemy's current world position directly. On the starting road, enemies spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Movement speed comes from `EnemyTemplate.SpeedTilesPerSecond`, is measured in Tiles per second, and is converted through the fixed logical update duration. Maximum health comes from `EnemyTemplate.MaxHealth`, and combat-defeat rewards come from `EnemyTemplate.Resources`. The current skeleton template has 50 health, moves at 1.0 Tiles per second, and rewards 5 Wood and 2 Stone. The current zombie template has 75 health, moves at 0.7 Tiles per second, and rewards 4 Wood, 3 Stone, and 1 Metal.
 
-The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
+The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. The Catapult Tower range is 5.0 Tiles, damage is 75 to every active enemy in the target's Tile, fire interval is 3.0 seconds, and projectile speed is 3.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
 If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources.
 
@@ -169,6 +169,7 @@ Tower types define the defensive structures the wizard can build in the Domain.
 
 - `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. The first prototype Bow Tower costs 30 Wood, 10 Stone, and 10 Metal to build. It is a general-purpose tower that deals moderate damage at moderate range. The first prototype Bow Tower has 3.0-Tile range, deals 10 damage per hit, fires every 1.0 second, and launches projectiles that travel at 9.0 Tiles per second.
 - `Flame Bolt Tower`: a magical tower that hurls bolts of flame at enemies within range. The first prototype Flame Bolt Tower costs 30 Stone and 20 Metal to build. It is a shorter-range, slower-firing damage tower than the Bow Tower in the first prototype. The first prototype Flame Bolt Tower has 2.5-Tile range, deals 20 damage per hit, fires every 1.5 seconds, and launches projectiles that travel at 7.0 Tiles per second.
+- `Catapult Tower`: a magically assisted siege tower that hurls heavy boulders at enemies within range. The first prototype Catapult Tower costs 40 Wood, 60 Stone, and 25 Metal to build. It is a long-range, slow-firing, slow-projectile, high-damage tower. The first prototype Catapult Tower has 5.0-Tile range, deals 75 damage to every active enemy in the Tile it strikes, fires every 3.0 seconds, and launches projectiles that travel at 3.0 Tiles per second.
 
 Open decisions include upgrade paths, specialized targeting modes, what other tower types exist, and whether these first prototype costs remain balanced once resource gathering and spending exist.
 
@@ -197,10 +198,10 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a building bar listing the Bow Tower and Flame Bolt Tower with prototype construction costs and calm-phase drag placement.
+- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a building bar listing the Bow Tower, Flame Bolt Tower, and Catapult Tower with prototype construction costs and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
-- The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, tower-damage defeats play a short prototype sound and grant small enemy-template resource rewards, and reaching enemies spend Barricade charges until the Sanctum is breached.
-- The first tower placement slice lets the player left-drag affordable tower icons from the building bar during calm play, release over empty grass-like Tiles to place towers, and spend the displayed Wood, Stone, and Metal costs. With default resources, Bow Tower is affordable and Flame Bolt Tower is not.
+- The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, Catapult projectiles damage every active enemy in the Tile they strike, tower-damage defeats play a short prototype sound and grant small enemy-template resource rewards, and reaching enemies spend Barricade charges until the Sanctum is breached.
+- The first tower placement slice lets the player left-drag affordable tower icons from the building bar during calm play, release over empty grass-like Tiles to place towers, and spend the displayed Wood, Stone, and Metal costs. With default resources, Bow Tower is affordable while Flame Bolt Tower and Catapult Tower are not.
 
 ## Open Game Design Questions
 
@@ -259,8 +260,8 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: A moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Metal for the Bow Tower, and 30 Stone and 20 Metal for the Flame Bolt Tower.
-  Rationale: These costs make both current tower options visible in the resource economy and now drive the first limited tower placement action.
+- Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Metal for the Bow Tower, 30 Stone and 20 Metal for the Flame Bolt Tower, and 40 Wood, 60 Stone, and 25 Metal for the Catapult Tower.
+  Rationale: These costs make current tower options visible in the resource economy and now drive the first limited tower placement action, with Catapult positioned as an expensive siege option.
   Date/Author: 2026-05-26 / Codex
 
 - Decision: Use second-based Bow Tower combat stats for the first automated tower slice: 3.0-Tile range, 10 damage, 1.0-second fire interval, and 9.0-Tiles-per-second projectile speed.
@@ -274,6 +275,14 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Add the Flame Bolt Tower as the second defined tower type and place one west of the starting road across from the Bow Tower.
   Rationale: A short-range, slower-firing magical damage tower makes the starting defense visibly more wizardly while keeping the first targeting and projectile rules shared and testable.
   Date/Author: 2026-05-16 / Codex
+
+- Decision: Add the Catapult Tower as the third defined tower type and make it buildable from the building bar without placing one for free in the starting Plot.
+  Rationale: A long-range, slow-firing, high-damage area tower creates the first clear tower-role contrast beyond single-target projectiles while preserving the existing authored starting defense.
+  Date/Author: 2026-05-26 / Codex
+
+- Decision: Catapult projectiles damage every active enemy in the Tile occupied by the original target when the projectile lands.
+  Rationale: Tile-area impact matches the grid-based map model and keeps the existing deterministic target selection rule instead of adding a new targeting mode.
+  Date/Author: 2026-05-26 / Codex
 
 - Decision: Use deterministic placeholder Raids as the first enemy-wave slice.
   Rationale: A fixed enemy count, fixed stagger, and fixed north-road path make Raid behavior visible and testable before adding pathfinding, rewards, or enemy variety.

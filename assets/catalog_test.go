@@ -102,6 +102,23 @@ func TestNewCatalogLoadsFlameBoltTowerProjectileSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsCatapultTowerProjectileSprite verifies the required projectile sprite is embedded.
+func TestNewCatalogLoadsCatapultTowerProjectileSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	projectile := catalog.Sprite.Projectile.CatapultTowerProjectile
+	if projectile == nil {
+		t.Fatal("expected Catapult Tower projectile sprite to load")
+	}
+	width, height := projectile.Bounds().Dx(), projectile.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("Catapult Tower projectile sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsSanctumSprite verifies the required structure sprite is embedded.
 func TestNewCatalogLoadsSanctumSprite(t *testing.T) {
 	catalog, err := NewCatalog()
@@ -150,6 +167,23 @@ func TestNewCatalogLoadsFlameBoltTowerSprite(t *testing.T) {
 	width, height := flameBoltTower.Bounds().Dx(), flameBoltTower.Bounds().Dy()
 	if width != 64 || height != 64 {
 		t.Fatalf("Flame Bolt Tower sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
+// TestNewCatalogLoadsCatapultTowerSprite verifies the required Catapult Tower sprite is embedded.
+func TestNewCatalogLoadsCatapultTowerSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	catapultTower := catalog.Sprite.Structure.CatapultTower
+	if catapultTower == nil {
+		t.Fatal("expected Catapult Tower sprite to load")
+	}
+	width, height := catapultTower.Bounds().Dx(), catapultTower.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("Catapult Tower sprite size = %dx%d, want 64x64", width, height)
 	}
 }
 

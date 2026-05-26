@@ -39,6 +39,7 @@ const (
 	featureSanctum
 	featureBowTower
 	featureFlameBoltTower
+	featureCatapultTower
 )
 
 // NewDefaultMap creates the prototype map used by a new game.

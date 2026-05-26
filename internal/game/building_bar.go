@@ -58,36 +58,31 @@ func (s *State) buildingBarBounds() ui.Button[int] {
 func (s *State) buildingBarItems() []buildingBarItem {
 	bar := s.buildingBarBounds()
 	x := bar.X + (bar.W-buildingBarItemSize)/2
-	y := bar.Y + buildingBarPadding
-	nextY := y + buildingBarItemSize + buildingBarCostGap + buildingBarCostTextHeight + buildingBarItemGap
-	return []buildingBarItem{
-		{
-			Name:   s.structureCatalog.BowTower.Name,
-			Sprite: s.structureCatalog.BowTower.Sprite,
-			Cost:   s.structureCatalog.BowTower.Cost,
+	startY := bar.Y + buildingBarPadding
+	stepY := buildingBarItemSize + buildingBarCostGap + buildingBarCostTextHeight + buildingBarItemGap
+	templates := []StructureTemplate{
+		s.structureCatalog.BowTower,
+		s.structureCatalog.FlameBoltTower,
+		s.structureCatalog.CatapultTower,
+	}
+	items := make([]buildingBarItem, 0, len(templates))
+	for i, template := range templates {
+		y := startY + i*stepY
+		items = append(items, buildingBarItem{
+			Name:   template.Name,
+			Sprite: template.Sprite,
+			Cost:   template.Cost,
 			Bounds: ui.Button[int]{
-				Label:  s.structureCatalog.BowTower.Name,
+				Label:  template.Name,
 				X:      x,
 				Y:      y,
 				W:      buildingBarItemSize,
 				H:      buildingBarItemSize,
-				Action: 0,
+				Action: i,
 			},
-		},
-		{
-			Name:   s.structureCatalog.FlameBoltTower.Name,
-			Sprite: s.structureCatalog.FlameBoltTower.Sprite,
-			Cost:   s.structureCatalog.FlameBoltTower.Cost,
-			Bounds: ui.Button[int]{
-				Label:  s.structureCatalog.FlameBoltTower.Name,
-				X:      x,
-				Y:      nextY,
-				W:      buildingBarItemSize,
-				H:      buildingBarItemSize,
-				Action: 1,
-			},
-		},
+		})
 	}
+	return items
 }
 
 // buildingBarContains reports whether a point is inside the visual building bar.
@@ -227,6 +222,8 @@ func buildingFeatureForItemIndex(index int) (tileFeature, bool) {
 		return featureBowTower, true
 	case 1:
 		return featureFlameBoltTower, true
+	case 2:
+		return featureCatapultTower, true
 	default:
 		return featureNone, false
 	}

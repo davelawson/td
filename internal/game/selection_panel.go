@@ -88,6 +88,8 @@ func (s *State) selectedStructurePanel() (selectionPanel, bool) {
 		return towerSelectionPanel(s.structureCatalog.BowTower), true
 	case featureFlameBoltTower:
 		return towerSelectionPanel(s.structureCatalog.FlameBoltTower), true
+	case featureCatapultTower:
+		return towerSelectionPanel(s.structureCatalog.CatapultTower), true
 	default:
 		return selectionPanel{}, false
 	}

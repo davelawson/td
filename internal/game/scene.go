@@ -54,6 +54,9 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	if tile.Feature == featureFlameBoltTower {
 		s.drawStructureSprite(screen, s.structureCatalog.FlameBoltTower.Sprite, rect.x, rect.y, rect.w, selected)
 	}
+	if tile.Feature == featureCatapultTower {
+		s.drawStructureSprite(screen, s.structureCatalog.CatapultTower.Sprite, rect.x, rect.y, rect.w, selected)
+	}
 }
 
 // drawPineTree renders a tree sprite variant chosen from the Tile tweak.

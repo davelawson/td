@@ -105,6 +105,45 @@ func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
 	}
 }
 
+// TestNewStructureCatalogIncludesCatapultTower verifies the Catapult Tower template values.
+func TestNewStructureCatalogIncludesCatapultTower(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	catalog := NewStructureCatalog(assetCatalog)
+	catapultTower := catalog.CatapultTower
+
+	if catapultTower.Name != "Catapult Tower" {
+		t.Fatalf("Catapult Tower name = %q, want %q", catapultTower.Name, "Catapult Tower")
+	}
+	if catapultTower.Sprite != assetCatalog.Sprite.Structure.CatapultTower {
+		t.Fatal("expected Catapult Tower sprite to reference the loaded asset catalog sprite")
+	}
+	if catapultTower.Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
+		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", catapultTower.Cost)
+	}
+	if catapultTower.RangeTiles != 5.0 {
+		t.Fatalf("Catapult Tower range = %f, want 5.0", catapultTower.RangeTiles)
+	}
+	if catapultTower.Damage != 75 {
+		t.Fatalf("Catapult Tower damage = %d, want 75", catapultTower.Damage)
+	}
+	if catapultTower.FireIntervalSeconds != 3.0 {
+		t.Fatalf("Catapult Tower fire interval = %f, want 3.0", catapultTower.FireIntervalSeconds)
+	}
+	if catapultTower.ProjectileSpeedTilesPerSecond != 3.0 {
+		t.Fatalf("Catapult Tower projectile speed = %f, want 3.0", catapultTower.ProjectileSpeedTilesPerSecond)
+	}
+	if catapultTower.ProjectileSprite != assetCatalog.Sprite.Projectile.CatapultTowerProjectile {
+		t.Fatal("expected Catapult Tower projectile sprite to reference the loaded asset catalog projectile sprite")
+	}
+	if !catapultTower.DamageAllEnemiesInTargetTile {
+		t.Fatal("expected Catapult Tower to damage all enemies in its target Tile")
+	}
+}
+
 // TestStructureStoresTemplateAndTileCoordinates verifies a placed structure instance.
 func TestStructureStoresTemplateAndTileCoordinates(t *testing.T) {
 	assetCatalog, err := assets.NewCatalog()

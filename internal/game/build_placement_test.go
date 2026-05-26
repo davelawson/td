@@ -58,6 +58,26 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 	}
 }
 
+// TestBuildDragPlacesCatapultTower verifies Catapult Tower placement maps to its feature and cost.
+func TestBuildDragPlacesCatapultTower(t *testing.T) {
+	state := newRaidTestState(t)
+	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+
+	state.Update(pressBuildingBarItemInput(state, 2))
+	state.Update(releaseTileInput(state, tile.X, tile.Y))
+
+	if state.buildDrag.active {
+		t.Fatal("expected drag to clear after release")
+	}
+	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureCatapultTower {
+		t.Fatalf("tile feature = %v, want Catapult Tower", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
+	}
+	if state.status.resources.wood != 60 || state.status.resources.stone != 40 || state.status.resources.metal != 25 {
+		t.Fatalf("resources = %+v, want wood 60 stone 40 metal 25", state.status.resources)
+	}
+}
+
 // TestBuildDragDoesNotReplaceOccupiedTile verifies occupied feature Tiles reject placement.
 func TestBuildDragDoesNotReplaceOccupiedTile(t *testing.T) {
 	state := newRaidTestState(t)

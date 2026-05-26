@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/metal.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/metal.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 //go:embed audio/raider-defeated.wav
@@ -53,6 +53,7 @@ type IconSprites struct {
 type ProjectileSprites struct {
 	BowTowerProjectile       *ebiten.Image
 	FlameBoltTowerProjectile *ebiten.Image
+	CatapultTowerProjectile  *ebiten.Image
 }
 
 // StructureSprites groups loaded sprites for map and base structures.
@@ -60,6 +61,7 @@ type StructureSprites struct {
 	Sanctum        *ebiten.Image
 	BowTower       *ebiten.Image
 	FlameBoltTower *ebiten.Image
+	CatapultTower  *ebiten.Image
 }
 
 // TerrainSprites groups loaded sprites for map terrain.
@@ -113,6 +115,14 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
+	catapultTower, err := loadSprite("sprites/structures/catapult-tower.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	catapultTowerProjectile, err := loadSprite("sprites/structures/catapult-tower-projectile.png")
+	if err != nil {
+		return Catalog{}, err
+	}
 	var pineTrees [4]*ebiten.Image
 	for i := range pineTrees {
 		path := fmt.Sprintf("sprites/terrains/pine-tree-%d.png", i+1)
@@ -136,11 +146,13 @@ func NewCatalog() (Catalog, error) {
 			Projectile: ProjectileSprites{
 				BowTowerProjectile:       bowTowerProjectile,
 				FlameBoltTowerProjectile: flameBoltTowerProjectile,
+				CatapultTowerProjectile:  catapultTowerProjectile,
 			},
 			Structure: StructureSprites{
 				Sanctum:        sanctum,
 				BowTower:       bowTower,
 				FlameBoltTower: flameBoltTower,
+				CatapultTower:  catapultTower,
 			},
 			Terrain: TerrainSprites{
 				PineTrees: pineTrees,
