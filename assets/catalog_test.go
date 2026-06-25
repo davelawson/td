@@ -68,6 +68,32 @@ func TestNewCatalogLoadsResourceIconSprites(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsInhabitantIconSprites verifies the required population HUD icons are embedded.
+func TestNewCatalogLoadsInhabitantIconSprites(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name string
+		icon *ebiten.Image
+	}{
+		{name: "apprentice", icon: catalog.Sprite.Icon.Apprentice},
+		{name: "soldier", icon: catalog.Sprite.Icon.Soldier},
+		{name: "peasant", icon: catalog.Sprite.Icon.Peasant},
+	}
+	for _, test := range tests {
+		if test.icon == nil {
+			t.Fatalf("expected %s icon sprite to load", test.name)
+		}
+		width, height := test.icon.Bounds().Dx(), test.icon.Bounds().Dy()
+		if width != 64 || height != 64 {
+			t.Fatalf("%s icon sprite size = %dx%d, want 64x64", test.name, width, height)
+		}
+	}
+}
+
 // TestNewCatalogLoadsBowTowerProjectileSprite verifies the required projectile sprite is embedded.
 func TestNewCatalogLoadsBowTowerProjectileSprite(t *testing.T) {
 	catalog, err := NewCatalog()

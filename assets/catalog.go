@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/metal.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 //go:embed audio/raider-defeated.wav
@@ -44,9 +44,12 @@ type EnemySprites struct {
 
 // IconSprites groups loaded sprites for HUD icons.
 type IconSprites struct {
-	Wood  *ebiten.Image
-	Stone *ebiten.Image
-	Metal *ebiten.Image
+	Wood       *ebiten.Image
+	Stone      *ebiten.Image
+	Metal      *ebiten.Image
+	Apprentice *ebiten.Image
+	Soldier    *ebiten.Image
+	Peasant    *ebiten.Image
 }
 
 // ProjectileSprites groups loaded sprites for projectiles fired by combat structures.
@@ -95,6 +98,18 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
+	apprenticeIcon, err := loadSprite("sprites/icons/apprentice.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	soldierIcon, err := loadSprite("sprites/icons/soldier.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	peasantIcon, err := loadSprite("sprites/icons/peasant.png")
+	if err != nil {
+		return Catalog{}, err
+	}
 	sanctum, err := loadSprite("sprites/structures/sanctum.png")
 	if err != nil {
 		return Catalog{}, err
@@ -139,9 +154,12 @@ func NewCatalog() (Catalog, error) {
 				Zombie:              zombie,
 			},
 			Icon: IconSprites{
-				Wood:  woodIcon,
-				Stone: stoneIcon,
-				Metal: metalIcon,
+				Wood:       woodIcon,
+				Stone:      stoneIcon,
+				Metal:      metalIcon,
+				Apprentice: apprenticeIcon,
+				Soldier:    soldierIcon,
+				Peasant:    peasantIcon,
 			},
 			Projectile: ProjectileSprites{
 				BowTowerProjectile:       bowTowerProjectile,

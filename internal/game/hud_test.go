@@ -3,6 +3,8 @@ package game
 import (
 	"image/color"
 	"testing"
+
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 // TestStateResourceHUDItems verifies the top bar resource icon order and counts.
@@ -42,6 +44,65 @@ func TestStateResourceHUDItems(t *testing.T) {
 	}
 }
 
+// TestStatePopulationHUDItems verifies the top bar population icon order and initial values.
+func TestStatePopulationHUDItems(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	items := state.populationHUDItems()
+	if len(items) != 3 {
+		t.Fatalf("population item count = %d, want 3", len(items))
+	}
+	names := []string{"Apprentice", "Soldier", "Peasant"}
+	for i, name := range names {
+		item := items[i]
+		if item.Name != name {
+			t.Fatalf("population item %d name = %q, want %q", i, item.Name, name)
+		}
+		if item.Available != 0 || item.Total != 0 {
+			t.Fatalf("population item %s = %d/%d, want 0/0", item.Name, item.Available, item.Total)
+		}
+		if item.Sprite == nil {
+			t.Fatalf("population item %s sprite is nil", item.Name)
+		}
+		if item.Color != colors.text {
+			t.Fatalf("population item %s color = %#v, want %#v", item.Name, item.Color, colors.text)
+		}
+	}
+}
+
+// TestPopulationHUDItemTextFormatsAvailableBeforeTotal verifies population value order.
+func TestPopulationHUDItemTextFormatsAvailableBeforeTotal(t *testing.T) {
+	item := populationHUDItem{Available: 3, Total: 8}
+	if value := populationHUDItemText(item); value != "3/8" {
+		t.Fatalf("populationHUDItemText = %q, want %q", value, "3/8")
+	}
+}
+
+// TestStateDomainStatusWidthIncludesSeparateGroups verifies full status measurement.
+func TestStateDomainStatusWidthIncludesSeparateGroups(t *testing.T) {
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resources := state.resourceHUDItems()
+	populations := state.populationHUDItems()
+	barricade := state.barricadeText()
+	got := state.domainStatusWidth(resources, populations, barricade)
+	barricadeWidth, _ := text.Measure(barricade, state.ui.hudFace, state.ui.hudFace.Size)
+	want := state.resourceHUDGroupWidth(resources) +
+		state.statusGroupSeparatorWidth() +
+		state.populationHUDGroupWidth(populations) +
+		state.statusGroupSeparatorWidth() +
+		barricadeWidth
+	if got != want {
+		t.Fatalf("domainStatusWidth = %f, want %f", got, want)
+	}
+}
+
 // TestStateFormatsBarricadeText verifies the top bar Sanctum defense text.
 func TestStateFormatsBarricadeText(t *testing.T) {
 	state, err := New("Merlin", 1920, 1080)
@@ -49,7 +110,7 @@ func TestStateFormatsBarricadeText(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if value := state.barricadeText(); value != "| Barricade 3" {
-		t.Fatalf("barricadeText = %q, want %q", value, "| Barricade 3")
+	if value := state.barricadeText(); value != "Barricade 3" {
+		t.Fatalf("barricadeText = %q, want %q", value, "Barricade 3")
 	}
 }

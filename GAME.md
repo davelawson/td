@@ -115,6 +115,18 @@ Open decisions include whether resources are gathered manually or passively, whe
 
 The in-game top bar should show the current Wood, Stone, and Metal counts as resource icons plus numbers once the economy exists. Prototype HUD values may be fixed until resource gathering and spending systems are implemented.
 
+### Inhabitants
+
+The wizard's Domain has three inhabitant groups:
+
+- `Apprentices`: magical students available for future spellcraft, research, or arcane assignments.
+- `Soldiers`: trained defenders available for future military and guard assignments.
+- `Peasants`: general workers available for future gathering, construction, farming, and settlement assignments.
+
+Each group has an available count and a total count. Available means inhabitants not currently committed to an assignment; total means every inhabitant of that type in the Domain. Available cannot be negative or exceed total.
+
+The top bar shows the three groups in a separate population grouping after physical resources. Each group uses an icon followed by `available/total`. The first prototype initializes every group to `0/0` and does not yet implement recruitment, assignment, population growth, losses, or gameplay effects.
+
 ### Base-Building
 
 Base-building should let the player shape a defensible Domain around the Sanctum. Placement should matter spatially, and construction should feel connected to the wizardry theme.
@@ -202,6 +214,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, Catapult projectiles damage every active enemy in the Tile they strike, tower-damage defeats play a short prototype sound and grant small enemy-template resource rewards, and reaching enemies spend Barricade charges until the Sanctum is breached.
 - The first tower placement slice lets the player left-drag affordable tower icons from the building bar during calm play, release over empty grass-like Tiles to place towers, and spend the displayed Wood, Stone, and Metal costs. With default resources, Bow Tower is affordable while Flame Bolt Tower and Catapult Tower are not.
+- The first inhabitant slice shows separate Apprentice, Soldier, and Peasant icons in the top bar with fixed `0/0` available/total values. It does not implement recruitment, assignment, growth, losses, or population-driven gameplay.
 
 ## Open Game Design Questions
 
@@ -217,6 +230,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - How are Plot dominant characters generated, selected, or presented to the player?
 - How many road exits can a Plot have, and can roads branch inside a Plot after entering through edge-center connector Tiles?
 - Are Wood, Stone, and Metal enough for interesting choices, or are additional resources needed?
+- How are Apprentices, Soldiers, and Peasants recruited, assigned, released from assignments, and affected by Raids?
 - Should later exploration add an on-map wizard character, remain camera-inspection driven, or combine both?
 - How many arcane barrier charges does the Sanctum have, and can those charges be restored or increased?
 - How does the Domain expand, contract, or change over time?
@@ -353,8 +367,12 @@ Record game design decisions here when they become durable enough to guide imple
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Use the in-game top bar for Chapter, Day, resources, phase status, and Sanctum barricade charges.
-  Rationale: These values are the minimum persistent status a player needs while preparing for and surviving Raids, and fixed prototype values can make the display observable before the underlying gameplay systems exist.
+  Rationale: These values are the minimum persistent status a player needs while preparing for and surviving Raids, and fixed prototype values can make the display observable before the underlying gameplay systems exist. Inhabitant populations now appear as a separate status group within the same top bar.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Divide the Domain's inhabitants into Apprentices, Soldiers, and Peasants, and display each population as available/total.
+  Rationale: The three roles create readable future pools for magical, military, and general labor assignments while the two values distinguish free capacity from the Domain's full population.
+  Date/Author: 2026-06-25 / User and Codex
 
 - Decision: Define Raids as the Rival's end-of-Day assaults on the wizard's Domain.
   Rationale: This gives the defense phase a dedicated design home and ties Raids to Chapters, Rivals, enemy pressure, the defended path, and Sanctum breach conditions.
