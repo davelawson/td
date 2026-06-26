@@ -38,6 +38,7 @@ const (
 	featureNone tileFeature = iota
 	featureSanctum
 	featureHouse
+	featureBarracks
 	featureBowTower
 	featureFlameBoltTower
 	featureCatapultTower

@@ -20,7 +20,7 @@ func TestAffordableBuildingDragStarts(t *testing.T) {
 func TestInsufficientStaffBuildingDragDoesNotStart(t *testing.T) {
 	state := newRaidTestState(t)
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 
 	if state.buildDrag.active {
 		t.Fatal("expected unstaffed Bow Tower drag not to start")
@@ -32,7 +32,7 @@ func TestBuildDragTracksCursor(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 1, 0)
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.Update(Input{CursorX: 320, CursorY: 440, MouseDown: true})
 
 	if state.buildDrag.cursorX != 320 || state.buildDrag.cursorY != 440 {
@@ -46,7 +46,7 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 	setAvailablePopulations(state, 0, 1, 0)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
 
 	if state.buildDrag.active {
@@ -85,6 +85,86 @@ func TestBuildDragPlacesHouseAndGrantsPeasants(t *testing.T) {
 	}
 }
 
+// TestBarracksDragRequiresPeasants verifies conversion buildings need source population.
+func TestBarracksDragRequiresPeasants(t *testing.T) {
+	state := newRaidTestState(t)
+
+	state.Update(pressBuildingBarItemInput(state, 1))
+
+	if state.buildDrag.active {
+		t.Fatal("expected Barracks drag not to start without Peasants")
+	}
+}
+
+// TestBuildDragPlacesBarracksAndConvertsPeasants verifies Barracks population conversion.
+func TestBuildDragPlacesBarracksAndConvertsPeasants(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 0, 2)
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+
+	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(releaseTileInput(state, tile.X, tile.Y))
+
+	if state.buildDrag.active {
+		t.Fatal("expected drag to clear after release")
+	}
+	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureBarracks {
+		t.Fatalf("tile feature = %v, want Barracks", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
+	}
+	if state.status.resources.wood != 90 || state.status.resources.stone != 40 || state.status.resources.metal != 20 {
+		t.Fatalf("resources = %+v, want wood 90 stone 40 metal 20", state.status.resources)
+	}
+	if state.status.populations.peasants != (populationCount{available: 0, total: 0}) {
+		t.Fatalf("peasants = %+v, want 0/0 after building Barracks", state.status.populations.peasants)
+	}
+	if state.status.populations.soldiers != (populationCount{available: 2, total: 2}) {
+		t.Fatalf("soldiers = %+v, want 2/2 after building Barracks", state.status.populations.soldiers)
+	}
+}
+
+// TestBarracksInvalidReleasePreservesPopulations verifies conversion is atomic.
+func TestBarracksInvalidReleasePreservesPopulations(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 0, 2)
+	initialResources := state.status.resources
+	initialPopulations := state.status.populations
+
+	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(Input{CursorX: -100, CursorY: -100, Released: true})
+
+	if state.buildDrag.active {
+		t.Fatal("expected invalid release to clear drag")
+	}
+	if state.status.resources != initialResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, initialResources)
+	}
+	if state.status.populations != initialPopulations {
+		t.Fatalf("populations = %+v, want unchanged %+v", state.status.populations, initialPopulations)
+	}
+}
+
+// TestHouseThenBarracksEnablesBowTower verifies the first Soldier-producing workflow.
+func TestHouseThenBarracksEnablesBowTower(t *testing.T) {
+	state := newRaidTestState(t)
+
+	state.Update(pressBuildingBarItemInput(state, 0))
+	state.Update(releaseTileInput(state, homePlotCenter+2, 5))
+	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(releaseTileInput(state, homePlotCenter+3, 5))
+	state.Update(pressBuildingBarItemInput(state, 2))
+	state.Update(releaseTileInput(state, homePlotCenter+4, 5))
+
+	if state.gameMap.Home.Tiles[5][homePlotCenter+4].Feature != featureBowTower {
+		t.Fatalf("tile feature = %v, want Bow Tower", state.gameMap.Home.Tiles[5][homePlotCenter+4].Feature)
+	}
+	if state.status.populations.soldiers != (populationCount{available: 1, total: 2}) {
+		t.Fatalf("soldiers = %+v, want 1/2 after staffing Bow Tower", state.status.populations.soldiers)
+	}
+	if state.status.populations.peasants != (populationCount{available: 0, total: 0}) {
+		t.Fatalf("peasants = %+v, want 0/0 after Barracks conversion", state.status.populations.peasants)
+	}
+}
+
 // TestBuildDragPlacesCatapultTower verifies Catapult Tower placement maps to its feature and cost.
 func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	state := newRaidTestState(t)
@@ -92,7 +172,7 @@ func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	setAvailablePopulations(state, 0, 1, 2)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 
-	state.Update(pressBuildingBarItemInput(state, 3))
+	state.Update(pressBuildingBarItemInput(state, 4))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
 
 	if state.buildDrag.active {
@@ -118,7 +198,7 @@ func TestBuildDragRejectsCatapultWhenOneRoleIsShort(t *testing.T) {
 	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
 	setAvailablePopulations(state, 0, 1, 1)
 
-	state.Update(pressBuildingBarItemInput(state, 3))
+	state.Update(pressBuildingBarItemInput(state, 4))
 
 	if state.buildDrag.active {
 		t.Fatal("expected one missing Peasant to block Catapult drag")
@@ -130,9 +210,9 @@ func TestSecondTowerBuildIsBlockedAfterStaffReservation(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 1, 0)
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.Update(releaseTileInput(state, homePlotCenter+2, 5))
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 
 	if state.buildDrag.active {
 		t.Fatal("expected reserved Soldier to block a second Bow Tower")
@@ -146,7 +226,7 @@ func TestBuildReleaseRechecksStaffing(t *testing.T) {
 	initialResources := state.status.resources
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.status.populations.soldiers.available = 0
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
 
@@ -167,7 +247,7 @@ func TestBuildDragDoesNotReplaceOccupiedTile(t *testing.T) {
 	tile := tileCoordinate{X: homePlotCenter + 1, Y: 5}
 	state.gameMap.Home.Tiles[tile.Y][tile.X].Feature = featureBowTower
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
 
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureBowTower {
@@ -188,7 +268,7 @@ func TestBuildDragRejectsRoadTile(t *testing.T) {
 	initialResources := state.status.resources
 	tile := tileCoordinate{X: homePlotCenter, Y: 4}
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
 
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureNone {
@@ -206,7 +286,7 @@ func TestBuildDragRejectsForestTile(t *testing.T) {
 	initialResources := state.status.resources
 	tile := tileCoordinate{X: 1, Y: 0}
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
 
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureNone {
@@ -224,7 +304,7 @@ func TestBuildDragRejectsActiveRaid(t *testing.T) {
 	initialResources := state.status.resources
 
 	state.startNextRaid()
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 
 	if state.buildDrag.active {
 		t.Fatal("expected active Raid to block build dragging")
@@ -245,7 +325,7 @@ func TestBuildDragAllowsPausedCalmPlacement(t *testing.T) {
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 	state.Update(Input{TogglePause: true})
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 2))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
 
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureBowTower {

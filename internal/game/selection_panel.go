@@ -86,7 +86,9 @@ func (s *State) selectedStructurePanel() (selectionPanel, bool) {
 			{Label: "Structure", Value: s.structureCatalog.Sanctum.Name},
 		}}, true
 	case featureHouse:
-		return houseSelectionPanel(s.structureCatalog.House), true
+		return populationBuildingSelectionPanel(s.structureCatalog.House), true
+	case featureBarracks:
+		return populationBuildingSelectionPanel(s.structureCatalog.Barracks), true
 	case featureBowTower:
 		return towerSelectionPanel(s.structureCatalog.BowTower), true
 	case featureFlameBoltTower:
@@ -98,17 +100,35 @@ func (s *State) selectedStructurePanel() (selectionPanel, bool) {
 	}
 }
 
-// houseSelectionPanel returns display rows for the population-providing House.
-func houseSelectionPanel(template StructureTemplate) selectionPanel {
+// populationBuildingSelectionPanel returns display rows for population buildings.
+func populationBuildingSelectionPanel(template StructureTemplate) selectionPanel {
 	name := template.Name
 	if name == "" {
 		name = selectionPanelUnknownValue
 	}
-	return selectionPanel{Rows: []selectionPanelRow{
+	rows := []selectionPanelRow{
 		{Label: "Structure", Value: name},
 		{Label: "Cost", Value: formatResourceCost(template.Cost)},
-		{Label: "Grants Peasants", Value: fmt.Sprintf("%d", template.PopulationGrant.Peasants)},
-	}}
+	}
+	if template.PopulationCost.Apprentices > 0 {
+		rows = append(rows, selectionPanelRow{Label: "Consumes Apprentices", Value: fmt.Sprintf("%d", template.PopulationCost.Apprentices)})
+	}
+	if template.PopulationCost.Soldiers > 0 {
+		rows = append(rows, selectionPanelRow{Label: "Consumes Soldiers", Value: fmt.Sprintf("%d", template.PopulationCost.Soldiers)})
+	}
+	if template.PopulationCost.Peasants > 0 {
+		rows = append(rows, selectionPanelRow{Label: "Consumes Peasants", Value: fmt.Sprintf("%d", template.PopulationCost.Peasants)})
+	}
+	if template.PopulationGrant.Apprentices > 0 {
+		rows = append(rows, selectionPanelRow{Label: "Grants Apprentices", Value: fmt.Sprintf("%d", template.PopulationGrant.Apprentices)})
+	}
+	if template.PopulationGrant.Soldiers > 0 {
+		rows = append(rows, selectionPanelRow{Label: "Grants Soldiers", Value: fmt.Sprintf("%d", template.PopulationGrant.Soldiers)})
+	}
+	if template.PopulationGrant.Peasants > 0 {
+		rows = append(rows, selectionPanelRow{Label: "Grants Peasants", Value: fmt.Sprintf("%d", template.PopulationGrant.Peasants)})
+	}
+	return selectionPanel{Rows: rows}
 }
 
 // towerSelectionPanel returns display rows for one combat tower template.

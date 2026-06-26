@@ -47,6 +47,28 @@ func TestSelectedHousePanelRows(t *testing.T) {
 	assertPanelRowAbsent(t, panel, "Damage")
 }
 
+// TestSelectedBarracksPanelRows verifies Barracks selection exposes its conversion effect.
+func TestSelectedBarracksPanelRows(t *testing.T) {
+	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+3].Feature = featureBarracks
+	state.selection = selectedItem{
+		kind: selectedItemStructure,
+		tile: tileCoordinate{X: homePlotCenter + 3, Y: 5},
+	}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected Barracks panel")
+	}
+
+	assertPanelRow(t, panel, "Structure", "Barracks")
+	assertPanelRow(t, panel, "Cost", "10 Wood, 10 Stone")
+	assertPanelRow(t, panel, "Consumes Peasants", "2")
+	assertPanelRow(t, panel, "Grants Soldiers", "2")
+	assertPanelRowAbsent(t, panel, "Range")
+	assertPanelRowAbsent(t, panel, "Damage")
+}
+
 // TestSelectedBowTowerPanelRows verifies Bow Tower selection exposes tower stats.
 func TestSelectedBowTowerPanelRows(t *testing.T) {
 	state := newRaidTestState(t)
@@ -163,6 +185,7 @@ func TestFormatResourceCost(t *testing.T) {
 	}{
 		{cost: Resources{}, want: "Free"},
 		{cost: Resources{Wood: 20}, want: "20 Wood"},
+		{cost: Resources{Wood: 10, Stone: 10}, want: "10 Wood, 10 Stone"},
 		{cost: Resources{Wood: 30, Stone: 10, Metal: 10}, want: "30 Wood, 10 Stone, 10 Metal"},
 	}
 	for _, test := range tests {

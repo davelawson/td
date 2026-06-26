@@ -34,6 +34,7 @@ type buildingBarItem struct {
 	Sprite          *ebiten.Image
 	Cost            Resources
 	Staffing        StaffingRequirements
+	PopulationCost  PopulationCost
 	PopulationGrant PopulationGrant
 	Bounds          ui.Button[int]
 }
@@ -47,6 +48,7 @@ type buildingBarStaffingItem struct {
 	Count  int
 	Value  string
 	Sprite *ebiten.Image
+	Cost   bool
 }
 
 type buildDragState struct {
@@ -77,6 +79,7 @@ func (s *State) buildingBarItems() []buildingBarItem {
 		buildingBarItemGap
 	templates := []StructureTemplate{
 		s.structureCatalog.House,
+		s.structureCatalog.Barracks,
 		s.structureCatalog.BowTower,
 		s.structureCatalog.FlameBoltTower,
 		s.structureCatalog.CatapultTower,
@@ -89,6 +92,7 @@ func (s *State) buildingBarItems() []buildingBarItem {
 			Sprite:          template.Sprite,
 			Cost:            template.Cost,
 			Staffing:        template.Staffing,
+			PopulationCost:  template.PopulationCost,
 			PopulationGrant: template.PopulationGrant,
 			Bounds: ui.Button[int]{
 				Label:  template.Name,
@@ -117,7 +121,9 @@ func (s *State) canAffordBuildingCost(cost Resources) bool {
 
 // canConstructBuilding reports whether current resources and staff cover one item.
 func (s *State) canConstructBuilding(item buildingBarItem) bool {
-	return s.canAffordBuildingCost(item.Cost) && s.canStaff(item.Staffing)
+	return s.canAffordBuildingCost(item.Cost) &&
+		s.canPayPopulationCost(item.PopulationCost) &&
+		s.canStaff(item.Staffing)
 }
 
 // updateBuildingBarHover records which tower icon, if any, is under the cursor.
@@ -192,6 +198,7 @@ func (s *State) placeDraggedBuilding(x, y int) {
 	}
 
 	s.deductBuildingCost(item.Cost)
+	s.deductPopulationCost(item.PopulationCost)
 	s.reserveStaffing(item.Staffing)
 	s.grantPopulation(item.PopulationGrant)
 	s.gameMap.Home.Tiles[tile.Y][tile.X].Feature = feature
@@ -246,10 +253,12 @@ func buildingFeatureForItemIndex(index int) (tileFeature, bool) {
 	case 0:
 		return featureHouse, true
 	case 1:
-		return featureBowTower, true
+		return featureBarracks, true
 	case 2:
-		return featureFlameBoltTower, true
+		return featureBowTower, true
 	case 3:
+		return featureFlameBoltTower, true
+	case 4:
 		return featureCatapultTower, true
 	default:
 		return featureNone, false
@@ -407,7 +416,10 @@ func (s *State) buildingBarPopulationMetadataItems(item buildingBarItem) []build
 	if len(staffingItems) > 0 {
 		return staffingItems
 	}
-	return s.buildingBarPopulationGrantItems(item.PopulationGrant)
+	return append(
+		s.buildingBarPopulationCostItems(item.PopulationCost),
+		s.buildingBarPopulationGrantItems(item.PopulationGrant)...,
+	)
 }
 
 // buildingBarStaffingItems returns non-zero requirements in Apprentice, Soldier, Peasant order.
@@ -447,6 +459,27 @@ func (s *State) buildingBarPopulationGrantItems(grant PopulationGrant) []buildin
 	if grant.Peasants > 0 {
 		items = append(items, buildingBarStaffingItem{
 			Count: grant.Peasants, Value: fmt.Sprintf("+%d", grant.Peasants), Sprite: s.assetCatalog.Sprite.Icon.Peasant,
+		})
+	}
+	return items
+}
+
+// buildingBarPopulationCostItems returns non-zero population costs in Apprentice, Soldier, Peasant order.
+func (s *State) buildingBarPopulationCostItems(cost PopulationCost) []buildingBarStaffingItem {
+	items := []buildingBarStaffingItem{}
+	if cost.Apprentices > 0 {
+		items = append(items, buildingBarStaffingItem{
+			Count: cost.Apprentices, Value: fmt.Sprintf("-%d", cost.Apprentices), Sprite: s.assetCatalog.Sprite.Icon.Apprentice, Cost: true,
+		})
+	}
+	if cost.Soldiers > 0 {
+		items = append(items, buildingBarStaffingItem{
+			Count: cost.Soldiers, Value: fmt.Sprintf("-%d", cost.Soldiers), Sprite: s.assetCatalog.Sprite.Icon.Soldier, Cost: true,
+		})
+	}
+	if cost.Peasants > 0 {
+		items = append(items, buildingBarStaffingItem{
+			Count: cost.Peasants, Value: fmt.Sprintf("-%d", cost.Peasants), Sprite: s.assetCatalog.Sprite.Icon.Peasant, Cost: true,
 		})
 	}
 	return items

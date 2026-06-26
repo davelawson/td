@@ -105,6 +105,42 @@ func TestNewStructureCatalogIncludesHouse(t *testing.T) {
 	}
 }
 
+// TestNewStructureCatalogIncludesBarracks verifies the Barracks template values.
+func TestNewStructureCatalogIncludesBarracks(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	catalog := NewStructureCatalog(assetCatalog)
+	barracks := catalog.Barracks
+
+	if barracks.Name != "Barracks" {
+		t.Fatalf("Barracks name = %q, want %q", barracks.Name, "Barracks")
+	}
+	if barracks.Sprite == nil {
+		t.Fatal("expected Barracks sprite to be assigned")
+	}
+	if barracks.Sprite != assetCatalog.Sprite.Structure.Barracks {
+		t.Fatal("expected Barracks sprite to reference the loaded asset catalog sprite")
+	}
+	if barracks.Cost != (Resources{Wood: 10, Stone: 10}) {
+		t.Fatalf("Barracks cost = %+v, want 10 wood 10 stone", barracks.Cost)
+	}
+	if barracks.Staffing != (StaffingRequirements{}) {
+		t.Fatalf("Barracks staffing = %+v, want none", barracks.Staffing)
+	}
+	if barracks.PopulationCost != (PopulationCost{Peasants: 2}) {
+		t.Fatalf("Barracks population cost = %+v, want 2 Peasants", barracks.PopulationCost)
+	}
+	if barracks.PopulationGrant != (PopulationGrant{Soldiers: 2}) {
+		t.Fatalf("Barracks population grant = %+v, want 2 Soldiers", barracks.PopulationGrant)
+	}
+	if barracks.canFireProjectiles() {
+		t.Fatal("expected Barracks not to have projectile combat stats")
+	}
+}
+
 // TestNewStructureCatalogIncludesFlameBoltTower verifies the Flame Bolt Tower template values.
 func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
 	assetCatalog, err := assets.NewCatalog()

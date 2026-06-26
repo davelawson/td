@@ -11,6 +11,7 @@ func TestClickingStructureTilesSelectsStructures(t *testing.T) {
 	}{
 		{name: "sanctum", x: homePlotCenter, y: homePlotCenter},
 		{name: "house", x: homePlotCenter + 2, y: 5},
+		{name: "barracks", x: homePlotCenter + 3, y: 5},
 		{name: "bow tower", x: homePlotCenter + 1, y: 5},
 		{name: "flame bolt tower", x: homePlotCenter - 1, y: 5},
 	}
@@ -23,6 +24,9 @@ func TestClickingStructureTilesSelectsStructures(t *testing.T) {
 			}
 			if tt.name == "house" {
 				state.gameMap.Home.Tiles[tt.y][tt.x].Feature = featureHouse
+			}
+			if tt.name == "barracks" {
+				state.gameMap.Home.Tiles[tt.y][tt.x].Feature = featureBarracks
 			}
 			if tt.name == "flame bolt tower" {
 				state.gameMap.Home.Tiles[tt.y][tt.x].Feature = featureFlameBoltTower

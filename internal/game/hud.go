@@ -61,6 +61,23 @@ func (s *State) canStaff(requirements StaffingRequirements) bool {
 		s.status.populations.peasants.available >= requirements.Peasants
 }
 
+// canPayPopulationCost reports whether every consumed inhabitant role is available.
+func (s *State) canPayPopulationCost(cost PopulationCost) bool {
+	return s.status.populations.apprentices.available >= cost.Apprentices &&
+		s.status.populations.soldiers.available >= cost.Soldiers &&
+		s.status.populations.peasants.available >= cost.Peasants
+}
+
+// deductPopulationCost permanently removes inhabitants from available and total counts.
+func (s *State) deductPopulationCost(cost PopulationCost) {
+	s.status.populations.apprentices.available -= cost.Apprentices
+	s.status.populations.apprentices.total -= cost.Apprentices
+	s.status.populations.soldiers.available -= cost.Soldiers
+	s.status.populations.soldiers.total -= cost.Soldiers
+	s.status.populations.peasants.available -= cost.Peasants
+	s.status.populations.peasants.total -= cost.Peasants
+}
+
 // reserveStaffing commits available inhabitants to a newly built structure.
 func (s *State) reserveStaffing(requirements StaffingRequirements) {
 	s.status.populations.apprentices.available -= requirements.Apprentices
