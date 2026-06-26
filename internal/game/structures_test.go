@@ -49,6 +49,9 @@ func TestNewStructureCatalogIncludesBowTower(t *testing.T) {
 	if bowTower.Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
 		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", bowTower.Cost)
 	}
+	if bowTower.Staffing != (StaffingRequirements{Soldiers: 1}) {
+		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", bowTower.Staffing)
+	}
 	if bowTower.RangeTiles != 3.0 {
 		t.Fatalf("Bow Tower range = %f, want 3.0", bowTower.RangeTiles)
 	}
@@ -88,6 +91,9 @@ func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
 	if flameBoltTower.Cost != (Resources{Stone: 30, Metal: 20}) {
 		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", flameBoltTower.Cost)
 	}
+	if flameBoltTower.Staffing != (StaffingRequirements{Apprentices: 1}) {
+		t.Fatalf("Flame Bolt Tower staffing = %+v, want 1 Apprentice", flameBoltTower.Staffing)
+	}
 	if flameBoltTower.RangeTiles != 2.5 {
 		t.Fatalf("Flame Bolt Tower range = %f, want 2.5", flameBoltTower.RangeTiles)
 	}
@@ -123,6 +129,9 @@ func TestNewStructureCatalogIncludesCatapultTower(t *testing.T) {
 	}
 	if catapultTower.Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
 		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", catapultTower.Cost)
+	}
+	if catapultTower.Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
+		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", catapultTower.Staffing)
 	}
 	if catapultTower.RangeTiles != 5.0 {
 		t.Fatalf("Catapult Tower range = %f, want 5.0", catapultTower.RangeTiles)

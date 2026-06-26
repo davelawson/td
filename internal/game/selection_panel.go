@@ -101,12 +101,28 @@ func towerSelectionPanel(template StructureTemplate) selectionPanel {
 	if name == "" {
 		name = selectionPanelUnknownValue
 	}
-	return selectionPanel{Rows: []selectionPanelRow{
+	rows := []selectionPanelRow{
 		{Label: "Tower Type", Value: name},
 		{Label: "Range", Value: fmt.Sprintf("%.1f tiles", template.RangeTiles)},
 		{Label: "Attack Speed", Value: fmt.Sprintf("every %.1fs", template.FireIntervalSeconds)},
 		{Label: "Damage", Value: fmt.Sprintf("%d", template.Damage)},
-	}}
+	}
+	if template.Staffing.Apprentices > 0 {
+		rows = append(rows, selectionPanelRow{
+			Label: "Required Apprentices", Value: fmt.Sprintf("%d", template.Staffing.Apprentices),
+		})
+	}
+	if template.Staffing.Soldiers > 0 {
+		rows = append(rows, selectionPanelRow{
+			Label: "Required Soldiers", Value: fmt.Sprintf("%d", template.Staffing.Soldiers),
+		})
+	}
+	if template.Staffing.Peasants > 0 {
+		rows = append(rows, selectionPanelRow{
+			Label: "Required Peasants", Value: fmt.Sprintf("%d", template.Staffing.Peasants),
+		})
+	}
+	return selectionPanel{Rows: rows}
 }
 
 // selectedHealthPercent returns rounded health percentage remaining.

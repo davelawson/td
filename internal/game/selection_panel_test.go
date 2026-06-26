@@ -29,6 +29,7 @@ func TestSelectedRaiderPanelRows(t *testing.T) {
 // TestSelectedBowTowerPanelRows verifies Bow Tower selection exposes tower stats.
 func TestSelectedBowTowerPanelRows(t *testing.T) {
 	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureBowTower
 	state.selection = selectedItem{
 		kind: selectedItemStructure,
 		tile: tileCoordinate{X: homePlotCenter + 1, Y: 5},
@@ -43,11 +44,13 @@ func TestSelectedBowTowerPanelRows(t *testing.T) {
 	assertPanelRow(t, panel, "Range", "3.0 tiles")
 	assertPanelRow(t, panel, "Attack Speed", "every 1.0s")
 	assertPanelRow(t, panel, "Damage", "10")
+	assertPanelRow(t, panel, "Required Soldiers", "1")
 }
 
 // TestSelectedFlameBoltTowerPanelRows verifies Flame Bolt Tower selection exposes tower stats.
 func TestSelectedFlameBoltTowerPanelRows(t *testing.T) {
 	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter-1].Feature = featureFlameBoltTower
 	state.selection = selectedItem{
 		kind: selectedItemStructure,
 		tile: tileCoordinate{X: homePlotCenter - 1, Y: 5},
@@ -62,6 +65,7 @@ func TestSelectedFlameBoltTowerPanelRows(t *testing.T) {
 	assertPanelRow(t, panel, "Range", "2.5 tiles")
 	assertPanelRow(t, panel, "Attack Speed", "every 1.5s")
 	assertPanelRow(t, panel, "Damage", "20")
+	assertPanelRow(t, panel, "Required Apprentices", "1")
 }
 
 // TestSelectedCatapultTowerPanelRows verifies Catapult Tower selection exposes tower stats.
@@ -82,6 +86,8 @@ func TestSelectedCatapultTowerPanelRows(t *testing.T) {
 	assertPanelRow(t, panel, "Range", "5.0 tiles")
 	assertPanelRow(t, panel, "Attack Speed", "every 3.0s")
 	assertPanelRow(t, panel, "Damage", "75")
+	assertPanelRow(t, panel, "Required Soldiers", "1")
+	assertPanelRow(t, panel, "Required Peasants", "2")
 }
 
 // TestSelectedSanctumPanelRows verifies Sanctum selection exposes only basic structure identity.
@@ -106,6 +112,7 @@ func TestSelectedSanctumPanelRows(t *testing.T) {
 // TestSelectionPanelClickDoesNotClearSelection verifies panel clicks are blocked as UI input.
 func TestSelectionPanelClickDoesNotClearSelection(t *testing.T) {
 	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureBowTower
 	state.Update(clickTileInput(state, homePlotCenter+1, 5))
 	state.paused = true
 	bounds, ok := state.selectionPanelBounds()

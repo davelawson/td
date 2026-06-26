@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation is a runnable Go/Ebitengine shell with menus, Wizard name entry, a static home Plot scene with automated Bow and Flame Bolt Towers, a building bar showing Bow Tower, Flame Bolt Tower, and Catapult Tower types and their prototype construction costs, first calm-phase tower drag placement with resource spending, basic camera zoom and pan, pause behavior, left-click selection for structures and raiders, an in-game overlay menu, and a deterministic placeholder Raid slice with sprite-backed skeleton and zombie enemies, first-pass projectile combat, Catapult Tile-area impact, and a short prototype sound plus small resource rewards when tower damage defeats a raider. The actual exploration, resource gathering, broader base-building, upgrade, and broader reward systems have not been implemented.
+The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot and tower templates with resource and staffing requirements. Construction requires sufficient available staff and reserves those inhabitants. Recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -69,7 +69,7 @@ The map is built on a grid. Each grid square is called a Tile. Tiles are grouped
 
 Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
 
-At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum, a straight road north to the Plot edge, a Bow Tower and Flame Bolt Tower across the road from each other, and a pine-tree border around the Plot edge except at the road opening; richer terrain variety, resources, build rules, and tower combat remain future work.
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum as its only initial structure, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening. The player must build every combat tower.
 
 Plots exist in one of these high-level states:
 
@@ -135,6 +135,8 @@ Structures can only be built in explored Plots. Expanding the Domain gives the w
 
 The first build-facing UI is a building bar on the left side of the playable scene. It shows Bow Tower, Flame Bolt Tower, and Catapult Tower icons using the existing tower sprites, with colour-coded prototype construction costs beneath each icon. Hovering an affordable icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an affordable tower icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that tower and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
 
+Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus two Peasants. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
+
 Open decisions include richer build rules for future terrain types, whether structures block paths beyond the current fixed road rejection, how much rebuilding is allowed between attacks, whether later placement needs previews or range indicators, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
 ### Sanctum
@@ -179,9 +181,9 @@ Open decisions include enemy archetypes, whether a Raid can include multiple wav
 
 Tower types define the defensive structures the wizard can build in the Domain.
 
-- `Bow Tower`: a tower replete with magically automated bows that fire arrows at enemies within range. The first prototype Bow Tower costs 30 Wood, 10 Stone, and 10 Metal to build. It is a general-purpose tower that deals moderate damage at moderate range. The first prototype Bow Tower has 3.0-Tile range, deals 10 damage per hit, fires every 1.0 second, and launches projectiles that travel at 9.0 Tiles per second.
-- `Flame Bolt Tower`: a magical tower that hurls bolts of flame at enemies within range. The first prototype Flame Bolt Tower costs 30 Stone and 20 Metal to build. It is a shorter-range, slower-firing damage tower than the Bow Tower in the first prototype. The first prototype Flame Bolt Tower has 2.5-Tile range, deals 20 damage per hit, fires every 1.5 seconds, and launches projectiles that travel at 7.0 Tiles per second.
-- `Catapult Tower`: a magically assisted siege tower that hurls heavy boulders at enemies within range. The first prototype Catapult Tower costs 40 Wood, 60 Stone, and 25 Metal to build. It is a long-range, slow-firing, slow-projectile, high-damage tower. The first prototype Catapult Tower has 5.0-Tile range, deals 75 damage to every active enemy in the Tile it strikes, fires every 3.0 seconds, and launches projectiles that travel at 3.0 Tiles per second.
+- `Bow Tower`: costs 30 Wood, 10 Stone, and 10 Metal; requires one Soldier; has 3.0-Tile range; deals 10 damage; fires every 1.0 second; and launches projectiles at 9.0 Tiles per second.
+- `Flame Bolt Tower`: costs 30 Stone and 20 Metal; requires one Apprentice; has 2.5-Tile range; deals 20 damage; fires every 1.5 seconds; and launches projectiles at 7.0 Tiles per second.
+- `Catapult Tower`: costs 40 Wood, 60 Stone, and 25 Metal; requires one Soldier and two Peasants; has 5.0-Tile range; deals 75 damage to every active enemy in the struck Tile; fires every 3.0 seconds; and launches projectiles at 3.0 Tiles per second.
 
 Open decisions include upgrade paths, specialized targeting modes, what other tower types exist, and whether these first prototype costs remain balanced once resource gathering and spending exist.
 
@@ -210,11 +212,11 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot scene backed by prototype map data. It contains the centered Sanctum, a straight road north to the Plot edge, one automated Bow Tower on the east side of the path, one automated Flame Bolt Tower on the west side of the path, a pine-tree border around the Plot edge except at the road opening, and a building bar listing the Bow Tower, Flame Bolt Tower, and Catapult Tower with prototype construction costs and calm-phase drag placement.
+- The first gameplay-facing rendered slice is a static home Plot containing only the centered Sanctum as an initial structure, a straight road north, a pine-tree border, and a building bar listing all three combat towers with costs, staffing requirements, and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
-- The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. The `Next Raid` button starts a Raid immediately, Raid 1 spawns skeleton, zombie, skeleton, zombie, skeleton, later placeholder Raids remain skeleton-only, enemies spawn on a fixed stagger, the starting towers fire projectiles at in-range enemies, Catapult projectiles damage every active enemy in the Tile they strike, tower-damage defeats play a short prototype sound and grant small enemy-template resource rewards, and reaching enemies spend Barricade charges until the Sanctum is breached.
-- The first tower placement slice lets the player left-drag affordable tower icons from the building bar during calm play, release over empty grass-like Tiles to place towers, and spend the displayed Wood, Stone, and Metal costs. With default resources, Bow Tower is affordable while Flame Bolt Tower and Catapult Tower are not.
-- The first inhabitant slice shows separate Apprentice, Soldier, and Peasant icons in the top bar with fixed `0/0` available/total values. It does not implement recruitment, assignment, growth, losses, or population-driven gameplay.
+- The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
+- A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover Bow and Flame Bolt, but zero starting inhabitants block every tower.
+- The first staffing slice uses available populations to gate construction and reserves staff on successful placement. New games still start at `0/0`, and recruitment, reassignment, release, growth, and losses are not implemented.
 
 ## Open Game Design Questions
 
@@ -289,6 +291,18 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Add the Flame Bolt Tower as the second defined tower type and place one west of the starting road across from the Bow Tower.
   Rationale: A short-range, slower-firing magical damage tower makes the starting defense visibly more wizardly while keeping the first targeting and projectile rules shared and testable.
   Date/Author: 2026-05-16 / Codex
+
+- Decision: Supersede the free starting-tower layout so a new Domain contains only the Sanctum, with 100 Wood, 50 Stone, and 20 Metal available for construction.
+  Rationale: Requiring the player to construct the first defense makes the building workflow meaningful. Resources cover Bow and Flame Bolt at the start, while staffing now remains an additional requirement.
+  Date/Author: 2026-06-26 / User and Codex
+
+- Decision: Store and display tower staffing requirements without enforcing them until recruitment and assignment exist.
+  Rationale: Template metadata establishes the intended requirements and UI language without making every tower unusable while all populations start at `0/0`.
+  Date/Author: 2026-06-26 / User and Codex
+
+- Decision: Supersede informational-only staffing by requiring available staff for construction and reserving that staff after a successful build.
+  Rationale: Staffing requirements should constrain the number and combination of towers in the same way resources constrain construction. Reducing available counts prevents one inhabitant from staffing unlimited towers, while preserving totals accurately represents assignment rather than population loss.
+  Date/Author: 2026-06-26 / User and Codex
 
 - Decision: Add the Catapult Tower as the third defined tower type and make it buildable from the building bar without placing one for free in the starting Plot.
   Rationale: A long-range, slow-firing, high-damage area tower creates the first clear tower-role contrast beyond single-target projectiles while preserving the existing authored starting defense.

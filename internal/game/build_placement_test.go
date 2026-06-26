@@ -5,6 +5,7 @@ import "testing"
 // TestAffordableBuildingDragStarts verifies affordable tower icons can leave the bar.
 func TestAffordableBuildingDragStarts(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 
 	state.Update(pressBuildingBarItemInput(state, 0))
 
@@ -16,20 +17,21 @@ func TestAffordableBuildingDragStarts(t *testing.T) {
 	}
 }
 
-// TestUnaffordableBuildingDragDoesNotStart verifies expensive towers cannot be dragged.
-func TestUnaffordableBuildingDragDoesNotStart(t *testing.T) {
+// TestInsufficientStaffBuildingDragDoesNotStart verifies staffing gates dragging.
+func TestInsufficientStaffBuildingDragDoesNotStart(t *testing.T) {
 	state := newRaidTestState(t)
 
-	state.Update(pressBuildingBarItemInput(state, 1))
+	state.Update(pressBuildingBarItemInput(state, 0))
 
 	if state.buildDrag.active {
-		t.Fatal("expected unaffordable Flame Bolt Tower drag not to start")
+		t.Fatal("expected unstaffed Bow Tower drag not to start")
 	}
 }
 
 // TestBuildDragTracksCursor verifies the dragged icon follows held mouse input.
 func TestBuildDragTracksCursor(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 
 	state.Update(pressBuildingBarItemInput(state, 0))
 	state.Update(Input{CursorX: 320, CursorY: 440, MouseDown: true})
@@ -42,6 +44,7 @@ func TestBuildDragTracksCursor(t *testing.T) {
 // TestBuildDragPlacesTowerAndDeductsResources verifies a valid drop constructs a tower.
 func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 
 	state.Update(pressBuildingBarItemInput(state, 0))
@@ -53,8 +56,11 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureBowTower {
 		t.Fatalf("tile feature = %v, want Bow Tower", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 50 || state.status.resources.stone != 35 || state.status.resources.metal != 2 {
-		t.Fatalf("resources = %+v, want wood 50 stone 35 metal 2", state.status.resources)
+	if state.status.resources.wood != 70 || state.status.resources.stone != 40 || state.status.resources.metal != 10 {
+		t.Fatalf("resources = %+v, want wood 70 stone 40 metal 10", state.status.resources)
+	}
+	if state.status.populations.soldiers != (populationCount{available: 0, total: 1}) {
+		t.Fatalf("soldiers = %+v, want 0/1 after staffing Bow Tower", state.status.populations.soldiers)
 	}
 }
 
@@ -62,6 +68,7 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
+	setAvailablePopulations(state, 0, 1, 2)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 
 	state.Update(pressBuildingBarItemInput(state, 2))
@@ -76,13 +83,68 @@ func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	if state.status.resources.wood != 60 || state.status.resources.stone != 40 || state.status.resources.metal != 25 {
 		t.Fatalf("resources = %+v, want wood 60 stone 40 metal 25", state.status.resources)
 	}
+	if state.status.populations.soldiers != (populationCount{available: 0, total: 1}) {
+		t.Fatalf("soldiers = %+v, want 0/1", state.status.populations.soldiers)
+	}
+	if state.status.populations.peasants != (populationCount{available: 0, total: 2}) {
+		t.Fatalf("peasants = %+v, want 0/2", state.status.populations.peasants)
+	}
+}
+
+// TestBuildDragRejectsCatapultWhenOneRoleIsShort verifies mixed requirements are atomic.
+func TestBuildDragRejectsCatapultWhenOneRoleIsShort(t *testing.T) {
+	state := newRaidTestState(t)
+	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
+	setAvailablePopulations(state, 0, 1, 1)
+
+	state.Update(pressBuildingBarItemInput(state, 2))
+
+	if state.buildDrag.active {
+		t.Fatal("expected one missing Peasant to block Catapult drag")
+	}
+}
+
+// TestSecondTowerBuildIsBlockedAfterStaffReservation verifies staff cannot be reused.
+func TestSecondTowerBuildIsBlockedAfterStaffReservation(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
+
+	state.Update(pressBuildingBarItemInput(state, 0))
+	state.Update(releaseTileInput(state, homePlotCenter+2, 5))
+	state.Update(pressBuildingBarItemInput(state, 0))
+
+	if state.buildDrag.active {
+		t.Fatal("expected reserved Soldier to block a second Bow Tower")
+	}
+}
+
+// TestBuildReleaseRechecksStaffing verifies changed staffing cancels an active drag.
+func TestBuildReleaseRechecksStaffing(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
+	initialResources := state.status.resources
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+
+	state.Update(pressBuildingBarItemInput(state, 0))
+	state.status.populations.soldiers.available = 0
+	state.Update(releaseTileInput(state, tile.X, tile.Y))
+
+	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureNone {
+		t.Fatalf("tile feature = %v, want none", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
+	}
+	if state.status.resources != initialResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, initialResources)
+	}
 }
 
 // TestBuildDragDoesNotReplaceOccupiedTile verifies occupied feature Tiles reject placement.
 func TestBuildDragDoesNotReplaceOccupiedTile(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 	initialResources := state.status.resources
+	initialPopulations := state.status.populations
 	tile := tileCoordinate{X: homePlotCenter + 1, Y: 5}
+	state.gameMap.Home.Tiles[tile.Y][tile.X].Feature = featureBowTower
 
 	state.Update(pressBuildingBarItemInput(state, 0))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
@@ -93,11 +155,15 @@ func TestBuildDragDoesNotReplaceOccupiedTile(t *testing.T) {
 	if state.status.resources != initialResources {
 		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, initialResources)
 	}
+	if state.status.populations != initialPopulations {
+		t.Fatalf("populations = %+v, want unchanged %+v", state.status.populations, initialPopulations)
+	}
 }
 
 // TestBuildDragRejectsRoadTile verifies roads are not buildable in the first placement slice.
 func TestBuildDragRejectsRoadTile(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 	initialResources := state.status.resources
 	tile := tileCoordinate{X: homePlotCenter, Y: 4}
 
@@ -115,6 +181,7 @@ func TestBuildDragRejectsRoadTile(t *testing.T) {
 // TestBuildDragRejectsForestTile verifies forest border Tiles are not buildable.
 func TestBuildDragRejectsForestTile(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 	initialResources := state.status.resources
 	tile := tileCoordinate{X: 1, Y: 0}
 
@@ -132,6 +199,7 @@ func TestBuildDragRejectsForestTile(t *testing.T) {
 // TestBuildDragRejectsActiveRaid verifies tower placement is calm-phase only.
 func TestBuildDragRejectsActiveRaid(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 	initialResources := state.status.resources
 
 	state.startNextRaid()
@@ -152,6 +220,7 @@ func TestBuildDragRejectsActiveRaid(t *testing.T) {
 // TestBuildDragAllowsPausedCalmPlacement verifies pause does not block calm building.
 func TestBuildDragAllowsPausedCalmPlacement(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 	state.Update(Input{TogglePause: true})
 
@@ -166,7 +235,9 @@ func TestBuildDragAllowsPausedCalmPlacement(t *testing.T) {
 // TestBuildDragInvalidReleaseClearsDrag verifies invalid drops are canceled safely.
 func TestBuildDragInvalidReleaseClearsDrag(t *testing.T) {
 	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
 	initialResources := state.status.resources
+	initialPopulations := state.status.populations
 
 	state.Update(pressBuildingBarItemInput(state, 0))
 	state.Update(Input{CursorX: -100, CursorY: -100, Released: true})
@@ -176,6 +247,9 @@ func TestBuildDragInvalidReleaseClearsDrag(t *testing.T) {
 	}
 	if state.status.resources != initialResources {
 		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, initialResources)
+	}
+	if state.status.populations != initialPopulations {
+		t.Fatalf("populations = %+v, want unchanged %+v", state.status.populations, initialPopulations)
 	}
 }
 
@@ -197,4 +271,13 @@ func releaseTileInput(state *State, x, y int) Input {
 	input.MouseDown = false
 	input.Released = true
 	return input
+}
+
+// setAvailablePopulations gives tests matching available and total inhabitant counts.
+func setAvailablePopulations(state *State, apprentices, soldiers, peasants int) {
+	state.status.populations = populationCounts{
+		apprentices: populationCount{available: apprentices, total: apprentices},
+		soldiers:    populationCount{available: soldiers, total: soldiers},
+		peasants:    populationCount{available: peasants, total: peasants},
+	}
 }

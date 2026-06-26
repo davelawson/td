@@ -11,12 +11,20 @@ type StructureTemplate struct {
 	Name                          string
 	Sprite                        *ebiten.Image
 	Cost                          Resources
+	Staffing                      StaffingRequirements
 	RangeTiles                    float64
 	Damage                        int
 	FireIntervalSeconds           float64
 	ProjectileSpeedTilesPerSecond float64
 	ProjectileSprite              *ebiten.Image
 	DamageAllEnemiesInTargetTile  bool
+}
+
+// StaffingRequirements describes the inhabitants required by one structure.
+type StaffingRequirements struct {
+	Apprentices int
+	Soldiers    int
+	Peasants    int
 }
 
 // Resources describes the resources required to construct a structure.
@@ -52,6 +60,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Name:                          "Bow Tower",
 			Sprite:                        assetCatalog.Sprite.Structure.BowTower,
 			Cost:                          Resources{Wood: 30, Stone: 10, Metal: 10},
+			Staffing:                      StaffingRequirements{Soldiers: 1},
 			RangeTiles:                    3.0,
 			Damage:                        10,
 			FireIntervalSeconds:           1.0,
@@ -62,6 +71,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Name:                          "Flame Bolt Tower",
 			Sprite:                        assetCatalog.Sprite.Structure.FlameBoltTower,
 			Cost:                          Resources{Stone: 30, Metal: 20},
+			Staffing:                      StaffingRequirements{Apprentices: 1},
 			RangeTiles:                    2.5,
 			Damage:                        20,
 			FireIntervalSeconds:           1.5,
@@ -72,6 +82,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Name:                          "Catapult Tower",
 			Sprite:                        assetCatalog.Sprite.Structure.CatapultTower,
 			Cost:                          Resources{Wood: 40, Stone: 60, Metal: 25},
+			Staffing:                      StaffingRequirements{Soldiers: 1, Peasants: 2},
 			RangeTiles:                    5.0,
 			Damage:                        75,
 			FireIntervalSeconds:           3.0,

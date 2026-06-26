@@ -26,17 +26,11 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.status.phase != phaseCalm {
 		t.Fatalf("phase = %v, want %v", state.status.phase, phaseCalm)
 	}
-	if state.status.resources.wood != 80 || state.status.resources.stone != 45 || state.status.resources.metal != 12 {
-		t.Fatalf("resources = %+v, want wood 80 stone 45 metal 12", state.status.resources)
+	if state.status.resources.wood != 100 || state.status.resources.stone != 50 || state.status.resources.metal != 20 {
+		t.Fatalf("resources = %+v, want wood 100 stone 50 metal 20", state.status.resources)
 	}
 	if state.gameMap.Home.Tiles[homePlotCenter][homePlotCenter].Feature != featureSanctum {
 		t.Fatal("expected new state to store the default home Plot")
-	}
-	if state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature != featureBowTower {
-		t.Fatal("expected new state to store the starting Bow Tower")
-	}
-	if state.gameMap.Home.Tiles[5][homePlotCenter-1].Feature != featureFlameBoltTower {
-		t.Fatal("expected new state to store the starting Flame Bolt Tower")
 	}
 	if state.assetCatalog.Sprite.Structure.Sanctum == nil {
 		t.Fatal("expected new state to store the Sanctum sprite")
@@ -85,27 +79,22 @@ func TestDefaultHomePlotShape(t *testing.T) {
 	}
 }
 
-// TestDefaultHomePlotIncludesStartingTowers verifies the authored tower placements.
-func TestDefaultHomePlotIncludesStartingTowers(t *testing.T) {
+// TestDefaultHomePlotStartsWithoutTowers verifies the player receives no free defenses.
+func TestDefaultHomePlotStartsWithoutTowers(t *testing.T) {
 	plot := NewDefaultHomePlot()
-	towerY := 5
-
-	bowTowerX := homePlotCenter + 1
-	if plot.Tiles[towerY][bowTowerX].Feature != featureBowTower {
-		t.Fatalf("tile (%d,%d) feature = %v, want Bow Tower", bowTowerX, towerY, plot.Tiles[towerY][bowTowerX].Feature)
-	}
-	if plot.Tiles[towerY][bowTowerX].Terrain != terrainEmpty {
-		t.Fatalf("tile (%d,%d) terrain = %v, want empty buildable ground", bowTowerX, towerY, plot.Tiles[towerY][bowTowerX].Terrain)
-	}
-	flameTowerX := homePlotCenter - 1
-	if plot.Tiles[towerY][flameTowerX].Feature != featureFlameBoltTower {
-		t.Fatalf("tile (%d,%d) feature = %v, want Flame Bolt Tower", flameTowerX, towerY, plot.Tiles[towerY][flameTowerX].Feature)
-	}
-	if plot.Tiles[towerY][flameTowerX].Terrain != terrainEmpty {
-		t.Fatalf("tile (%d,%d) terrain = %v, want empty buildable ground", flameTowerX, towerY, plot.Tiles[towerY][flameTowerX].Terrain)
-	}
-	if plot.Tiles[towerY][homePlotCenter].Terrain != terrainRoad {
-		t.Fatalf("adjacent path tile (%d,%d) terrain = %v, want road", homePlotCenter, towerY, plot.Tiles[towerY][homePlotCenter].Terrain)
+	for y := range plot.Tiles {
+		for x := range plot.Tiles[y] {
+			feature := plot.Tiles[y][x].Feature
+			if x == homePlotCenter && y == homePlotCenter {
+				if feature != featureSanctum {
+					t.Fatalf("center feature = %v, want Sanctum", feature)
+				}
+				continue
+			}
+			if feature != featureNone {
+				t.Fatalf("tile (%d,%d) feature = %v, want none", x, y, feature)
+			}
+		}
 	}
 }
 

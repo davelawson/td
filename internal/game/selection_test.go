@@ -17,6 +17,12 @@ func TestClickingStructureTilesSelectsStructures(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			state := newRaidTestState(t)
+			if tt.name == "bow tower" {
+				state.gameMap.Home.Tiles[tt.y][tt.x].Feature = featureBowTower
+			}
+			if tt.name == "flame bolt tower" {
+				state.gameMap.Home.Tiles[tt.y][tt.x].Feature = featureFlameBoltTower
+			}
 
 			state.Update(clickTileInput(state, tt.x, tt.y))
 
@@ -87,6 +93,7 @@ func TestClickingEmptySpaceClearsSelection(t *testing.T) {
 // TestSelectionWorksWhilePaused verifies pause still allows object inspection clicks.
 func TestSelectionWorksWhilePaused(t *testing.T) {
 	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureBowTower
 	state.Update(Input{TogglePause: true})
 
 	state.Update(clickTileInput(state, homePlotCenter+1, 5))

@@ -28,7 +28,7 @@ func TestSpawnRaidEnemyAssignsHealthAndStableIDs(t *testing.T) {
 // TestBowTowerDoesNotFireOutsideRange verifies range gates projectile launch.
 func TestBowTowerDoesNotFireOutsideRange(t *testing.T) {
 	state := newRaidTestState(t)
-	removeStartingFlameBoltTower(state)
+	placeCombatTestTower(state, featureBowTower, homePlotCenter+1, 5)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 7}, 20)}
 
 	state.updateCombat()
@@ -41,7 +41,7 @@ func TestBowTowerDoesNotFireOutsideRange(t *testing.T) {
 // TestBowTowerFiresAtEnemyInRangeAndStartsCooldown verifies launch and second-based cooldown state.
 func TestBowTowerFiresAtEnemyInRangeAndStartsCooldown(t *testing.T) {
 	state := newRaidTestState(t)
-	removeStartingFlameBoltTower(state)
+	placeCombatTestTower(state, featureBowTower, homePlotCenter+1, 5)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 
 	state.updateCombat()
@@ -68,7 +68,7 @@ func TestBowTowerFiresAtEnemyInRangeAndStartsCooldown(t *testing.T) {
 // TestFlameBoltTowerFiresAtEnemyInRange verifies the authored flame tower combat stats.
 func TestFlameBoltTowerFiresAtEnemyInRange(t *testing.T) {
 	state := newRaidTestState(t)
-	removeStartingBowTower(state)
+	placeCombatTestTower(state, featureFlameBoltTower, homePlotCenter-1, 5)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 20)}
 
 	state.updateCombat()
@@ -92,9 +92,7 @@ func TestFlameBoltTowerFiresAtEnemyInRange(t *testing.T) {
 // TestCatapultTowerFiresAtEnemyInRange verifies the authored Catapult Tower combat stats.
 func TestCatapultTowerFiresAtEnemyInRange(t *testing.T) {
 	state := newRaidTestState(t)
-	removeStartingBowTower(state)
-	removeStartingFlameBoltTower(state)
-	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureCatapultTower
+	placeCombatTestTower(state, featureCatapultTower, homePlotCenter+2, 5)
 	state.raid.enemies = []raidEnemy{combatTestEnemy(0, coord{X: 0, Y: 2}, 100)}
 
 	state.updateCombat()
@@ -121,7 +119,7 @@ func TestCatapultTowerFiresAtEnemyInRange(t *testing.T) {
 // TestBowTowerTargetPriorityUsesClosestEnemyToSanctum verifies urgent targets are chosen first.
 func TestBowTowerTargetPriorityUsesClosestEnemyToSanctum(t *testing.T) {
 	state := newRaidTestState(t)
-	removeStartingFlameBoltTower(state)
+	placeCombatTestTower(state, featureBowTower, homePlotCenter+1, 5)
 	state.raid.enemies = []raidEnemy{
 		combatTestEnemy(0, coord{X: 0, Y: 3}, 20),
 		combatTestEnemy(1, coord{X: 0, Y: 1}, 20),
@@ -339,14 +337,9 @@ func combatTestEnemyWithTemplate(id int, position coord, health int, template *E
 	return enemy
 }
 
-// removeStartingBowTower removes the default Bow Tower from focused combat tests.
-func removeStartingBowTower(state *State) {
-	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureNone
-}
-
-// removeStartingFlameBoltTower removes the default Flame Bolt Tower from focused combat tests.
-func removeStartingFlameBoltTower(state *State) {
-	state.gameMap.Home.Tiles[5][homePlotCenter-1].Feature = featureNone
+// placeCombatTestTower installs one tower without using the building UI.
+func placeCombatTestTower(state *State, feature tileFeature, x, y int) {
+	state.gameMap.Home.Tiles[y][x].Feature = feature
 }
 
 type recordingSoundSink struct {

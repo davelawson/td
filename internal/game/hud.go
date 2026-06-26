@@ -54,6 +54,20 @@ type gameStatus struct {
 	populations populationCounts
 }
 
+// canStaff reports whether every required inhabitant role is currently available.
+func (s *State) canStaff(requirements StaffingRequirements) bool {
+	return s.status.populations.apprentices.available >= requirements.Apprentices &&
+		s.status.populations.soldiers.available >= requirements.Soldiers &&
+		s.status.populations.peasants.available >= requirements.Peasants
+}
+
+// reserveStaffing commits available inhabitants to a newly built structure.
+func (s *State) reserveStaffing(requirements StaffingRequirements) {
+	s.status.populations.apprentices.available -= requirements.Apprentices
+	s.status.populations.soldiers.available -= requirements.Soldiers
+	s.status.populations.peasants.available -= requirements.Peasants
+}
+
 type resourceHUDItem struct {
 	Name   string
 	Count  int
@@ -78,9 +92,9 @@ func (s *State) setPrototypeGameStatus() {
 		calmTime:  120,
 		barricade: 3,
 		resources: resourceCounts{
-			wood:  80,
-			stone: 45,
-			metal: 12,
+			wood:  100,
+			stone: 50,
+			metal: 20,
 		},
 		populations: populationCounts{
 			apprentices: populationCount{},

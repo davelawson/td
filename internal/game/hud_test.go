@@ -23,9 +23,9 @@ func TestStateResourceHUDItems(t *testing.T) {
 		count int
 		color color.Color
 	}{
-		{name: "Wood", count: 80, color: colors.resourceWood},
-		{name: "Stone", count: 45, color: colors.resourceStone},
-		{name: "Metal", count: 12, color: colors.resourceMetal},
+		{name: "Wood", count: 100, color: colors.resourceWood},
+		{name: "Stone", count: 50, color: colors.resourceStone},
+		{name: "Metal", count: 20, color: colors.resourceMetal},
 	}
 	for i, test := range tests {
 		item := items[i]

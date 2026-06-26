@@ -18,6 +18,10 @@ const (
 	buildDragIconSize         = buildingBarItemSize / 2
 	buildingBarCostGap        = 4
 	buildingBarCostTextHeight = 18
+	buildingBarStaffingGap    = 4
+	buildingBarStaffingHeight = 18
+	buildingBarStaffIconSize  = 14
+	buildingBarStaffIconGap   = 2
 	buildingBarCostItemGap    = 5
 	buildingBarItemGap        = 12
 	buildingBarSpriteInset    = 8
@@ -26,15 +30,21 @@ const (
 var buildingBarCostShadow = color.RGBA{R: 8, G: 10, B: 8, A: 220}
 
 type buildingBarItem struct {
-	Name   string
-	Sprite *ebiten.Image
-	Cost   Resources
-	Bounds ui.Button[int]
+	Name     string
+	Sprite   *ebiten.Image
+	Cost     Resources
+	Staffing StaffingRequirements
+	Bounds   ui.Button[int]
 }
 
 type buildingBarCostItem struct {
 	Value string
 	Color color.Color
+}
+
+type buildingBarStaffingItem struct {
+	Count  int
+	Sprite *ebiten.Image
 }
 
 type buildDragState struct {
@@ -59,7 +69,10 @@ func (s *State) buildingBarItems() []buildingBarItem {
 	bar := s.buildingBarBounds()
 	x := bar.X + (bar.W-buildingBarItemSize)/2
 	startY := bar.Y + buildingBarPadding
-	stepY := buildingBarItemSize + buildingBarCostGap + buildingBarCostTextHeight + buildingBarItemGap
+	stepY := buildingBarItemSize +
+		buildingBarCostGap + buildingBarCostTextHeight +
+		buildingBarStaffingGap + buildingBarStaffingHeight +
+		buildingBarItemGap
 	templates := []StructureTemplate{
 		s.structureCatalog.BowTower,
 		s.structureCatalog.FlameBoltTower,
@@ -69,9 +82,10 @@ func (s *State) buildingBarItems() []buildingBarItem {
 	for i, template := range templates {
 		y := startY + i*stepY
 		items = append(items, buildingBarItem{
-			Name:   template.Name,
-			Sprite: template.Sprite,
-			Cost:   template.Cost,
+			Name:     template.Name,
+			Sprite:   template.Sprite,
+			Cost:     template.Cost,
+			Staffing: template.Staffing,
 			Bounds: ui.Button[int]{
 				Label:  template.Name,
 				X:      x,
@@ -95,6 +109,11 @@ func (s *State) canAffordBuildingCost(cost Resources) bool {
 	return s.status.resources.wood >= cost.Wood &&
 		s.status.resources.stone >= cost.Stone &&
 		s.status.resources.metal >= cost.Metal
+}
+
+// canConstructBuilding reports whether current resources and staff cover one item.
+func (s *State) canConstructBuilding(item buildingBarItem) bool {
+	return s.canAffordBuildingCost(item.Cost) && s.canStaff(item.Staffing)
 }
 
 // updateBuildingBarHover records which tower icon, if any, is under the cursor.
@@ -127,7 +146,7 @@ func (s *State) updateBuildDrag(input Input) {
 		return
 	}
 	item := s.buildingBarItems()[index]
-	if !s.canAffordBuildingCost(item.Cost) || !s.canBuildTowersNow() {
+	if !s.canConstructBuilding(item) || !s.canBuildTowersNow() {
 		return
 	}
 	s.buildDrag = buildDragState{
@@ -156,7 +175,7 @@ func (s *State) canBuildTowersNow() bool {
 // placeDraggedBuilding attempts to build the active dragged tower at a screen point.
 func (s *State) placeDraggedBuilding(x, y int) {
 	item, ok := s.draggedBuildingItem()
-	if !ok || !s.canAffordBuildingCost(item.Cost) || !s.canBuildTowersNow() || s.buildDropBlockedByUI(x, y) {
+	if !ok || !s.canConstructBuilding(item) || !s.canBuildTowersNow() || s.buildDropBlockedByUI(x, y) {
 		return
 	}
 	tile, ok := s.homePlotTileAtScreenPosition(x, y)
@@ -169,6 +188,7 @@ func (s *State) placeDraggedBuilding(x, y int) {
 	}
 
 	s.deductBuildingCost(item.Cost)
+	s.reserveStaffing(item.Staffing)
 	s.gameMap.Home.Tiles[tile.Y][tile.X].Feature = feature
 }
 
@@ -275,7 +295,7 @@ func (s *State) drawBuildDrag(screen *ebiten.Image) {
 
 // buildingBarItemHighlighted reports whether an item should receive hover emphasis.
 func (s *State) buildingBarItemHighlighted(index int, item buildingBarItem) bool {
-	return s.ui.buildBarHover == index && s.canAffordBuildingCost(item.Cost)
+	return s.ui.buildBarHover == index && s.canConstructBuilding(item)
 }
 
 // drawBuildingBarItem renders one tower icon slot.
@@ -286,12 +306,14 @@ func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem, 
 
 	if item.Sprite == nil {
 		s.drawBuildingBarCost(screen, item, hovered)
+		s.drawBuildingBarStaffing(screen, item)
 		return
 	}
 	spriteWidth := float64(item.Sprite.Bounds().Dx())
 	spriteHeight := float64(item.Sprite.Bounds().Dy())
 	if spriteWidth <= 0 || spriteHeight <= 0 {
 		s.drawBuildingBarCost(screen, item, hovered)
+		s.drawBuildingBarStaffing(screen, item)
 		return
 	}
 
@@ -308,6 +330,7 @@ func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem, 
 	}
 	screen.DrawImage(item.Sprite, options)
 	s.drawBuildingBarCost(screen, item, hovered)
+	s.drawBuildingBarStaffing(screen, item)
 }
 
 // drawBuildingBarCost renders non-zero resource costs below one tower icon.
@@ -333,6 +356,73 @@ func (s *State) drawBuildingBarCost(screen *ebiten.Image, item buildingBarItem, 
 			x += buildingBarCostItemGap
 		}
 	}
+}
+
+// drawBuildingBarStaffing renders non-zero inhabitant requirements below one tower cost.
+func (s *State) drawBuildingBarStaffing(screen *ebiten.Image, item buildingBarItem) {
+	staffingItems := s.buildingBarStaffingItems(item.Staffing)
+	if len(staffingItems) == 0 {
+		return
+	}
+
+	totalWidth := s.buildingBarStaffingWidth(staffingItems)
+	x := float64(item.Bounds.X) + (float64(item.Bounds.W)-totalWidth)/2
+	y := float64(item.Bounds.Y + item.Bounds.H + buildingBarCostGap + buildingBarCostTextHeight + buildingBarStaffingGap)
+	for i, staffingItem := range staffingItems {
+		if staffingItem.Sprite != nil {
+			spriteWidth := float64(staffingItem.Sprite.Bounds().Dx())
+			spriteHeight := float64(staffingItem.Sprite.Bounds().Dy())
+			if spriteWidth > 0 && spriteHeight > 0 {
+				options := &ebiten.DrawImageOptions{}
+				scale := float64(buildingBarStaffIconSize) / spriteWidth
+				options.GeoM.Scale(scale, scale)
+				options.GeoM.Translate(x, y)
+				screen.DrawImage(staffingItem.Sprite, options)
+			}
+		}
+		x += buildingBarStaffIconSize + buildingBarStaffIconGap
+		value := fmt.Sprintf("%d", staffingItem.Count)
+		ui.DrawText(screen, value, s.ui.costFace, x, y-1, colors.text)
+		valueWidth, _ := text.Measure(value, s.ui.costFace, s.ui.costFace.Size)
+		x += valueWidth
+		if i < len(staffingItems)-1 {
+			x += buildingBarCostItemGap
+		}
+	}
+}
+
+// buildingBarStaffingItems returns non-zero requirements in Apprentice, Soldier, Peasant order.
+func (s *State) buildingBarStaffingItems(requirements StaffingRequirements) []buildingBarStaffingItem {
+	items := []buildingBarStaffingItem{}
+	if requirements.Apprentices > 0 {
+		items = append(items, buildingBarStaffingItem{
+			Count: requirements.Apprentices, Sprite: s.assetCatalog.Sprite.Icon.Apprentice,
+		})
+	}
+	if requirements.Soldiers > 0 {
+		items = append(items, buildingBarStaffingItem{
+			Count: requirements.Soldiers, Sprite: s.assetCatalog.Sprite.Icon.Soldier,
+		})
+	}
+	if requirements.Peasants > 0 {
+		items = append(items, buildingBarStaffingItem{
+			Count: requirements.Peasants, Sprite: s.assetCatalog.Sprite.Icon.Peasant,
+		})
+	}
+	return items
+}
+
+// buildingBarStaffingWidth measures one inline inhabitant-requirement row.
+func (s *State) buildingBarStaffingWidth(items []buildingBarStaffingItem) float64 {
+	total := 0.0
+	for i, item := range items {
+		valueWidth, _ := text.Measure(fmt.Sprintf("%d", item.Count), s.ui.costFace, s.ui.costFace.Size)
+		total += buildingBarStaffIconSize + buildingBarStaffIconGap + valueWidth
+		if i < len(items)-1 {
+			total += buildingBarCostItemGap
+		}
+	}
+	return total
 }
 
 // buildingBarCostWidth measures the full inline cost row width.

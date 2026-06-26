@@ -43,11 +43,17 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 	if items[0].Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
 		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[0].Cost)
 	}
+	if items[0].Staffing != (StaffingRequirements{Soldiers: 1}) {
+		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", items[0].Staffing)
+	}
 	if items[1].Sprite != state.structureCatalog.FlameBoltTower.Sprite {
 		t.Fatal("expected second item to use Flame Bolt Tower sprite")
 	}
 	if items[1].Cost != (Resources{Stone: 30, Metal: 20}) {
 		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[1].Cost)
+	}
+	if items[1].Staffing != (StaffingRequirements{Apprentices: 1}) {
+		t.Fatalf("Flame Bolt Tower staffing = %+v, want 1 Apprentice", items[1].Staffing)
 	}
 	if items[2].Sprite != state.structureCatalog.CatapultTower.Sprite {
 		t.Fatal("expected third item to use Catapult Tower sprite")
@@ -55,13 +61,42 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 	if items[2].Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
 		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", items[2].Cost)
 	}
-	firstBlockBottom := items[0].Bounds.Y + items[0].Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
+	if items[2].Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
+		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", items[2].Staffing)
+	}
+	firstBlockBottom := buildingBarItemBottom(items[0])
 	if items[1].Bounds.Y <= firstBlockBottom {
 		t.Fatalf("second item Y = %d, want below first item cost bottom %d", items[1].Bounds.Y, firstBlockBottom)
 	}
-	secondBlockBottom := items[1].Bounds.Y + items[1].Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
+	secondBlockBottom := buildingBarItemBottom(items[1])
 	if items[2].Bounds.Y <= secondBlockBottom {
 		t.Fatalf("third item Y = %d, want below second item cost bottom %d", items[2].Bounds.Y, secondBlockBottom)
+	}
+}
+
+// TestBuildingBarStaffingItems verifies non-zero roles use stable display ordering.
+func TestBuildingBarStaffingItems(t *testing.T) {
+	state := newRaidTestState(t)
+	items := state.buildingBarStaffingItems(StaffingRequirements{
+		Apprentices: 3,
+		Soldiers:    1,
+		Peasants:    2,
+	})
+
+	if len(items) != 3 {
+		t.Fatalf("staffing items = %d, want 3", len(items))
+	}
+	if items[0].Count != 3 || items[0].Sprite != state.assetCatalog.Sprite.Icon.Apprentice {
+		t.Fatalf("first staffing item = %+v, want 3 Apprentices", items[0])
+	}
+	if items[1].Count != 1 || items[1].Sprite != state.assetCatalog.Sprite.Icon.Soldier {
+		t.Fatalf("second staffing item = %+v, want 1 Soldier", items[1])
+	}
+	if items[2].Count != 2 || items[2].Sprite != state.assetCatalog.Sprite.Icon.Peasant {
+		t.Fatalf("third staffing item = %+v, want 2 Peasants", items[2])
+	}
+	if got := state.buildingBarStaffingItems(StaffingRequirements{}); len(got) != 0 {
+		t.Fatalf("zero staffing items = %+v, want none", got)
 	}
 }
 
@@ -121,32 +156,36 @@ func TestBuildingBarHoverTracksIconBounds(t *testing.T) {
 	}
 }
 
-// TestBuildingBarHighlightRequiresAffordableCost verifies hover emphasis follows resources.
-func TestBuildingBarHighlightRequiresAffordableCost(t *testing.T) {
+// TestBuildingBarHighlightRequiresResourcesAndStaff verifies all construction inputs gate emphasis.
+func TestBuildingBarHighlightRequiresResourcesAndStaff(t *testing.T) {
 	state := newRaidTestState(t)
 	items := state.buildingBarItems()
 
 	state.ui.buildBarHover = 0
-	if !state.buildingBarItemHighlighted(0, items[0]) {
-		t.Fatal("expected default resources to highlight affordable Bow Tower")
+	if state.buildingBarItemHighlighted(0, items[0]) {
+		t.Fatal("expected zero Soldiers to suppress Bow Tower highlight")
 	}
-	state.ui.buildBarHover = 1
-	if state.buildingBarItemHighlighted(1, items[1]) {
-		t.Fatal("expected default resources not to highlight unaffordable Flame Bolt Tower")
+	setAvailablePopulations(state, 1, 1, 2)
+	if !state.buildingBarItemHighlighted(0, items[0]) {
+		t.Fatal("expected sufficient resources and staff to highlight Bow Tower")
 	}
 
-	state.status.resources.metal = 20
+	state.ui.buildBarHover = 1
 	if !state.buildingBarItemHighlighted(1, items[1]) {
-		t.Fatal("expected Flame Bolt Tower to highlight after resources cover its cost")
+		t.Fatal("expected sufficient resources and staff to highlight Flame Bolt Tower")
 	}
 
 	state.ui.buildBarHover = 2
 	if state.buildingBarItemHighlighted(2, items[2]) {
-		t.Fatal("expected default resources not to highlight unaffordable Catapult Tower")
+		t.Fatal("expected insufficient resources to suppress Catapult Tower highlight")
 	}
 	state.status.resources = resourceCounts{wood: 80, stone: 80, metal: 30}
 	if !state.buildingBarItemHighlighted(2, items[2]) {
-		t.Fatal("expected Catapult Tower to highlight after resources cover its cost")
+		t.Fatal("expected Catapult Tower to highlight after resources and staff cover it")
+	}
+	state.status.populations.peasants.available = 1
+	if state.buildingBarItemHighlighted(2, items[2]) {
+		t.Fatal("expected one missing Peasant to suppress Catapult Tower highlight")
 	}
 }
 
@@ -211,6 +250,7 @@ func TestBuildingBarHoveredCostFitsIcon(t *testing.T) {
 // TestBuildingBarClickDoesNotClearSelection verifies bar clicks are blocked as UI input.
 func TestBuildingBarClickDoesNotClearSelection(t *testing.T) {
 	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureBowTower
 	state.Update(clickTileInput(state, homePlotCenter+1, 5))
 	item := state.buildingBarItems()[0]
 
@@ -253,11 +293,18 @@ func assertBuildingBarItem(t *testing.T, state *State, item buildingBarItem, nam
 		t.Fatalf("item size = %dx%d, want %dx%d", item.Bounds.W, item.Bounds.H, buildingBarItemSize, buildingBarItemSize)
 	}
 	bar := state.buildingBarBounds()
-	itemBottom := item.Bounds.Y + item.Bounds.H + buildingBarCostGap + buildingBarCostTextHeight
+	itemBottom := buildingBarItemBottom(item)
 	if !bar.Contains(item.Bounds.X, item.Bounds.Y) ||
 		!bar.Contains(item.Bounds.X+item.Bounds.W-1, itemBottom-1) {
 		t.Fatalf("item bounds %+v should fit inside bar %+v", item.Bounds, bar)
 	}
+}
+
+// buildingBarItemBottom returns the bottom edge of one icon and metadata block.
+func buildingBarItemBottom(item buildingBarItem) int {
+	return item.Bounds.Y + item.Bounds.H +
+		buildingBarCostGap + buildingBarCostTextHeight +
+		buildingBarStaffingGap + buildingBarStaffingHeight
 }
 
 // assertCostItem verifies one resource-cost display item.

@@ -26,9 +26,8 @@ type screenshotTarget struct {
 	paused         bool
 	ingameMenu     bool
 	activeRaid     bool
-	selectedTower  bool
 	selectedRaider bool
-	placedTower    bool
+	hoverBuilding  bool
 	path           string
 }
 
@@ -90,15 +89,14 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "30-inhabitant-populations", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "32-enforce-tower-staffing", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
-			{wizardName: "Merlin", placedTower: true, path: filepath.Join(basePath, "placed-tower.png")},
-			{wizardName: "Merlin", selectedTower: true, path: filepath.Join(basePath, "selected-tower.png")},
+			{wizardName: "Merlin", hoverBuilding: true, path: filepath.Join(basePath, "insufficient-staff.png")},
 			{wizardName: "Merlin", activeRaid: true, path: filepath.Join(basePath, "active-raid.png")},
 			{wizardName: "Merlin", activeRaid: true, selectedRaider: true, path: filepath.Join(basePath, "selected-raider.png")},
 			{wizardName: "Merlin", paused: true, path: filepath.Join(basePath, "paused-game.png")},
@@ -137,24 +135,10 @@ func (a *screenshotApp) Update() error {
 				a.app.gameState.Update(game.Input{})
 			}
 		}
-		if target.placedTower {
+		if target.hoverBuilding {
 			a.app.gameState.Update(game.Input{
-				CursorX:   48,
-				CursorY:   topOfGameScene() + 48,
-				Clicked:   true,
-				MouseDown: true,
-			})
-			a.app.gameState.Update(game.Input{
-				CursorX:  defaultWindowWidth/2 + 108,
-				CursorY:  topOfGameScene() + defaultGameSceneHeight()/2 - 108,
-				Released: true,
-			})
-		}
-		if target.selectedTower {
-			a.app.gameState.Update(game.Input{
-				CursorX: defaultWindowWidth/2 + 54,
-				CursorY: topOfGameScene() + defaultGameSceneHeight()/2 - 108,
-				Clicked: true,
+				CursorX: 48,
+				CursorY: topOfGameScene() + 48,
 			})
 		}
 		if target.selectedRaider {
