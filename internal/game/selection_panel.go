@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"math"
+	"strings"
 
 	"td/internal/ui"
 
@@ -84,6 +85,8 @@ func (s *State) selectedStructurePanel() (selectionPanel, bool) {
 		return selectionPanel{Rows: []selectionPanelRow{
 			{Label: "Structure", Value: s.structureCatalog.Sanctum.Name},
 		}}, true
+	case featureHouse:
+		return houseSelectionPanel(s.structureCatalog.House), true
 	case featureBowTower:
 		return towerSelectionPanel(s.structureCatalog.BowTower), true
 	case featureFlameBoltTower:
@@ -93,6 +96,19 @@ func (s *State) selectedStructurePanel() (selectionPanel, bool) {
 	default:
 		return selectionPanel{}, false
 	}
+}
+
+// houseSelectionPanel returns display rows for the population-providing House.
+func houseSelectionPanel(template StructureTemplate) selectionPanel {
+	name := template.Name
+	if name == "" {
+		name = selectionPanelUnknownValue
+	}
+	return selectionPanel{Rows: []selectionPanelRow{
+		{Label: "Structure", Value: name},
+		{Label: "Cost", Value: formatResourceCost(template.Cost)},
+		{Label: "Grants Peasants", Value: fmt.Sprintf("%d", template.PopulationGrant.Peasants)},
+	}}
 }
 
 // towerSelectionPanel returns display rows for one combat tower template.
@@ -123,6 +139,24 @@ func towerSelectionPanel(template StructureTemplate) selectionPanel {
 		})
 	}
 	return selectionPanel{Rows: rows}
+}
+
+// formatResourceCost formats a compact human-readable construction cost.
+func formatResourceCost(cost Resources) string {
+	parts := []string{}
+	if cost.Wood > 0 {
+		parts = append(parts, fmt.Sprintf("%d Wood", cost.Wood))
+	}
+	if cost.Stone > 0 {
+		parts = append(parts, fmt.Sprintf("%d Stone", cost.Stone))
+	}
+	if cost.Metal > 0 {
+		parts = append(parts, fmt.Sprintf("%d Metal", cost.Metal))
+	}
+	if len(parts) == 0 {
+		return "Free"
+	}
+	return strings.Join(parts, ", ")
 }
 
 // selectedHealthPercent returns rounded health percentage remaining.

@@ -50,6 +50,12 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.structureCatalog.BowTower.Sprite == nil {
 		t.Fatal("expected new state to store the Bow Tower structure template sprite")
 	}
+	if state.structureCatalog.House.Name != "House" {
+		t.Fatalf("House name = %q, want %q", state.structureCatalog.House.Name, "House")
+	}
+	if state.structureCatalog.House.Sprite == nil {
+		t.Fatal("expected new state to store the House structure template sprite")
+	}
 	if state.structureCatalog.FlameBoltTower.Name != "Flame Bolt Tower" {
 		t.Fatalf("Flame Bolt Tower name = %q, want %q", state.structureCatalog.FlameBoltTower.Name, "Flame Bolt Tower")
 	}

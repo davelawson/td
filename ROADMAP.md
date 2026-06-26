@@ -24,7 +24,7 @@ The secondary user is the developer maintaining the prototype. Success for this 
 
 ## Current Phase
 
-The current phase is still early prototype foundation. Tower construction now requires and reserves available inhabitants. Because new games start with zero inhabitants, recruitment is the next missing capability needed to make tower construction reachable in normal play.
+The current phase is still early prototype foundation. Tower construction requires and reserves available inhabitants. House construction now provides the first population-seeding path by converting Wood into Peasants, but there is still no normal-play source for Apprentices or Soldiers. Broader recruitment remains a missing capability needed to make every tower type reachable in normal play.
 
 The immediate product goal is not to make a full tower-defense encounter. The next work should extend the basic Raid baseline with one observable gameplay-facing slice at a time while preserving the small, testable codebase.
 
@@ -35,7 +35,7 @@ The completed foundation plans have established the runnable app, expanded menu 
 1. Add the next basic scene interaction. Camera movement, selected-object state, selected-object detail panels, and building-bar drag placement are now the first implemented inspection and command-surface models; future interaction slices should stay small and avoid upgrades, selling, range previews, or broader resource rules until they have a visible reason to exist.
 2. Extend the early deterministic defense loop. Fixed-path placeholder Raids now exist; the next defense slice should add placeholder towers, simple targeting, and testable combat rules before adding art assets or broader encounter variety.
 3. Extend the first resource and base-building slice. Costs and limited placement now exist; future work should add gathering, richer build rules, or placement feedback only as separate observable slices.
-4. Add a small recruitment or population-seeding workflow so players can satisfy staffing requirements. Reassignment and staff release should remain separate later slices tied to tower removal or management.
+4. Extend recruitment or population-seeding beyond the first House slice so players can satisfy Soldier and Apprentice staffing requirements. Reassignment and staff release should remain separate later slices tied to tower removal or management.
 
 ## Later Opportunities
 

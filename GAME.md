@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot and tower templates with resource and staffing requirements. Construction requires sufficient available staff and reserves those inhabitants. Recruitment, reassignment, and staff release are not implemented.
+The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, a House that adds Peasant population, and tower templates with resource and staffing requirements. Tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -59,7 +59,7 @@ During the calm phase, the wizard can spend resources to explore another Plot ad
 
 Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
-The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
+The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum, House, and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, the House shows its cost and Peasant grant, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
 
 Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
 
@@ -125,7 +125,7 @@ The wizard's Domain has three inhabitant groups:
 
 Each group has an available count and a total count. Available means inhabitants not currently committed to an assignment; total means every inhabitant of that type in the Domain. Available cannot be negative or exceed total.
 
-The top bar shows the three groups in a separate population grouping after physical resources. Each group uses an icon followed by `available/total`. The first prototype initializes every group to `0/0` and does not yet implement recruitment, assignment, population growth, losses, or gameplay effects.
+The top bar shows the three groups in a separate population grouping after physical resources. Each group uses an icon followed by `available/total`. The first prototype initializes every group to `0/0`. House construction immediately increases Peasants by `2/2`; timed recruitment, assignment, broader population growth, losses, and staff release are not implemented.
 
 ### Base-Building
 
@@ -133,9 +133,11 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a building bar on the left side of the playable scene. It shows Bow Tower, Flame Bolt Tower, and Catapult Tower icons using the existing tower sprites, with colour-coded prototype construction costs beneath each icon. Hovering an affordable icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an affordable tower icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that tower and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
+The first build-facing UI is a building bar on the left side of the playable scene. It shows House, Bow Tower, Flame Bolt Tower, and Catapult Tower icons using structure sprites, with colour-coded prototype construction costs beneath each icon and a compact population row for requirements or grants. Hovering an eligible icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
 
 Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus two Peasants. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
+
+The House is the first population-provider building. It costs 20 Wood, requires no staff, has no combat stats, and immediately grants 2 Peasants by increasing both available and total Peasant population. House population is not removed because structure removal does not yet exist.
 
 Open decisions include richer build rules for future terrain types, whether structures block paths beyond the current fixed road rejection, how much rebuilding is allowed between attacks, whether later placement needs previews or range indicators, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
@@ -212,11 +214,11 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot containing only the centered Sanctum as an initial structure, a straight road north, a pine-tree border, and a building bar listing all three combat towers with costs, staffing requirements, and calm-phase drag placement.
+- The first gameplay-facing rendered slice is a static home Plot containing only the centered Sanctum as an initial structure, a straight road north, a pine-tree border, and a building bar listing House plus all three combat towers with costs, population grants or staffing requirements, and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
-- A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover Bow and Flame Bolt, but zero starting inhabitants block every tower.
-- The first staffing slice uses available populations to gate construction and reserves staff on successful placement. New games still start at `0/0`, and recruitment, reassignment, release, growth, and losses are not implemented.
+- A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Bow, and Flame Bolt, but zero starting Soldiers and Apprentices block Bow and Flame Bolt until future population sources exist.
+- The first staffing slice uses available populations to gate tower construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
 
 ## Open Game Design Questions
 
@@ -302,6 +304,10 @@ Record game design decisions here when they become durable enough to guide imple
 
 - Decision: Supersede informational-only staffing by requiring available staff for construction and reserving that staff after a successful build.
   Rationale: Staffing requirements should constrain the number and combination of towers in the same way resources constrain construction. Reducing available counts prevents one inhabitant from staffing unlimited towers, while preserving totals accurately represents assignment rather than population loss.
+  Date/Author: 2026-06-26 / User and Codex
+
+- Decision: Add House as the first population-provider building: it costs 20 Wood, requires no staff, has no combat stats, and immediately grants 2 available and total Peasants.
+  Rationale: The current staffing gate needs a small normal-play path to create at least one inhabitant role. An immediate Peasant grant proves population-producing structures without adding timed recruitment, reassignment, or removal rules.
   Date/Author: 2026-06-26 / User and Codex
 
 - Decision: Add the Catapult Tower as the third defined tower type and make it buildable from the building bar without placing one for free in the starting Plot.

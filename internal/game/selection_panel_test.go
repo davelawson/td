@@ -26,6 +26,27 @@ func TestSelectedRaiderPanelRows(t *testing.T) {
 	assertPanelRow(t, panel, "Sanctum Damage", "1")
 }
 
+// TestSelectedHousePanelRows verifies House selection exposes its population effect.
+func TestSelectedHousePanelRows(t *testing.T) {
+	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureHouse
+	state.selection = selectedItem{
+		kind: selectedItemStructure,
+		tile: tileCoordinate{X: homePlotCenter + 2, Y: 5},
+	}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected House panel")
+	}
+
+	assertPanelRow(t, panel, "Structure", "House")
+	assertPanelRow(t, panel, "Cost", "20 Wood")
+	assertPanelRow(t, panel, "Grants Peasants", "2")
+	assertPanelRowAbsent(t, panel, "Range")
+	assertPanelRowAbsent(t, panel, "Damage")
+}
+
 // TestSelectedBowTowerPanelRows verifies Bow Tower selection exposes tower stats.
 func TestSelectedBowTowerPanelRows(t *testing.T) {
 	state := newRaidTestState(t)
@@ -134,6 +155,23 @@ func TestSelectionPanelClickDoesNotClearSelection(t *testing.T) {
 	}
 }
 
+// TestFormatResourceCost verifies selection panels format construction costs.
+func TestFormatResourceCost(t *testing.T) {
+	tests := []struct {
+		cost Resources
+		want string
+	}{
+		{cost: Resources{}, want: "Free"},
+		{cost: Resources{Wood: 20}, want: "20 Wood"},
+		{cost: Resources{Wood: 30, Stone: 10, Metal: 10}, want: "30 Wood, 10 Stone, 10 Metal"},
+	}
+	for _, test := range tests {
+		if got := formatResourceCost(test.cost); got != test.want {
+			t.Fatalf("formatResourceCost(%+v) = %q, want %q", test.cost, got, test.want)
+		}
+	}
+}
+
 // assertPanelRow verifies one label and value pair exists in a selection panel.
 func assertPanelRow(t *testing.T, panel selectionPanel, label, value string) {
 	t.Helper()
@@ -146,4 +184,14 @@ func assertPanelRow(t *testing.T, panel selectionPanel, label, value string) {
 		}
 	}
 	t.Fatalf("missing panel row %q in %+v", label, panel.Rows)
+}
+
+// assertPanelRowAbsent verifies one label does not exist in a selection panel.
+func assertPanelRowAbsent(t *testing.T, panel selectionPanel, label string) {
+	t.Helper()
+	for _, row := range panel.Rows {
+		if row.Label == label {
+			t.Fatalf("unexpected panel row %q in %+v", label, panel.Rows)
+		}
+	}
 }

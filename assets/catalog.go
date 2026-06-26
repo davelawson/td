@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 //go:embed audio/raider-defeated.wav
@@ -62,6 +62,7 @@ type ProjectileSprites struct {
 // StructureSprites groups loaded sprites for map and base structures.
 type StructureSprites struct {
 	Sanctum        *ebiten.Image
+	House          *ebiten.Image
 	BowTower       *ebiten.Image
 	FlameBoltTower *ebiten.Image
 	CatapultTower  *ebiten.Image
@@ -111,6 +112,10 @@ func NewCatalog() (Catalog, error) {
 		return Catalog{}, err
 	}
 	sanctum, err := loadSprite("sprites/structures/sanctum.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	house, err := loadSprite("sprites/structures/house.png")
 	if err != nil {
 		return Catalog{}, err
 	}
@@ -168,6 +173,7 @@ func NewCatalog() (Catalog, error) {
 			},
 			Structure: StructureSprites{
 				Sanctum:        sanctum,
+				House:          house,
 				BowTower:       bowTower,
 				FlameBoltTower: flameBoltTower,
 				CatapultTower:  catapultTower,

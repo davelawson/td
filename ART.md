@@ -24,6 +24,10 @@ Enemy: 64x64
 
 Generated graphical assets should be placed in a subfolder under the `assets/sprites` folder.  The name of the subfolder should reflect the purpose of the asset: terrains, structures, enemies, or icons.
 
+## Current Generated Asset Notes
+
+The House structure sprite lives at `assets/sprites/structures/house.png`. It was generated as a centered low-detail medieval timber-and-stone cottage on a flat chroma-key background, converted to alpha, and resized to 64x64 PNG. Future structure prompts should continue to ask for a single isolated readable subject, no scenery, no text, no watermark, no cast shadow, and no background after processing.
+
 ## Open Questions
 
 - When should the project introduce an asset pipeline, sprite atlas, animation workflow, or custom font?

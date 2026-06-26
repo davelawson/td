@@ -179,6 +179,23 @@ func TestNewCatalogLoadsBowTowerSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsHouseSprite verifies the required House sprite is embedded.
+func TestNewCatalogLoadsHouseSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	house := catalog.Sprite.Structure.House
+	if house == nil {
+		t.Fatal("expected House sprite to load")
+	}
+	width, height := house.Bounds().Dx(), house.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("House sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsFlameBoltTowerSprite verifies the required Flame Bolt Tower sprite is embedded.
 func TestNewCatalogLoadsFlameBoltTowerSprite(t *testing.T) {
 	catalog, err := NewCatalog()

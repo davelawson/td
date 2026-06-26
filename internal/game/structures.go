@@ -12,6 +12,7 @@ type StructureTemplate struct {
 	Sprite                        *ebiten.Image
 	Cost                          Resources
 	Staffing                      StaffingRequirements
+	PopulationGrant               PopulationGrant
 	RangeTiles                    float64
 	Damage                        int
 	FireIntervalSeconds           float64
@@ -22,6 +23,13 @@ type StructureTemplate struct {
 
 // StaffingRequirements describes the inhabitants required by one structure.
 type StaffingRequirements struct {
+	Apprentices int
+	Soldiers    int
+	Peasants    int
+}
+
+// PopulationGrant describes inhabitants added by constructing one structure.
+type PopulationGrant struct {
 	Apprentices int
 	Soldiers    int
 	Peasants    int
@@ -44,6 +52,7 @@ type Structure struct {
 // StructureCatalog groups every structure template available to game systems.
 type StructureCatalog struct {
 	Sanctum        StructureTemplate
+	House          StructureTemplate
 	BowTower       StructureTemplate
 	FlameBoltTower StructureTemplate
 	CatapultTower  StructureTemplate
@@ -55,6 +64,12 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		Sanctum: StructureTemplate{
 			Name:   "Sanctum",
 			Sprite: assetCatalog.Sprite.Structure.Sanctum,
+		},
+		House: StructureTemplate{
+			Name:            "House",
+			Sprite:          assetCatalog.Sprite.Structure.House,
+			Cost:            Resources{Wood: 20},
+			PopulationGrant: PopulationGrant{Peasants: 2},
 		},
 		BowTower: StructureTemplate{
 			Name:                          "Bow Tower",

@@ -48,6 +48,9 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	if tile.Feature == featureSanctum {
 		s.drawSanctum(screen, rect.x, rect.y, rect.w, selected)
 	}
+	if tile.Feature == featureHouse {
+		s.drawStructureSprite(screen, s.structureCatalog.House.Sprite, rect.x, rect.y, rect.w, selected)
+	}
 	if tile.Feature == featureBowTower {
 		s.drawStructureSprite(screen, s.structureCatalog.BowTower.Sprite, rect.x, rect.y, rect.w, selected)
 	}

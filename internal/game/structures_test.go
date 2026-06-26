@@ -72,6 +72,39 @@ func TestNewStructureCatalogIncludesBowTower(t *testing.T) {
 	}
 }
 
+// TestNewStructureCatalogIncludesHouse verifies the House template values.
+func TestNewStructureCatalogIncludesHouse(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	catalog := NewStructureCatalog(assetCatalog)
+	house := catalog.House
+
+	if house.Name != "House" {
+		t.Fatalf("House name = %q, want %q", house.Name, "House")
+	}
+	if house.Sprite == nil {
+		t.Fatal("expected House sprite to be assigned")
+	}
+	if house.Sprite != assetCatalog.Sprite.Structure.House {
+		t.Fatal("expected House sprite to reference the loaded asset catalog sprite")
+	}
+	if house.Cost != (Resources{Wood: 20}) {
+		t.Fatalf("House cost = %+v, want 20 wood", house.Cost)
+	}
+	if house.Staffing != (StaffingRequirements{}) {
+		t.Fatalf("House staffing = %+v, want none", house.Staffing)
+	}
+	if house.PopulationGrant != (PopulationGrant{Peasants: 2}) {
+		t.Fatalf("House population grant = %+v, want 2 Peasants", house.PopulationGrant)
+	}
+	if house.canFireProjectiles() {
+		t.Fatal("expected House not to have projectile combat stats")
+	}
+}
+
 // TestNewStructureCatalogIncludesFlameBoltTower verifies the Flame Bolt Tower template values.
 func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
 	assetCatalog, err := assets.NewCatalog()

@@ -25,44 +25,57 @@ func TestBuildingBarBoundsFillPlayableLeftEdge(t *testing.T) {
 	}
 }
 
-// TestBuildingBarItemsExposeTowerIcons verifies the visual build choices use the tower templates.
-func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
+// TestBuildingBarItemsExposeStructureIcons verifies visual build choices use templates.
+func TestBuildingBarItemsExposeStructureIcons(t *testing.T) {
 	state := newRaidTestState(t)
 
 	items := state.buildingBarItems()
 
-	if len(items) != 3 {
-		t.Fatalf("building bar items = %d, want 3", len(items))
+	if len(items) != 4 {
+		t.Fatalf("building bar items = %d, want 4", len(items))
 	}
-	assertBuildingBarItem(t, state, items[0], "Bow Tower")
-	assertBuildingBarItem(t, state, items[1], "Flame Bolt Tower")
-	assertBuildingBarItem(t, state, items[2], "Catapult Tower")
-	if items[0].Sprite != state.structureCatalog.BowTower.Sprite {
-		t.Fatal("expected first item to use Bow Tower sprite")
+	assertBuildingBarItem(t, state, items[0], "House")
+	assertBuildingBarItem(t, state, items[1], "Bow Tower")
+	assertBuildingBarItem(t, state, items[2], "Flame Bolt Tower")
+	assertBuildingBarItem(t, state, items[3], "Catapult Tower")
+	if items[0].Sprite != state.structureCatalog.House.Sprite {
+		t.Fatal("expected first item to use House sprite")
 	}
-	if items[0].Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
-		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[0].Cost)
+	if items[0].Cost != (Resources{Wood: 20}) {
+		t.Fatalf("House cost = %+v, want 20 wood", items[0].Cost)
 	}
-	if items[0].Staffing != (StaffingRequirements{Soldiers: 1}) {
-		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", items[0].Staffing)
+	if items[0].Staffing != (StaffingRequirements{}) {
+		t.Fatalf("House staffing = %+v, want none", items[0].Staffing)
 	}
-	if items[1].Sprite != state.structureCatalog.FlameBoltTower.Sprite {
-		t.Fatal("expected second item to use Flame Bolt Tower sprite")
+	if items[0].PopulationGrant != (PopulationGrant{Peasants: 2}) {
+		t.Fatalf("House population grant = %+v, want 2 Peasants", items[0].PopulationGrant)
 	}
-	if items[1].Cost != (Resources{Stone: 30, Metal: 20}) {
-		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[1].Cost)
+	if items[1].Sprite != state.structureCatalog.BowTower.Sprite {
+		t.Fatal("expected second item to use Bow Tower sprite")
 	}
-	if items[1].Staffing != (StaffingRequirements{Apprentices: 1}) {
-		t.Fatalf("Flame Bolt Tower staffing = %+v, want 1 Apprentice", items[1].Staffing)
+	if items[1].Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
+		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[1].Cost)
 	}
-	if items[2].Sprite != state.structureCatalog.CatapultTower.Sprite {
-		t.Fatal("expected third item to use Catapult Tower sprite")
+	if items[1].Staffing != (StaffingRequirements{Soldiers: 1}) {
+		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", items[1].Staffing)
 	}
-	if items[2].Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
-		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", items[2].Cost)
+	if items[2].Sprite != state.structureCatalog.FlameBoltTower.Sprite {
+		t.Fatal("expected third item to use Flame Bolt Tower sprite")
 	}
-	if items[2].Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
-		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", items[2].Staffing)
+	if items[2].Cost != (Resources{Stone: 30, Metal: 20}) {
+		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[2].Cost)
+	}
+	if items[2].Staffing != (StaffingRequirements{Apprentices: 1}) {
+		t.Fatalf("Flame Bolt Tower staffing = %+v, want 1 Apprentice", items[2].Staffing)
+	}
+	if items[3].Sprite != state.structureCatalog.CatapultTower.Sprite {
+		t.Fatal("expected fourth item to use Catapult Tower sprite")
+	}
+	if items[3].Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
+		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", items[3].Cost)
+	}
+	if items[3].Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
+		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", items[3].Staffing)
 	}
 	firstBlockBottom := buildingBarItemBottom(items[0])
 	if items[1].Bounds.Y <= firstBlockBottom {
@@ -71,6 +84,10 @@ func TestBuildingBarItemsExposeTowerIcons(t *testing.T) {
 	secondBlockBottom := buildingBarItemBottom(items[1])
 	if items[2].Bounds.Y <= secondBlockBottom {
 		t.Fatalf("third item Y = %d, want below second item cost bottom %d", items[2].Bounds.Y, secondBlockBottom)
+	}
+	thirdBlockBottom := buildingBarItemBottom(items[2])
+	if items[3].Bounds.Y <= thirdBlockBottom {
+		t.Fatalf("fourth item Y = %d, want below third item cost bottom %d", items[3].Bounds.Y, thirdBlockBottom)
 	}
 }
 
@@ -100,9 +117,31 @@ func TestBuildingBarStaffingItems(t *testing.T) {
 	}
 }
 
+// TestBuildingBarPopulationGrantItems verifies non-zero grants use stable display ordering.
+func TestBuildingBarPopulationGrantItems(t *testing.T) {
+	state := newRaidTestState(t)
+	items := state.buildingBarPopulationGrantItems(PopulationGrant{Peasants: 2})
+
+	if len(items) != 1 {
+		t.Fatalf("grant items = %d, want 1", len(items))
+	}
+	if items[0].Count != 2 || items[0].Value != "+2" || items[0].Sprite != state.assetCatalog.Sprite.Icon.Peasant {
+		t.Fatalf("grant item = %+v, want +2 Peasants", items[0])
+	}
+	if got := state.buildingBarPopulationGrantItems(PopulationGrant{}); len(got) != 0 {
+		t.Fatalf("zero grant items = %+v, want none", got)
+	}
+}
+
 // TestBuildingBarCostItems verifies non-zero tower costs render in resource order.
 func TestBuildingBarCostItems(t *testing.T) {
-	items := buildingBarCostItems(Resources{Wood: 30, Stone: 10, Metal: 10})
+	items := buildingBarCostItems(Resources{Wood: 20})
+	if len(items) != 1 {
+		t.Fatalf("House cost items = %d, want 1", len(items))
+	}
+	assertCostItem(t, items[0], "20", colors.resourceWood)
+
+	items = buildingBarCostItems(Resources{Wood: 30, Stone: 10, Metal: 10})
 	if len(items) != 3 {
 		t.Fatalf("cost items = %d, want 3", len(items))
 	}
@@ -148,11 +187,11 @@ func TestBuildingBarHoverTracksIconBounds(t *testing.T) {
 	}
 
 	state.updateBuildingBarHover(Input{
-		CursorX: items[2].Bounds.X + items[2].Bounds.W/2,
-		CursorY: items[2].Bounds.Y + items[2].Bounds.H/2,
+		CursorX: items[3].Bounds.X + items[3].Bounds.W/2,
+		CursorY: items[3].Bounds.Y + items[3].Bounds.H/2,
 	})
-	if state.ui.buildBarHover != 2 {
-		t.Fatalf("building bar hover = %d, want third item", state.ui.buildBarHover)
+	if state.ui.buildBarHover != 3 {
+		t.Fatalf("building bar hover = %d, want fourth item", state.ui.buildBarHover)
 	}
 }
 
@@ -162,29 +201,30 @@ func TestBuildingBarHighlightRequiresResourcesAndStaff(t *testing.T) {
 	items := state.buildingBarItems()
 
 	state.ui.buildBarHover = 0
-	if state.buildingBarItemHighlighted(0, items[0]) {
-		t.Fatal("expected zero Soldiers to suppress Bow Tower highlight")
+	if !state.buildingBarItemHighlighted(0, items[0]) {
+		t.Fatal("expected zero-staff House to highlight when resources cover it")
 	}
 	setAvailablePopulations(state, 1, 1, 2)
-	if !state.buildingBarItemHighlighted(0, items[0]) {
+	state.ui.buildBarHover = 1
+	if !state.buildingBarItemHighlighted(1, items[1]) {
 		t.Fatal("expected sufficient resources and staff to highlight Bow Tower")
 	}
 
-	state.ui.buildBarHover = 1
-	if !state.buildingBarItemHighlighted(1, items[1]) {
+	state.ui.buildBarHover = 2
+	if !state.buildingBarItemHighlighted(2, items[2]) {
 		t.Fatal("expected sufficient resources and staff to highlight Flame Bolt Tower")
 	}
 
-	state.ui.buildBarHover = 2
-	if state.buildingBarItemHighlighted(2, items[2]) {
+	state.ui.buildBarHover = 3
+	if state.buildingBarItemHighlighted(3, items[3]) {
 		t.Fatal("expected insufficient resources to suppress Catapult Tower highlight")
 	}
 	state.status.resources = resourceCounts{wood: 80, stone: 80, metal: 30}
-	if !state.buildingBarItemHighlighted(2, items[2]) {
+	if !state.buildingBarItemHighlighted(3, items[3]) {
 		t.Fatal("expected Catapult Tower to highlight after resources and staff cover it")
 	}
 	state.status.populations.peasants.available = 1
-	if state.buildingBarItemHighlighted(2, items[2]) {
+	if state.buildingBarItemHighlighted(3, items[3]) {
 		t.Fatal("expected one missing Peasant to suppress Catapult Tower highlight")
 	}
 }

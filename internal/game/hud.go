@@ -68,6 +68,16 @@ func (s *State) reserveStaffing(requirements StaffingRequirements) {
 	s.status.populations.peasants.available -= requirements.Peasants
 }
 
+// grantPopulation adds new inhabitants made available by a constructed structure.
+func (s *State) grantPopulation(grant PopulationGrant) {
+	s.status.populations.apprentices.available += grant.Apprentices
+	s.status.populations.apprentices.total += grant.Apprentices
+	s.status.populations.soldiers.available += grant.Soldiers
+	s.status.populations.soldiers.total += grant.Soldiers
+	s.status.populations.peasants.available += grant.Peasants
+	s.status.populations.peasants.total += grant.Peasants
+}
+
 type resourceHUDItem struct {
 	Name   string
 	Count  int

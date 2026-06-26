@@ -37,6 +37,7 @@ type tileFeature int
 const (
 	featureNone tileFeature = iota
 	featureSanctum
+	featureHouse
 	featureBowTower
 	featureFlameBoltTower
 	featureCatapultTower

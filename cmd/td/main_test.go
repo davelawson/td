@@ -28,6 +28,7 @@ type screenshotTarget struct {
 	activeRaid     bool
 	selectedRaider bool
 	hoverBuilding  bool
+	placedHouse    bool
 	path           string
 }
 
@@ -89,14 +90,15 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "32-enforce-tower-staffing", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "33-house-building", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
-			{wizardName: "Merlin", hoverBuilding: true, path: filepath.Join(basePath, "insufficient-staff.png")},
+			{wizardName: "Merlin", hoverBuilding: true, path: filepath.Join(basePath, "house-icon.png")},
+			{wizardName: "Merlin", placedHouse: true, path: filepath.Join(basePath, "placed-house.png")},
 			{wizardName: "Merlin", activeRaid: true, path: filepath.Join(basePath, "active-raid.png")},
 			{wizardName: "Merlin", activeRaid: true, selectedRaider: true, path: filepath.Join(basePath, "selected-raider.png")},
 			{wizardName: "Merlin", paused: true, path: filepath.Join(basePath, "paused-game.png")},
@@ -139,6 +141,19 @@ func (a *screenshotApp) Update() error {
 			a.app.gameState.Update(game.Input{
 				CursorX: 48,
 				CursorY: topOfGameScene() + 48,
+			})
+		}
+		if target.placedHouse {
+			a.app.gameState.Update(game.Input{
+				CursorX:   48,
+				CursorY:   topOfGameScene() + 48,
+				Clicked:   true,
+				MouseDown: true,
+			})
+			a.app.gameState.Update(game.Input{
+				CursorX:  1068,
+				CursorY:  475,
+				Released: true,
 			})
 		}
 		if target.selectedRaider {

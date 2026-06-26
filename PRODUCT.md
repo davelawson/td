@@ -6,7 +6,7 @@
 
 `td` is planned as a PC tower-defense game prototype for a single local player. The intended game blends exploration, base-building, resource gathering, and conventional tower-defense encounters in a medieval wizardry fantasy setting.
 
-The current repository ships a small playable shell that starts a static home Plot with only the Sanctum, 100 Wood, 50 Stone, 20 Metal, and zero inhabitants. The building bar offers three tower templates, but construction now requires both resources and available staff. A successful build reserves staff by reducing available counts while preserving totals. Since recruitment is not implemented and all populations start at `0/0`, no tower can initially be built. Camera inspection, selection, deterministic Raids, projectile combat, rewards, pause, overlay, and menu behavior remain implemented.
+The current repository ships a small playable shell that starts a static home Plot with only the Sanctum, 100 Wood, 50 Stone, 20 Metal, and zero inhabitants. The building bar offers House plus three tower templates. House costs 20 Wood, requires no staff, and immediately grants 2 available and total Peasants when placed. Tower construction requires both resources and available staff. A successful tower build reserves staff by reducing available counts while preserving totals. Camera inspection, selection, deterministic Raids, projectile combat, rewards, pause, overlay, and menu behavior remain implemented.
 
 ## Users and Jobs To Be Done
 
@@ -30,11 +30,11 @@ Future players are expected to want a strategy game where they explore, build a 
 
 ### Runtime Shell
 
-`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, typed runtime assets, menu and game packages, a Sanctum-only starting Plot, status state, camera and selection behavior, a building bar with construction costs and staffing metadata, drag placement, deterministic Raids, and Bow, Flame Bolt, and Catapult projectile combat. Tests cover these behaviors without depending on free starting towers.
+`Core`: The repository has a Go module, an Ebitengine executable under `cmd/td/`, typed runtime assets, menu and game packages, a Sanctum-only starting Plot, status state, camera and selection behavior, a building bar with construction costs, population-grant metadata, staffing metadata, drag placement, deterministic Raids, and Bow, Flame Bolt, and Catapult projectile combat. Tests cover these behaviors without depending on free starting towers.
 
 ### Missing Gameplay And Operations
 
-`Core`: There is currently no tower upgrade, exploration, resource gathering, inhabitant recruitment, reassignment, staff release, broader base-building, save system, or campaign system. Tower placement is a calm-phase action gated by resources and available staffing. Population totals are fixed prototype values; only available counts can decrease through tower construction.
+`Core`: There is currently no tower upgrade, exploration, resource gathering, timed inhabitant recruitment, reassignment, staff release, broader base-building, save system, or campaign system. House placement is a calm-phase action gated by Wood that increases Peasant population immediately. Tower placement is a calm-phase action gated by resources and available staffing. Population totals can increase through Houses, and available counts can decrease through tower construction.
 
 ## Core Workflows
 
@@ -44,7 +44,7 @@ A contributor opens the repository, reads the root control documents, and sees t
 
 ### Main Menu Workflow
 
-A contributor runs `go run ./cmd/td`, starts a new game, and sees a tower-free home Plot containing only the Sanctum. The top bar shows 100 Wood, 50 Stone, 20 Metal, and `0/0` for every inhabitant role. Although resources cover Bow and Flame Bolt, neither icon highlights or starts dragging because the required staff are unavailable. When tests or future gameplay provide staff, successful placement reduces the relevant available count and leaves its total unchanged.
+A contributor runs `go run ./cmd/td`, starts a new game, and sees a tower-free home Plot containing only the Sanctum. The top bar shows 100 Wood, 50 Stone, 20 Metal, and `0/0` for every inhabitant role. The House icon is available immediately; dragging it onto an empty grass-like Tile spends 20 Wood and changes Peasants to `2/2`. Although starting resources cover Bow and Flame Bolt, neither tower icon highlights or starts dragging because the required staff are unavailable. When tests or future gameplay provide staff, successful tower placement reduces the relevant available count and leaves its total unchanged.
 
 The top bar groups Apprentice, Soldier, and Peasant icons after physical resources. Each shows `available/total`; available inhabitants can be reserved by tower construction, while total remains unchanged.
 
@@ -52,9 +52,9 @@ The top bar groups Apprentice, Soldier, and Peasant icons after physical resourc
 
 - The current target is a local prototype only.
 - Distribution, release packaging, CI, license selection, and store targets are deferred.
-- The current playable shell includes a Sanctum-only starting Plot and a building bar whose resource and staffing requirements jointly gate tower placement.
+- The current playable shell includes a Sanctum-only starting Plot and a building bar whose resource and staffing requirements jointly gate tower placement. The same building bar can place Houses, which cost Wood and grant Peasants.
 - Saving the game and campaign structure are explicit non-goals for the first phase.
-- Starting a new game opens the static home Plot with `0/0` inhabitants, so construction remains blocked until a future recruitment or population source exists. Staff committed to towers cannot currently be released because tower removal and reassignment are not implemented.
+- Starting a new game opens the static home Plot with `0/0` inhabitants. House construction can add Peasants, but there is still no way to add Apprentices or Soldiers in normal play. Staff committed to towers cannot currently be released because tower removal and reassignment are not implemented.
 - Settings are represented only by a placeholder screen; no configurable options exist yet.
 - Exploration, broader base-building, resource gathering, and broader tower-defense gameplay are intended but not implemented.
 
