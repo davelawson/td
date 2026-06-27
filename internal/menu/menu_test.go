@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
@@ -11,6 +13,27 @@ const (
 	testWidth  = 1920
 	testHeight = 1080
 )
+
+// TestMenuFontSizesUseUIConstants verifies menu faces use centralized sizes.
+func TestMenuFontSizesUseUIConstants(t *testing.T) {
+	menu, err := New(testWidth, testHeight)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if menu.titleFace.Size != ui.MenuTitleFontSize {
+		t.Fatalf("title font size = %.1f, want %.1f", menu.titleFace.Size, ui.MenuTitleFontSize)
+	}
+	if menu.bodyFace.Size != ui.MenuBodyFontSize {
+		t.Fatalf("body font size = %.1f, want %.1f", menu.bodyFace.Size, ui.MenuBodyFontSize)
+	}
+	if menu.buttonFace.Size != ui.MenuButtonFontSize {
+		t.Fatalf("button font size = %.1f, want %.1f", menu.buttonFace.Size, ui.MenuButtonFontSize)
+	}
+	if menu.nameFace.Size != ui.MenuNameFontSize {
+		t.Fatalf("name font size = %.1f, want %.1f", menu.nameFace.Size, ui.MenuNameFontSize)
+	}
+}
 
 // TestButtonContainsIncludesTopLeft verifies inclusive top-left hit bounds.
 func TestButtonContainsIncludesTopLeft(t *testing.T) {

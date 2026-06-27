@@ -128,32 +128,32 @@ func newGameUI(source, boldSource *text.GoTextFaceSource, width, height int) gam
 		buildBarHover: -1,
 		titleFace: &text.GoTextFace{
 			Source: source,
-			Size:   34,
+			Size:   ui.GameTitleFontSize,
 		},
 		bodyFace: &text.GoTextFace{
 			Source: source,
-			Size:   24,
+			Size:   ui.GameBodyFontSize,
 		},
 		hudFace: &text.GoTextFace{
 			Source: source,
-			Size:   22,
+			Size:   ui.GameHUDFontSize,
 		},
 		costFace: &text.GoTextFace{
 			Source: source,
-			Size:   16,
+			Size:   ui.GameCostFontSize,
 		},
 		costBoldFace: &text.GoTextFace{
 			Source: boldSource,
-			Size:   16,
+			Size:   ui.GameCostFontSize,
 		},
 		menu: ingameMenu{
 			titleFace: &text.GoTextFace{
 				Source: source,
-				Size:   46,
+				Size:   ui.IngameMenuTitleFontSize,
 			},
 			buttonFace: &text.GoTextFace{
 				Source: source,
-				Size:   28,
+				Size:   ui.IngameMenuButtonFontSize,
 			},
 		},
 	}

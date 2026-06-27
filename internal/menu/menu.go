@@ -93,19 +93,19 @@ func New(width, height int) (*Menu, error) {
 		height: height,
 		titleFace: &text.GoTextFace{
 			Source: source,
-			Size:   74,
+			Size:   ui.MenuTitleFontSize,
 		},
 		bodyFace: &text.GoTextFace{
 			Source: source,
-			Size:   24,
+			Size:   ui.MenuBodyFontSize,
 		},
 		buttonFace: &text.GoTextFace{
 			Source: source,
-			Size:   30,
+			Size:   ui.MenuButtonFontSize,
 		},
 		nameFace: &text.GoTextFace{
 			Source: source,
-			Size:   20,
+			Size:   ui.MenuNameFontSize,
 		},
 	}
 	menu.layoutButtons()

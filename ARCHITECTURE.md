@@ -17,7 +17,7 @@ The codebase is organized around a small Ebitengine executable in `cmd/td/` and 
 - `internal/menu/` owns menu screen state, menu rendering, resizable menu geometry, button hit testing, disabled-target handling, action selection, Wizard name input, the New Game configuration screen, and placeholder menu screens.
 - `internal/game/` owns game status, structure templates, construction resources, available/total populations, staffing checks and reservations, House population grants, Barracks population conversion, placement, combat, rendering, and input behavior. Staffing reservation, population costs, and population grants are part of successful construction; no separate assignment subsystem exists yet.
 - `internal/sound/` owns Ebitengine audio context creation, WAV decoding for one-shot effects, active audio players, and effect playback. It is runtime-facing; gameplay rules should depend only on the game package's sound sink interface.
-- `internal/ui/` owns shared UI palette colors used by menu and game rendering. It should remain palette-only until repeated UI behavior justifies more shared code.
+- `internal/ui/` owns shared UI palette colors, font-size constants, text drawing helpers, and simple widgets used by menu and game rendering.
 - `internal/render/` may later own shared drawing helpers when rendering code becomes reusable.
 - `assets/` stores static images, audio effect files, and the first typed runtime asset catalog. It may later grow to include fonts and other runtime assets.
 - `plans/` stores ordered ExecPlans. `plans/00-initial-ebitengine-menu.md` is the first implementation plan.
