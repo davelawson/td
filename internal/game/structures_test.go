@@ -141,6 +141,65 @@ func TestNewStructureCatalogIncludesBarracks(t *testing.T) {
 	}
 }
 
+// TestNewStructureCatalogIncludesEconomicBuildings verifies the economic templates.
+func TestNewStructureCatalogIncludesEconomicBuildings(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	catalog := NewStructureCatalog(assetCatalog)
+	tests := []struct {
+		name     string
+		template StructureTemplate
+		sprite   any
+		cost     Resources
+		yield    Resources
+	}{
+		{
+			name:     "Woodcutter",
+			template: catalog.Woodcutter,
+			sprite:   assetCatalog.Sprite.Structure.Woodcutter,
+			cost:     Resources{Wood: 10},
+			yield:    Resources{Wood: 10},
+		},
+		{
+			name:     "Stone Quarry",
+			template: catalog.StoneQuarry,
+			sprite:   assetCatalog.Sprite.Structure.StoneQuarry,
+			cost:     Resources{Wood: 10, Stone: 10},
+			yield:    Resources{Stone: 10},
+		},
+		{
+			name:     "Iron Mine",
+			template: catalog.IronMine,
+			sprite:   assetCatalog.Sprite.Structure.IronMine,
+			cost:     Resources{Wood: 10, Stone: 10, Metal: 10},
+			yield:    Resources{Metal: 10},
+		},
+	}
+	for _, test := range tests {
+		if test.template.Name != test.name {
+			t.Fatalf("%s name = %q, want %q", test.name, test.template.Name, test.name)
+		}
+		if test.template.Sprite != test.sprite {
+			t.Fatalf("%s sprite should reference the loaded asset catalog sprite", test.name)
+		}
+		if test.template.Cost != test.cost {
+			t.Fatalf("%s cost = %+v, want %+v", test.name, test.template.Cost, test.cost)
+		}
+		if test.template.Staffing != (StaffingRequirements{Peasants: 1}) {
+			t.Fatalf("%s staffing = %+v, want 1 Peasant", test.name, test.template.Staffing)
+		}
+		if test.template.ResourceYield != test.yield {
+			t.Fatalf("%s yield = %+v, want %+v", test.name, test.template.ResourceYield, test.yield)
+		}
+		if test.template.canFireProjectiles() {
+			t.Fatalf("expected %s not to have projectile combat stats", test.name)
+		}
+	}
+}
+
 // TestNewStructureCatalogIncludesFlameBoltTower verifies the Flame Bolt Tower template values.
 func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
 	assetCatalog, err := assets.NewCatalog()

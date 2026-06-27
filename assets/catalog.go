@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/sanctum.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/iron-mine.png sprites/structures/sanctum.png sprites/structures/stone-quarry.png sprites/structures/woodcutter.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 //go:embed audio/raider-defeated.wav
@@ -64,6 +64,9 @@ type StructureSprites struct {
 	Sanctum        *ebiten.Image
 	House          *ebiten.Image
 	Barracks       *ebiten.Image
+	Woodcutter     *ebiten.Image
+	StoneQuarry    *ebiten.Image
+	IronMine       *ebiten.Image
 	BowTower       *ebiten.Image
 	FlameBoltTower *ebiten.Image
 	CatapultTower  *ebiten.Image
@@ -124,6 +127,18 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
+	woodcutter, err := loadSprite("sprites/structures/woodcutter.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	stoneQuarry, err := loadSprite("sprites/structures/stone-quarry.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	ironMine, err := loadSprite("sprites/structures/iron-mine.png")
+	if err != nil {
+		return Catalog{}, err
+	}
 	bowTower, err := loadSprite("sprites/structures/bow-tower.png")
 	if err != nil {
 		return Catalog{}, err
@@ -180,6 +195,9 @@ func NewCatalog() (Catalog, error) {
 				Sanctum:        sanctum,
 				House:          house,
 				Barracks:       barracks,
+				Woodcutter:     woodcutter,
+				StoneQuarry:    stoneQuarry,
+				IronMine:       ironMine,
 				BowTower:       bowTower,
 				FlameBoltTower: flameBoltTower,
 				CatapultTower:  catapultTower,

@@ -30,6 +30,12 @@ The House structure sprite lives at `assets/sprites/structures/house.png`. It wa
 
 The Barracks structure sprite lives at `assets/sprites/structures/barracks.png`. It was generated as a centered low-detail medieval timber-and-stone barracks on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG.
 
+The Woodcutter structure sprite lives at `assets/sprites/structures/woodcutter.png`. It was generated as a centered low-detail medieval lumber-camp hut with stacked logs and woodcutting props on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG.
+
+The Stone Quarry structure sprite lives at `assets/sprites/structures/stone-quarry.png`. It was generated as a centered low-detail medieval quarry worksite with a timber hoist, shed roof, and stone blocks on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG.
+
+The Iron Mine structure sprite lives at `assets/sprites/structures/iron-mine.png`. It was generated as a centered low-detail medieval mine entrance with timber supports, a winch, and bluish metal ore on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG. The building produces the existing Metal resource even though the structure name uses Iron.
+
 Future structure prompts should continue to ask for a single isolated readable subject, no scenery, no text, no watermark, no cast shadow, and no background after processing.
 
 ## Open Questions

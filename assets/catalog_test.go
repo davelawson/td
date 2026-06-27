@@ -213,6 +213,32 @@ func TestNewCatalogLoadsBarracksSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsEconomicBuildingSprites verifies the required economic sprites are embedded.
+func TestNewCatalogLoadsEconomicBuildingSprites(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name   string
+		sprite *ebiten.Image
+	}{
+		{name: "Woodcutter", sprite: catalog.Sprite.Structure.Woodcutter},
+		{name: "Stone Quarry", sprite: catalog.Sprite.Structure.StoneQuarry},
+		{name: "Iron Mine", sprite: catalog.Sprite.Structure.IronMine},
+	}
+	for _, test := range tests {
+		if test.sprite == nil {
+			t.Fatalf("expected %s sprite to load", test.name)
+		}
+		width, height := test.sprite.Bounds().Dx(), test.sprite.Bounds().Dy()
+		if width != 64 || height != 64 {
+			t.Fatalf("%s sprite size = %dx%d, want 64x64", test.name, width, height)
+		}
+	}
+}
+
 // TestNewCatalogLoadsFlameBoltTowerSprite verifies the required Flame Bolt Tower sprite is embedded.
 func TestNewCatalogLoadsFlameBoltTowerSprite(t *testing.T) {
 	catalog, err := NewCatalog()

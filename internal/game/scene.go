@@ -54,6 +54,15 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	if tile.Feature == featureBarracks {
 		s.drawStructureSprite(screen, s.structureCatalog.Barracks.Sprite, rect.x, rect.y, rect.w, selected)
 	}
+	if tile.Feature == featureWoodcutter {
+		s.drawStructureSprite(screen, s.structureCatalog.Woodcutter.Sprite, rect.x, rect.y, rect.w, selected)
+	}
+	if tile.Feature == featureStoneQuarry {
+		s.drawStructureSprite(screen, s.structureCatalog.StoneQuarry.Sprite, rect.x, rect.y, rect.w, selected)
+	}
+	if tile.Feature == featureIronMine {
+		s.drawStructureSprite(screen, s.structureCatalog.IronMine.Sprite, rect.x, rect.y, rect.w, selected)
+	}
 	if tile.Feature == featureBowTower {
 		s.drawStructureSprite(screen, s.structureCatalog.BowTower.Sprite, rect.x, rect.y, rect.w, selected)
 	}

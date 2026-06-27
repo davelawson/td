@@ -205,6 +205,47 @@ func TestRaidCompletionReturnsToCalmAndAdvancesDay(t *testing.T) {
 	}
 }
 
+// TestRaidCompletionGrantsEconomicBuildingResources verifies defeated Raids pay producers.
+func TestRaidCompletionGrantsEconomicBuildingResources(t *testing.T) {
+	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
+	state.gameMap.Home.Tiles[5][homePlotCenter+3].Feature = featureStoneQuarry
+	state.gameMap.Home.Tiles[5][homePlotCenter+4].Feature = featureIronMine
+	startingResources := state.status.resources
+
+	state.completeRaid()
+
+	if state.status.resources.wood != startingResources.wood+10 {
+		t.Fatalf("wood = %d, want %d", state.status.resources.wood, startingResources.wood+10)
+	}
+	if state.status.resources.stone != startingResources.stone+10 {
+		t.Fatalf("stone = %d, want %d", state.status.resources.stone, startingResources.stone+10)
+	}
+	if state.status.resources.metal != startingResources.metal+10 {
+		t.Fatalf("metal = %d, want %d", state.status.resources.metal, startingResources.metal+10)
+	}
+}
+
+// TestRaidBreachDoesNotGrantEconomicResources verifies failed Raids do not pay producers.
+func TestRaidBreachDoesNotGrantEconomicResources(t *testing.T) {
+	state := newRaidTestState(t)
+	state.status.barricade = 0
+	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
+	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
+	state.raid = raidState{
+		active:  true,
+		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: step}}},
+	}
+	state.status.phase = phaseRaid
+	startingResources := state.status.resources
+
+	state.Update(Input{})
+
+	if state.status.resources != startingResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, startingResources)
+	}
+}
+
 // TestRaidEnemyAtSanctumSpendsBarricade verifies reaching enemies consume charges.
 func TestRaidEnemyAtSanctumSpendsBarricade(t *testing.T) {
 	state := newRaidTestState(t)

@@ -69,6 +69,28 @@ func TestSelectedBarracksPanelRows(t *testing.T) {
 	assertPanelRowAbsent(t, panel, "Damage")
 }
 
+// TestSelectedEconomicBuildingPanelRows verifies resource producers expose yield details.
+func TestSelectedEconomicBuildingPanelRows(t *testing.T) {
+	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureStoneQuarry
+	state.selection = selectedItem{
+		kind: selectedItemStructure,
+		tile: tileCoordinate{X: homePlotCenter + 2, Y: 5},
+	}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected Stone Quarry panel")
+	}
+
+	assertPanelRow(t, panel, "Structure", "Stone Quarry")
+	assertPanelRow(t, panel, "Cost", "10 Wood, 10 Stone")
+	assertPanelRow(t, panel, "Required Peasants", "1")
+	assertPanelRow(t, panel, "Produces", "10 Stone after each Raid")
+	assertPanelRowAbsent(t, panel, "Range")
+	assertPanelRowAbsent(t, panel, "Damage")
+}
+
 // TestSelectedBowTowerPanelRows verifies Bow Tower selection exposes tower stats.
 func TestSelectedBowTowerPanelRows(t *testing.T) {
 	state := newRaidTestState(t)
@@ -186,6 +208,7 @@ func TestFormatResourceCost(t *testing.T) {
 		{cost: Resources{}, want: "Free"},
 		{cost: Resources{Wood: 20}, want: "20 Wood"},
 		{cost: Resources{Wood: 10, Stone: 10}, want: "10 Wood, 10 Stone"},
+		{cost: Resources{Wood: 10, Stone: 10, Metal: 10}, want: "10 Wood, 10 Stone, 10 Metal"},
 		{cost: Resources{Wood: 30, Stone: 10, Metal: 10}, want: "30 Wood, 10 Stone, 10 Metal"},
 	}
 	for _, test := range tests {

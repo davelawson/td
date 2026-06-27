@@ -89,6 +89,12 @@ func (s *State) selectedStructurePanel() (selectionPanel, bool) {
 		return populationBuildingSelectionPanel(s.structureCatalog.House), true
 	case featureBarracks:
 		return populationBuildingSelectionPanel(s.structureCatalog.Barracks), true
+	case featureWoodcutter:
+		return economicBuildingSelectionPanel(s.structureCatalog.Woodcutter), true
+	case featureStoneQuarry:
+		return economicBuildingSelectionPanel(s.structureCatalog.StoneQuarry), true
+	case featureIronMine:
+		return economicBuildingSelectionPanel(s.structureCatalog.IronMine), true
 	case featureBowTower:
 		return towerSelectionPanel(s.structureCatalog.BowTower), true
 	case featureFlameBoltTower:
@@ -128,6 +134,23 @@ func populationBuildingSelectionPanel(template StructureTemplate) selectionPanel
 	if template.PopulationGrant.Peasants > 0 {
 		rows = append(rows, selectionPanelRow{Label: "Grants Peasants", Value: fmt.Sprintf("%d", template.PopulationGrant.Peasants)})
 	}
+	return selectionPanel{Rows: rows}
+}
+
+// economicBuildingSelectionPanel returns display rows for resource-producing buildings.
+func economicBuildingSelectionPanel(template StructureTemplate) selectionPanel {
+	name := template.Name
+	if name == "" {
+		name = selectionPanelUnknownValue
+	}
+	rows := []selectionPanelRow{
+		{Label: "Structure", Value: name},
+		{Label: "Cost", Value: formatResourceCost(template.Cost)},
+	}
+	if template.Staffing.Peasants > 0 {
+		rows = append(rows, selectionPanelRow{Label: "Required Peasants", Value: fmt.Sprintf("%d", template.Staffing.Peasants)})
+	}
+	rows = append(rows, selectionPanelRow{Label: "Produces", Value: formatResourceYield(template.ResourceYield)})
 	return selectionPanel{Rows: rows}
 }
 
@@ -177,6 +200,15 @@ func formatResourceCost(cost Resources) string {
 		return "Free"
 	}
 	return strings.Join(parts, ", ")
+}
+
+// formatResourceYield formats Raid-completion resource production.
+func formatResourceYield(yield Resources) string {
+	cost := formatResourceCost(yield)
+	if cost == "Free" {
+		return "Nothing"
+	}
+	return cost + " after each Raid"
 }
 
 // selectedHealthPercent returns rounded health percentage remaining.

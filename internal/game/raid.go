@@ -146,10 +146,40 @@ func (s *State) applySanctumContact() bool {
 
 // completeRaid returns the game to calm state after all Raid enemies are gone.
 func (s *State) completeRaid() {
+	s.grantEconomicBuildingResources()
 	s.raid.active = false
 	s.status.phase = phaseCalm
 	s.status.day++
 	s.status.calmTime = 120
+}
+
+// grantEconomicBuildingResources awards placed economic building yields after a defeated Raid.
+func (s *State) grantEconomicBuildingResources() {
+	for y := 0; y < plotSize; y++ {
+		for x := 0; x < plotSize; x++ {
+			yield, ok := s.economicBuildingYield(s.gameMap.Home.Tiles[y][x].Feature)
+			if !ok {
+				continue
+			}
+			s.status.resources.wood += yield.Wood
+			s.status.resources.stone += yield.Stone
+			s.status.resources.metal += yield.Metal
+		}
+	}
+}
+
+// economicBuildingYield returns the Raid-completion yield for one placed feature.
+func (s *State) economicBuildingYield(feature tileFeature) (Resources, bool) {
+	switch feature {
+	case featureWoodcutter:
+		return s.structureCatalog.Woodcutter.ResourceYield, true
+	case featureStoneQuarry:
+		return s.structureCatalog.StoneQuarry.ResourceYield, true
+	case featureIronMine:
+		return s.structureCatalog.IronMine.ResourceYield, true
+	default:
+		return Resources{}, false
+	}
 }
 
 // raidEnemiesRemaining returns active and pending enemies in the current Raid.

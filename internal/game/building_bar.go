@@ -29,6 +29,17 @@ const (
 
 var buildingBarCostShadow = color.RGBA{R: 8, G: 10, B: 8, A: 220}
 
+const (
+	buildingBarHouseIndex = iota
+	buildingBarBarracksIndex
+	buildingBarWoodcutterIndex
+	buildingBarStoneQuarryIndex
+	buildingBarIronMineIndex
+	buildingBarBowTowerIndex
+	buildingBarFlameBoltTowerIndex
+	buildingBarCatapultTowerIndex
+)
+
 type buildingBarItem struct {
 	Name            string
 	Sprite          *ebiten.Image
@@ -80,6 +91,9 @@ func (s *State) buildingBarItems() []buildingBarItem {
 	templates := []StructureTemplate{
 		s.structureCatalog.House,
 		s.structureCatalog.Barracks,
+		s.structureCatalog.Woodcutter,
+		s.structureCatalog.StoneQuarry,
+		s.structureCatalog.IronMine,
 		s.structureCatalog.BowTower,
 		s.structureCatalog.FlameBoltTower,
 		s.structureCatalog.CatapultTower,
@@ -250,15 +264,21 @@ func (s *State) canBuildOnTile(tile tileCoordinate) bool {
 // buildingFeatureForItemIndex maps building-bar choices to placed Tile features.
 func buildingFeatureForItemIndex(index int) (tileFeature, bool) {
 	switch index {
-	case 0:
+	case buildingBarHouseIndex:
 		return featureHouse, true
-	case 1:
+	case buildingBarBarracksIndex:
 		return featureBarracks, true
-	case 2:
+	case buildingBarWoodcutterIndex:
+		return featureWoodcutter, true
+	case buildingBarStoneQuarryIndex:
+		return featureStoneQuarry, true
+	case buildingBarIronMineIndex:
+		return featureIronMine, true
+	case buildingBarBowTowerIndex:
 		return featureBowTower, true
-	case 3:
+	case buildingBarFlameBoltTowerIndex:
 		return featureFlameBoltTower, true
-	case 4:
+	case buildingBarCatapultTowerIndex:
 		return featureCatapultTower, true
 	default:
 		return featureNone, false

@@ -14,6 +14,7 @@ type StructureTemplate struct {
 	Staffing                      StaffingRequirements
 	PopulationCost                PopulationCost
 	PopulationGrant               PopulationGrant
+	ResourceYield                 Resources
 	RangeTiles                    float64
 	Damage                        int
 	FireIntervalSeconds           float64
@@ -62,6 +63,9 @@ type StructureCatalog struct {
 	Sanctum        StructureTemplate
 	House          StructureTemplate
 	Barracks       StructureTemplate
+	Woodcutter     StructureTemplate
+	StoneQuarry    StructureTemplate
+	IronMine       StructureTemplate
 	BowTower       StructureTemplate
 	FlameBoltTower StructureTemplate
 	CatapultTower  StructureTemplate
@@ -86,6 +90,27 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Cost:            Resources{Wood: 10, Stone: 10},
 			PopulationCost:  PopulationCost{Peasants: 2},
 			PopulationGrant: PopulationGrant{Soldiers: 2},
+		},
+		Woodcutter: StructureTemplate{
+			Name:          "Woodcutter",
+			Sprite:        assetCatalog.Sprite.Structure.Woodcutter,
+			Cost:          Resources{Wood: 10},
+			Staffing:      StaffingRequirements{Peasants: 1},
+			ResourceYield: Resources{Wood: 10},
+		},
+		StoneQuarry: StructureTemplate{
+			Name:          "Stone Quarry",
+			Sprite:        assetCatalog.Sprite.Structure.StoneQuarry,
+			Cost:          Resources{Wood: 10, Stone: 10},
+			Staffing:      StaffingRequirements{Peasants: 1},
+			ResourceYield: Resources{Stone: 10},
+		},
+		IronMine: StructureTemplate{
+			Name:          "Iron Mine",
+			Sprite:        assetCatalog.Sprite.Structure.IronMine,
+			Cost:          Resources{Wood: 10, Stone: 10, Metal: 10},
+			Staffing:      StaffingRequirements{Peasants: 1},
+			ResourceYield: Resources{Metal: 10},
 		},
 		BowTower: StructureTemplate{
 			Name:                          "Bow Tower",

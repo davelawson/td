@@ -21,17 +21,18 @@ type screenshotApp struct {
 }
 
 type screenshotTarget struct {
-	screen         menu.Screen
-	wizardName     string
-	paused         bool
-	ingameMenu     bool
-	activeRaid     bool
-	selectedRaider bool
-	hoverBuilding  bool
-	hoverBarracks  bool
-	placedHouse    bool
-	placedBarracks bool
-	path           string
+	screen           menu.Screen
+	wizardName       string
+	paused           bool
+	ingameMenu       bool
+	activeRaid       bool
+	selectedRaider   bool
+	hoverBuilding    bool
+	hoverBarracks    bool
+	placedHouse      bool
+	placedBarracks   bool
+	placedWoodcutter bool
+	path             string
 }
 
 // TestStartGameSwitchesToGameMode verifies app-level game startup.
@@ -92,7 +93,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "34-barracks-building", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "35-economic-buildings", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -101,6 +102,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
 			{wizardName: "Merlin", hoverBuilding: true, path: filepath.Join(basePath, "house-icon.png")},
 			{wizardName: "Merlin", placedHouse: true, path: filepath.Join(basePath, "placed-house.png")},
+			{wizardName: "Merlin", placedWoodcutter: true, path: filepath.Join(basePath, "placed-woodcutter.png")},
 			{wizardName: "Merlin", hoverBarracks: true, placedHouse: true, path: filepath.Join(basePath, "barracks-icon.png")},
 			{wizardName: "Merlin", placedBarracks: true, path: filepath.Join(basePath, "placed-barracks.png")},
 			{wizardName: "Merlin", activeRaid: true, path: filepath.Join(basePath, "active-raid.png")},
@@ -181,6 +183,30 @@ func (a *screenshotApp) Update() error {
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
 				CursorY:   topOfGameScene() + 168,
+				Clicked:   true,
+				MouseDown: true,
+			})
+			a.app.gameState.Update(game.Input{
+				CursorX:  1130,
+				CursorY:  475,
+				Released: true,
+			})
+		}
+		if target.placedWoodcutter {
+			a.app.gameState.Update(game.Input{
+				CursorX:   48,
+				CursorY:   topOfGameScene() + 48,
+				Clicked:   true,
+				MouseDown: true,
+			})
+			a.app.gameState.Update(game.Input{
+				CursorX:  1068,
+				CursorY:  475,
+				Released: true,
+			})
+			a.app.gameState.Update(game.Input{
+				CursorX:   48,
+				CursorY:   topOfGameScene() + 288,
 				Clicked:   true,
 				MouseDown: true,
 			})

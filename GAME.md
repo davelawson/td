@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, and tower templates with resource and staffing requirements. Tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
+The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -55,11 +55,11 @@ The exact boundaries between exploration, building, and defense are not decided 
 
 Exploration should give the player information and access. It may reveal terrain, enemy routes, resource nodes, buildable areas, hazards, or future attack pressure.
 
-During the calm phase, the wizard can spend resources to explore another Plot adjacent to the current Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and defend along a longer path.
+During the calm phase, the wizard can eventually spend resources to explore another Plot adjacent to the current Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and defend along a longer path.
 
 Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
-The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum, House, Barracks, and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, population buildings show their cost and population effects, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
+The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum, House, Barracks, economic buildings, and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, population buildings show their cost and population effects, economic buildings show their cost, Peasant requirement, and post-Raid production, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
 
 Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
 
@@ -111,7 +111,9 @@ The initial resources are:
 - `Stone`: gathered by quarrying rocks.
 - `Metal`: gathered by exploiting mines.
 
-Open decisions include whether resources are gathered manually or passively, whether resources persist across encounters, whether additional resources are needed, and how resource nodes are discovered or depleted.
+The first implemented resource-production slice uses economic buildings rather than direct gathering. A Woodcutter produces 10 Wood, a Stone Quarry produces 10 Stone, and an Iron Mine produces 10 Metal after each successfully defeated Raid. Failed Raids that breach the Sanctum do not pay economic building resources. The Iron Mine uses the existing Metal resource; there is no separate Iron resource.
+
+Open decisions include whether later resources are gathered manually or passively during calm play, whether resources persist across longer campaign structures, whether additional resources are needed, and how resource nodes are discovered or depleted.
 
 The in-game top bar should show the current Wood, Stone, and Metal counts as resource icons plus numbers once the economy exists. Prototype HUD values may be fixed until resource gathering and spending systems are implemented.
 
@@ -125,7 +127,7 @@ The wizard's Domain has three inhabitant groups:
 
 Each group has an available count and a total count. Available means inhabitants not currently committed to an assignment; total means every inhabitant of that type in the Domain. Available cannot be negative or exceed total.
 
-The top bar shows the three groups in a separate population grouping after physical resources. Each group uses an icon followed by `available/total`. The first prototype initializes every group to `0/0`. House construction immediately increases Peasants by `2/2`. Barracks construction consumes 2 available and total Peasants and grants 2 available and total Soldiers. Timed recruitment, assignment, broader population growth, losses, and staff release are not implemented.
+The top bar shows the three groups in a separate population grouping after physical resources. Each group uses an icon followed by `available/total`. The first prototype initializes every group to `0/0`. House construction immediately increases Peasants by `2/2`. Barracks construction consumes 2 available and total Peasants and grants 2 available and total Soldiers. Economic buildings reserve one available Peasant while leaving total Peasants unchanged. Timed recruitment, reassignment, broader population growth, losses, and staff release are not implemented.
 
 ### Base-Building
 
@@ -133,13 +135,15 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a building bar on the left side of the playable scene. It shows House, Barracks, Bow Tower, Flame Bolt Tower, and Catapult Tower icons using structure sprites, with colour-coded prototype construction costs beneath each icon and a compact population row for requirements, costs, or grants. Hovering an eligible icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
+The first build-facing UI is a building bar on the left side of the playable scene. It shows House, Barracks, Woodcutter, Stone Quarry, Iron Mine, Bow Tower, Flame Bolt Tower, and Catapult Tower icons using structure sprites, with colour-coded prototype construction costs beneath each icon and a compact population row for requirements, costs, or grants. Hovering an eligible icon brightens that icon and emphasizes its cost row. During calm play, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
 
 Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus two Peasants. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
 
 The House is the first population-provider building. It costs 20 Wood, requires no staff, has no combat stats, and immediately grants 2 Peasants by increasing both available and total Peasant population. House population is not removed because structure removal does not yet exist.
 
 The Barracks is the first population-conversion building. It costs 10 Wood and 10 Stone, requires no staff, has no combat stats, consumes 2 available and total Peasants, and immediately grants 2 available and total Soldiers. This creates the first normal-play Soldier source without adding timed recruitment or a general assignment system.
+
+Economic buildings are the first resource-production buildings. The Woodcutter costs 10 Wood, requires one available Peasant, has no combat stats, reserves that Peasant on construction, and produces 10 Wood after each defeated Raid. The Stone Quarry costs 10 Wood and 10 Stone, requires one available Peasant, reserves that Peasant on construction, and produces 10 Stone after each defeated Raid. The Iron Mine costs 10 Wood, 10 Stone, and 10 Metal, requires one available Peasant, reserves that Peasant on construction, and produces 10 Metal after each defeated Raid.
 
 Open decisions include richer build rules for future terrain types, whether structures block paths beyond the current fixed road rejection, how much rebuilding is allowed between attacks, whether later placement needs previews or range indicators, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
@@ -177,7 +181,7 @@ The first Raid slice stores each active enemy's current world position directly.
 
 The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. The Catapult Tower range is 5.0 Tiles, damage is 75 to every active enemy in the target's Tile, fire interval is 3.0 seconds, and projectile speed is 3.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
-If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources.
+If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources. When a Raid ends with all enemies defeated, each placed economic building pays its post-Raid resource yield once. A breached Raid does not pay economic building resources.
 
 Open decisions include enemy archetypes, whether a Raid can include multiple waves or paths, how Raid difficulty scales with Domain expansion, whether towers or resources can remove enemies before they reach the Sanctum, and what longer-term recovery or loss flow follows a breached Sanctum.
 
@@ -216,11 +220,12 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot containing only the centered Sanctum as an initial structure, a straight road north, a pine-tree border, and a building bar listing House, Barracks, and all three combat towers with costs, population costs, population grants or staffing requirements, and calm-phase drag placement.
+- The first gameplay-facing rendered slice is a static home Plot containing only the centered Sanctum as an initial structure, a straight road north, a pine-tree border, and a building bar listing House, Barracks, Woodcutter, Stone Quarry, Iron Mine, and all three combat towers with costs, population costs, population grants or staffing requirements, and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
-- A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Bow, and Flame Bolt, but zero starting population blocks Barracks and the staffed towers until House creates Peasants.
-- The first staffing slice uses available populations to gate tower construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
+- A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, economic buildings, and staffed towers until House creates Peasants.
+- The first staffing slice uses available populations to gate tower and economic building construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, economic buildings can produce post-Raid resources, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
+- Woodcutter, Stone Quarry, and Iron Mine are the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource after each defeated Raid. The Iron Mine produces Metal, not a separate Iron resource.
 
 ## Open Game Design Questions
 
@@ -314,6 +319,10 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Add Barracks as the first population-conversion building: it costs 10 Wood and 10 Stone, requires no staff, consumes 2 available and total Peasants, and immediately grants 2 available and total Soldiers.
   Rationale: Soldier staffing needs a normal-play source after House without adding a broad recruitment or assignment system. Treating the effect as conversion makes the population totals match the visible inhabitant roles.
   Date/Author: 2026-06-26 / User and Codex
+
+- Decision: Add Woodcutter, Stone Quarry, and Iron Mine as the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource after each defeated Raid. The Iron Mine produces Metal, not a separate Iron resource.
+  Rationale: This creates the first repeatable resource production while keeping worker assignment, timing, and resource taxonomy small enough for the current prototype.
+  Date/Author: 2026-06-27 / User and Codex
 
 - Decision: Add the Catapult Tower as the third defined tower type and make it buildable from the building bar without placing one for free in the starting Plot.
   Rationale: A long-range, slow-firing, high-damage area tower creates the first clear tower-role contrast beyond single-target projectiles while preserving the existing authored starting defense.
