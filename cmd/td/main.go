@@ -120,8 +120,8 @@ func (a *app) updateMenu() error {
 	return nil
 }
 
-// updateGame handles in-game input and logical updates.
-func (a *app) updateGame() error {
+// create an input object for this frame's update
+func (a *app) updateInput() game.Input {
 	cursorX, cursorY := ebiten.CursorPosition()
 	_, wheelY := ebiten.Wheel()
 	input := game.Input{
@@ -138,6 +138,12 @@ func (a *app) updateGame() error {
 	input.Pan.Down = ebiten.IsKeyPressed(ebiten.KeyS)
 	input.Pan.Left = ebiten.IsKeyPressed(ebiten.KeyA)
 	input.Pan.Right = ebiten.IsKeyPressed(ebiten.KeyD)
+	return input
+}
+
+// updateGame handles in-game input and logical updates.
+func (a *app) updateGame() error {
+	input := a.updateInput()
 
 	switch action := a.gameState.Update(input); action {
 	case game.ActionSurrender:
