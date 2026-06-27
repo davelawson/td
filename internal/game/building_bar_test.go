@@ -20,6 +20,9 @@ func TestBuildingBarBoundsFillPlayableLeftEdge(t *testing.T) {
 	if bounds.W != buildingBarWidth {
 		t.Fatalf("bar width = %d, want %d", bounds.W, buildingBarWidth)
 	}
+	if bounds.W != 260 {
+		t.Fatalf("bar width = %d, want expanded width 260", bounds.W)
+	}
 	if bounds.H != state.ui.height-topBarHeight {
 		t.Fatalf("bar height = %d, want %d", bounds.H, state.ui.height-topBarHeight)
 	}
@@ -411,8 +414,8 @@ func TestBuildingBarHoverIgnoresCostsAndEmptyBar(t *testing.T) {
 	item := state.buildingBarItems()[0]
 
 	state.updateBuildingBarHover(Input{
-		CursorX: item.Bounds.X + item.Bounds.W/2,
-		CursorY: item.Bounds.Y + item.Bounds.H + buildingBarCostGap + buildingBarCostTextHeight/2,
+		CursorX: state.buildingBarMetadataX(item),
+		CursorY: item.Bounds.Y + buildingBarCostOffsetY,
 	})
 	if state.ui.buildBarHover != -1 {
 		t.Fatalf("building bar hover = %d, want none over cost row", state.ui.buildBarHover)
@@ -446,8 +449,8 @@ func TestBuildingBarHoverClearsWhenIngameMenuOpens(t *testing.T) {
 	}
 }
 
-// TestBuildingBarHoveredCostFitsIcon verifies bold hover costs keep the compact row.
-func TestBuildingBarHoveredCostFitsIcon(t *testing.T) {
+// TestBuildingBarHoveredCostFitsMetadataArea verifies bold hover costs keep the compact row.
+func TestBuildingBarHoveredCostFitsMetadataArea(t *testing.T) {
 	state := newRaidTestState(t)
 
 	if state.ui.costBoldFace.Size != state.ui.costFace.Size {
@@ -457,8 +460,9 @@ func TestBuildingBarHoveredCostFitsIcon(t *testing.T) {
 	for _, item := range state.buildingBarItems() {
 		costItems := buildingBarCostItems(item.Cost)
 		width := state.buildingBarCostWidth(costItems, true)
-		if width > float64(item.Bounds.W) {
-			t.Fatalf("%s hovered cost width = %.2f, want <= %d", item.Name, width, item.Bounds.W)
+		available := state.buildingBarMetadataRight() - state.buildingBarMetadataX(item)
+		if width > float64(available) {
+			t.Fatalf("%s hovered cost width = %.2f, want <= %d", item.Name, width, available)
 		}
 	}
 }
@@ -553,9 +557,7 @@ func assertBuildingBarTabInsideBar(t *testing.T, state *State, tab buildingBarTa
 
 // buildingBarItemBottom returns the bottom edge of one icon and metadata block.
 func buildingBarItemBottom(item buildingBarItem) int {
-	return item.Bounds.Y + item.Bounds.H +
-		buildingBarCostGap + buildingBarCostTextHeight +
-		buildingBarStaffingGap + buildingBarStaffingHeight
+	return item.Bounds.Y + item.Bounds.H
 }
 
 // assertCostItem verifies one resource-cost display item.

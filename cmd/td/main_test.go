@@ -93,7 +93,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "36-building-bar-tabs", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "37-building-bar-horizontal-values", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -135,7 +135,7 @@ func (a *screenshotApp) Update() error {
 		a.app.gameState.Update(game.Input{})
 		if target.activeRaid {
 			a.app.gameState.Update(game.Input{
-				CursorX: 233,
+				CursorX: 397,
 				CursorY: defaultWindowHeight - 68,
 				Clicked: true,
 			})
@@ -165,7 +165,7 @@ func (a *screenshotApp) Update() error {
 		if target.hoverBarracks {
 			a.app.gameState.Update(game.Input{
 				CursorX: 48,
-				CursorY: topOfGameScene() + 278,
+				CursorY: topOfGameScene() + 234,
 			})
 		}
 		if target.placedBarracks {
@@ -182,7 +182,7 @@ func (a *screenshotApp) Update() error {
 			})
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
-				CursorY:   topOfGameScene() + 278,
+				CursorY:   topOfGameScene() + 234,
 				Clicked:   true,
 				MouseDown: true,
 			})

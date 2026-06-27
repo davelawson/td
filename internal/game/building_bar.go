@@ -11,22 +11,21 @@ import (
 )
 
 const (
-	buildingBarWidth          = 96
-	buildingBarPadding        = 16
-	buildingBarTabHeight      = 28
-	buildingBarTabGap         = 6
-	buildingBarTabBottomGap   = 14
-	buildingBarItemSize       = 64
-	buildDragIconSize         = buildingBarItemSize / 2
-	buildingBarCostGap        = 4
-	buildingBarCostTextHeight = 18
-	buildingBarStaffingGap    = 4
-	buildingBarStaffingHeight = 18
-	buildingBarStaffIconSize  = 14
-	buildingBarStaffIconGap   = 2
-	buildingBarCostItemGap    = 5
-	buildingBarItemGap        = 12
-	buildingBarSpriteInset    = 8
+	buildingBarWidth           = 260
+	buildingBarPadding         = 16
+	buildingBarTabHeight       = 28
+	buildingBarTabGap          = 6
+	buildingBarTabBottomGap    = 14
+	buildingBarItemSize        = 64
+	buildDragIconSize          = buildingBarItemSize / 2
+	buildingBarMetadataGap     = 12
+	buildingBarCostOffsetY     = 11
+	buildingBarStaffingOffsetY = 35
+	buildingBarStaffIconSize   = 14
+	buildingBarStaffIconGap    = 2
+	buildingBarCostItemGap     = 5
+	buildingBarItemGap         = 12
+	buildingBarSpriteInset     = 8
 )
 
 var buildingBarCostShadow = color.RGBA{R: 8, G: 10, B: 8, A: 220}
@@ -74,12 +73,9 @@ func (s *State) buildingBarBounds() ui.Button[int] {
 // buildingBarItems returns the structure choices shown in the building bar.
 func (s *State) buildingBarItems() []buildingBarItem {
 	bar := s.buildingBarBounds()
-	x := bar.X + (bar.W-buildingBarItemSize)/2
+	x := bar.X + buildingBarPadding
 	startY := bar.Y + buildingBarPadding + buildingBarTabsHeight() + buildingBarTabBottomGap
-	stepY := buildingBarItemSize +
-		buildingBarCostGap + buildingBarCostTextHeight +
-		buildingBarStaffingGap + buildingBarStaffingHeight +
-		buildingBarItemGap
+	stepY := buildingBarItemSize + buildingBarItemGap
 	ids := buildingBarItemIDsForCategory(s.ui.buildBarCategory)
 	items := make([]buildingBarItem, 0, len(ids))
 	for i, id := range ids {
@@ -322,7 +318,7 @@ func (s *State) deductBuildingCost(cost Resources) {
 	s.status.resources.metal -= cost.Metal
 }
 
-// drawBuildingBar renders the tower picker at the left edge of the scene.
+// drawBuildingBar renders the building picker at the left edge of the scene.
 func (s *State) drawBuildingBar(screen *ebiten.Image) {
 	bar := s.buildingBarBounds()
 	if bar.H <= 0 {
@@ -390,7 +386,7 @@ func (s *State) buildingBarItemHighlighted(index int, item buildingBarItem) bool
 	return s.ui.buildBarHover == index && s.canConstructBuilding(item)
 }
 
-// drawBuildingBarItem renders one tower icon slot.
+// drawBuildingBarItem renders one building icon slot and its right-side values.
 func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem, hovered bool) {
 	bounds := item.Bounds
 	vector.FillRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), colors.plotBackdrop, false)
@@ -417,10 +413,19 @@ func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem, 
 		float64(bounds.X)+(float64(bounds.W)-spriteWidth*scale)/2,
 		float64(bounds.Y)+(float64(bounds.H)-spriteHeight*scale)/2,
 	)
+	options.ColorScale.Scale(1, 1, 1, s.buildingBarIconAlpha(item))
 	if hovered {
 		brightenDrawOptions(options)
 	}
 	screen.DrawImage(item.Sprite, options)
 	s.drawBuildingBarCost(screen, item, hovered)
 	s.drawBuildingBarPopulationMetadata(screen, item)
+}
+
+// buildingBarIconAlpha returns the icon opacity for current construction capacity.
+func (s *State) buildingBarIconAlpha(item buildingBarItem) float32 {
+	if s.canConstructBuilding(item) {
+		return 1
+	}
+	return 0.70
 }

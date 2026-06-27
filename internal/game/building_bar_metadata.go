@@ -9,7 +9,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
-// drawBuildingBarCost renders non-zero resource costs below one tower icon.
+// drawBuildingBarCost renders non-zero resource costs to the right of one icon.
 func (s *State) drawBuildingBarCost(screen *ebiten.Image, item buildingBarItem, hovered bool) {
 	costItems := buildingBarCostItems(item.Cost)
 	if len(costItems) == 0 {
@@ -17,9 +17,8 @@ func (s *State) drawBuildingBarCost(screen *ebiten.Image, item buildingBarItem, 
 	}
 
 	face := s.buildingBarCostFace(hovered)
-	totalWidth := s.buildingBarCostWidth(costItems, hovered)
-	x := float64(item.Bounds.X) + (float64(item.Bounds.W)-totalWidth)/2
-	y := float64(item.Bounds.Y + item.Bounds.H + buildingBarCostGap)
+	x := float64(s.buildingBarMetadataX(item))
+	y := float64(item.Bounds.Y + buildingBarCostOffsetY)
 	for i, costItem := range costItems {
 		width, _ := text.Measure(costItem.Value, face, face.Size)
 		if hovered {
@@ -34,16 +33,15 @@ func (s *State) drawBuildingBarCost(screen *ebiten.Image, item buildingBarItem, 
 	}
 }
 
-// drawBuildingBarPopulationMetadata renders staffing requirements or population grants.
+// drawBuildingBarPopulationMetadata renders staffing requirements or population grants beside one icon.
 func (s *State) drawBuildingBarPopulationMetadata(screen *ebiten.Image, item buildingBarItem) {
 	metadataItems := s.buildingBarPopulationMetadataItems(item)
 	if len(metadataItems) == 0 {
 		return
 	}
 
-	totalWidth := s.buildingBarStaffingWidth(metadataItems)
-	x := float64(item.Bounds.X) + (float64(item.Bounds.W)-totalWidth)/2
-	y := float64(item.Bounds.Y + item.Bounds.H + buildingBarCostGap + buildingBarCostTextHeight + buildingBarStaffingGap)
+	x := float64(s.buildingBarMetadataX(item))
+	y := float64(item.Bounds.Y + buildingBarStaffingOffsetY)
 	for i, staffingItem := range metadataItems {
 		if staffingItem.Sprite != nil {
 			spriteWidth := float64(staffingItem.Sprite.Bounds().Dx())
@@ -68,6 +66,17 @@ func (s *State) drawBuildingBarPopulationMetadata(screen *ebiten.Image, item bui
 			x += buildingBarCostItemGap
 		}
 	}
+}
+
+// buildingBarMetadataX returns the x coordinate where right-side item values begin.
+func (s *State) buildingBarMetadataX(item buildingBarItem) int {
+	return item.Bounds.X + item.Bounds.W + buildingBarMetadataGap
+}
+
+// buildingBarMetadataRight returns the right edge available to item values.
+func (s *State) buildingBarMetadataRight() int {
+	bar := s.buildingBarBounds()
+	return bar.X + bar.W - buildingBarPadding
 }
 
 // buildingBarPopulationMetadataItems returns the row shown beneath one structure cost.
