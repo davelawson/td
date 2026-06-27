@@ -390,7 +390,7 @@ func (s *State) buildingBarItemHighlighted(index int, item buildingBarItem) bool
 func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem, hovered bool) {
 	bounds := item.Bounds
 	vector.FillRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), colors.plotBackdrop, false)
-	vector.StrokeRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), 2, colors.fieldEdge, false)
+	vector.StrokeRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), 2, s.buildingBarItemOutlineColor(item), false)
 
 	if item.Sprite == nil {
 		s.drawBuildingBarCost(screen, item, hovered)
@@ -428,4 +428,12 @@ func (s *State) buildingBarIconAlpha(item buildingBarItem) float32 {
 		return 1
 	}
 	return 0.70
+}
+
+// buildingBarItemOutlineColor returns the icon slot outline color for construction capacity.
+func (s *State) buildingBarItemOutlineColor(item buildingBarItem) color.Color {
+	if s.canConstructBuilding(item) {
+		return colors.buildable
+	}
+	return colors.buildBlocked
 }

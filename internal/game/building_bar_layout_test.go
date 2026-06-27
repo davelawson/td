@@ -67,3 +67,33 @@ func TestBuildingBarIconAlphaTracksConstructionCapacity(t *testing.T) {
 		t.Fatalf("Bow Tower alpha = %.2f, want 0.70 without Soldier", alpha)
 	}
 }
+
+// TestBuildingBarItemOutlineColorTracksConstructionCapacity verifies green/red outlines.
+func TestBuildingBarItemOutlineColorTracksConstructionCapacity(t *testing.T) {
+	state := newRaidTestState(t)
+	items := state.buildingBarItems()
+
+	if got := state.buildingBarItemOutlineColor(items[0]); got != colors.buildable {
+		t.Fatalf("House outline = %#v, want buildable green %#v", got, colors.buildable)
+	}
+	if got := state.buildingBarItemOutlineColor(items[1]); got != colors.buildBlocked {
+		t.Fatalf("Barracks outline = %#v, want blocked red %#v", got, colors.buildBlocked)
+	}
+
+	setAvailablePopulations(state, 0, 0, 2)
+	items = state.buildingBarItems()
+	if got := state.buildingBarItemOutlineColor(items[1]); got != colors.buildable {
+		t.Fatalf("Barracks outline = %#v, want buildable green with Peasants %#v", got, colors.buildable)
+	}
+
+	state.ui.buildBarCategory = buildingBarCategoryDefenses
+	items = state.buildingBarItems()
+	if got := state.buildingBarItemOutlineColor(items[0]); got != colors.buildBlocked {
+		t.Fatalf("Bow Tower outline = %#v, want blocked red without Soldier %#v", got, colors.buildBlocked)
+	}
+	setAvailablePopulations(state, 0, 1, 0)
+	items = state.buildingBarItems()
+	if got := state.buildingBarItemOutlineColor(items[0]); got != colors.buildable {
+		t.Fatalf("Bow Tower outline = %#v, want buildable green with Soldier %#v", got, colors.buildable)
+	}
+}
