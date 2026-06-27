@@ -9,6 +9,7 @@ import (
 // StructureTemplate describes shared metadata for every instance of one structure type.
 type StructureTemplate struct {
 	Name                          string
+	Description                   string
 	Sprite                        *ebiten.Image
 	Cost                          Resources
 	Staffing                      StaffingRequirements
@@ -80,12 +81,14 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		House: StructureTemplate{
 			Name:            "House",
+			Description:     "Shelters new Peasants for the Domain.",
 			Sprite:          assetCatalog.Sprite.Structure.House,
 			Cost:            Resources{Wood: 20},
 			PopulationGrant: PopulationGrant{Peasants: 2},
 		},
 		Barracks: StructureTemplate{
 			Name:            "Barracks",
+			Description:     "Trains Peasants into Soldiers for staffed defenses.",
 			Sprite:          assetCatalog.Sprite.Structure.Barracks,
 			Cost:            Resources{Wood: 10, Stone: 10},
 			PopulationCost:  PopulationCost{Peasants: 2},
@@ -93,6 +96,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		Woodcutter: StructureTemplate{
 			Name:          "Woodcutter",
+			Description:   "Assigns a Peasant to bring in Wood after defeated Raids.",
 			Sprite:        assetCatalog.Sprite.Structure.Woodcutter,
 			Cost:          Resources{Wood: 10},
 			Staffing:      StaffingRequirements{Peasants: 1},
@@ -100,6 +104,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		StoneQuarry: StructureTemplate{
 			Name:          "Stone Quarry",
+			Description:   "Assigns a Peasant to quarry Stone after defeated Raids.",
 			Sprite:        assetCatalog.Sprite.Structure.StoneQuarry,
 			Cost:          Resources{Wood: 10, Stone: 10},
 			Staffing:      StaffingRequirements{Peasants: 1},
@@ -107,6 +112,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		IronMine: StructureTemplate{
 			Name:          "Iron Mine",
+			Description:   "Assigns a Peasant to extract Metal after defeated Raids.",
 			Sprite:        assetCatalog.Sprite.Structure.IronMine,
 			Cost:          Resources{Wood: 10, Stone: 10, Metal: 10},
 			Staffing:      StaffingRequirements{Peasants: 1},
@@ -114,6 +120,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		BowTower: StructureTemplate{
 			Name:                          "Bow Tower",
+			Description:                   "A staffed archer tower that fires quick arrows.",
 			Sprite:                        assetCatalog.Sprite.Structure.BowTower,
 			Cost:                          Resources{Wood: 30, Stone: 10, Metal: 10},
 			Staffing:                      StaffingRequirements{Soldiers: 1},
@@ -125,6 +132,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		FlameBoltTower: StructureTemplate{
 			Name:                          "Flame Bolt Tower",
+			Description:                   "An apprentice-staffed tower that hurls focused fire.",
 			Sprite:                        assetCatalog.Sprite.Structure.FlameBoltTower,
 			Cost:                          Resources{Stone: 30, Metal: 20},
 			Staffing:                      StaffingRequirements{Apprentices: 1},
@@ -136,6 +144,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		CatapultTower: StructureTemplate{
 			Name:                          "Catapult Tower",
+			Description:                   "A heavy crewed tower that crushes enemies in one Tile.",
 			Sprite:                        assetCatalog.Sprite.Structure.CatapultTower,
 			Cost:                          Resources{Wood: 40, Stone: 60, Metal: 25},
 			Staffing:                      StaffingRequirements{Soldiers: 1, Peasants: 2},
