@@ -11,8 +11,8 @@ func TestAffordableBuildingDragStarts(t *testing.T) {
 	if !state.buildDrag.active {
 		t.Fatal("expected affordable House drag to start")
 	}
-	if state.buildDrag.itemIndex != buildingBarHouseIndex {
-		t.Fatalf("drag item index = %d, want House index 0", state.buildDrag.itemIndex)
+	if state.buildDrag.itemID != buildingBarHouseIndex {
+		t.Fatalf("drag item ID = %d, want House", state.buildDrag.itemID)
 	}
 }
 
@@ -378,8 +378,12 @@ func TestBuildDragInvalidReleaseClearsDrag(t *testing.T) {
 }
 
 // pressBuildingBarItemInput returns a left press at the center of a building-bar icon.
-func pressBuildingBarItemInput(state *State, index int) Input {
-	item := state.buildingBarItems()[index]
+func pressBuildingBarItemInput(state *State, id buildingBarItemID) Input {
+	state.ui.buildBarCategory = buildingBarCategoryForItem(id)
+	item, ok := state.buildingBarItemByID(id)
+	if !ok {
+		return Input{}
+	}
 	return Input{
 		CursorX:   item.Bounds.X + item.Bounds.W/2,
 		CursorY:   item.Bounds.Y + item.Bounds.H/2,

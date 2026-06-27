@@ -25,106 +25,131 @@ func TestBuildingBarBoundsFillPlayableLeftEdge(t *testing.T) {
 	}
 }
 
-// TestBuildingBarItemsExposeStructureIcons verifies visual build choices use templates.
-func TestBuildingBarItemsExposeStructureIcons(t *testing.T) {
+// TestBuildingBarDefaultsToHousing verifies the first visible category shows population buildings.
+func TestBuildingBarDefaultsToHousing(t *testing.T) {
 	state := newRaidTestState(t)
 
+	if state.ui.buildBarCategory != buildingBarCategoryHousing {
+		t.Fatalf("default category = %v, want Housing", state.ui.buildBarCategory)
+	}
 	items := state.buildingBarItems()
 
-	if len(items) != 8 {
-		t.Fatalf("building bar items = %d, want 8", len(items))
-	}
-	assertBuildingBarItem(t, state, items[buildingBarHouseIndex], "House")
-	assertBuildingBarItem(t, state, items[buildingBarBarracksIndex], "Barracks")
-	assertBuildingBarItem(t, state, items[buildingBarWoodcutterIndex], "Woodcutter")
-	assertBuildingBarItem(t, state, items[buildingBarStoneQuarryIndex], "Stone Quarry")
-	assertBuildingBarItem(t, state, items[buildingBarIronMineIndex], "Iron Mine")
-	assertBuildingBarItem(t, state, items[buildingBarBowTowerIndex], "Bow Tower")
-	assertBuildingBarItem(t, state, items[buildingBarFlameBoltTowerIndex], "Flame Bolt Tower")
-	assertBuildingBarItem(t, state, items[buildingBarCatapultTowerIndex], "Catapult Tower")
-	if items[buildingBarHouseIndex].Sprite != state.structureCatalog.House.Sprite {
+	assertBuildingBarItems(t, state, []buildingBarItemID{buildingBarHouseIndex, buildingBarBarracksIndex})
+	if items[0].Sprite != state.structureCatalog.House.Sprite {
 		t.Fatal("expected first item to use House sprite")
 	}
-	if items[buildingBarHouseIndex].Cost != (Resources{Wood: 20}) {
-		t.Fatalf("House cost = %+v, want 20 wood", items[buildingBarHouseIndex].Cost)
+	if items[0].Cost != (Resources{Wood: 20}) {
+		t.Fatalf("House cost = %+v, want 20 wood", items[0].Cost)
 	}
-	if items[buildingBarHouseIndex].Staffing != (StaffingRequirements{}) {
-		t.Fatalf("House staffing = %+v, want none", items[buildingBarHouseIndex].Staffing)
+	if items[0].Staffing != (StaffingRequirements{}) {
+		t.Fatalf("House staffing = %+v, want none", items[0].Staffing)
 	}
-	if items[buildingBarHouseIndex].PopulationGrant != (PopulationGrant{Peasants: 2}) {
-		t.Fatalf("House population grant = %+v, want 2 Peasants", items[buildingBarHouseIndex].PopulationGrant)
+	if items[0].PopulationGrant != (PopulationGrant{Peasants: 2}) {
+		t.Fatalf("House population grant = %+v, want 2 Peasants", items[0].PopulationGrant)
 	}
-	if items[buildingBarBarracksIndex].Sprite != state.structureCatalog.Barracks.Sprite {
+	if items[1].Sprite != state.structureCatalog.Barracks.Sprite {
 		t.Fatal("expected second item to use Barracks sprite")
 	}
-	if items[buildingBarBarracksIndex].Cost != (Resources{Wood: 10, Stone: 10}) {
-		t.Fatalf("Barracks cost = %+v, want 10 wood 10 stone", items[buildingBarBarracksIndex].Cost)
+	if items[1].Cost != (Resources{Wood: 10, Stone: 10}) {
+		t.Fatalf("Barracks cost = %+v, want 10 wood 10 stone", items[1].Cost)
 	}
-	if items[buildingBarBarracksIndex].PopulationCost != (PopulationCost{Peasants: 2}) {
-		t.Fatalf("Barracks population cost = %+v, want 2 Peasants", items[buildingBarBarracksIndex].PopulationCost)
+	if items[1].PopulationCost != (PopulationCost{Peasants: 2}) {
+		t.Fatalf("Barracks population cost = %+v, want 2 Peasants", items[1].PopulationCost)
 	}
-	if items[buildingBarBarracksIndex].PopulationGrant != (PopulationGrant{Soldiers: 2}) {
-		t.Fatalf("Barracks population grant = %+v, want 2 Soldiers", items[buildingBarBarracksIndex].PopulationGrant)
+	if items[1].PopulationGrant != (PopulationGrant{Soldiers: 2}) {
+		t.Fatalf("Barracks population grant = %+v, want 2 Soldiers", items[1].PopulationGrant)
 	}
-	if items[buildingBarWoodcutterIndex].Sprite != state.structureCatalog.Woodcutter.Sprite {
+}
+
+// TestBuildingBarEconomicTabShowsResourceBuildings verifies economic structures are grouped.
+func TestBuildingBarEconomicTabShowsResourceBuildings(t *testing.T) {
+	state := newRaidTestState(t)
+	state.ui.buildBarCategory = buildingBarCategoryEconomic
+	items := state.buildingBarItems()
+
+	assertBuildingBarItems(t, state, []buildingBarItemID{buildingBarWoodcutterIndex, buildingBarStoneQuarryIndex, buildingBarIronMineIndex})
+	if items[0].Sprite != state.structureCatalog.Woodcutter.Sprite {
 		t.Fatal("expected third item to use Woodcutter sprite")
 	}
-	if items[buildingBarWoodcutterIndex].Cost != (Resources{Wood: 10}) {
-		t.Fatalf("Woodcutter cost = %+v, want 10 wood", items[buildingBarWoodcutterIndex].Cost)
+	if items[0].Cost != (Resources{Wood: 10}) {
+		t.Fatalf("Woodcutter cost = %+v, want 10 wood", items[0].Cost)
 	}
-	if items[buildingBarWoodcutterIndex].Staffing != (StaffingRequirements{Peasants: 1}) {
-		t.Fatalf("Woodcutter staffing = %+v, want 1 Peasant", items[buildingBarWoodcutterIndex].Staffing)
+	if items[0].Staffing != (StaffingRequirements{Peasants: 1}) {
+		t.Fatalf("Woodcutter staffing = %+v, want 1 Peasant", items[0].Staffing)
 	}
-	if items[buildingBarStoneQuarryIndex].Sprite != state.structureCatalog.StoneQuarry.Sprite {
+	if items[1].Sprite != state.structureCatalog.StoneQuarry.Sprite {
 		t.Fatal("expected fourth item to use Stone Quarry sprite")
 	}
-	if items[buildingBarStoneQuarryIndex].Cost != (Resources{Wood: 10, Stone: 10}) {
-		t.Fatalf("Stone Quarry cost = %+v, want 10 wood 10 stone", items[buildingBarStoneQuarryIndex].Cost)
+	if items[1].Cost != (Resources{Wood: 10, Stone: 10}) {
+		t.Fatalf("Stone Quarry cost = %+v, want 10 wood 10 stone", items[1].Cost)
 	}
-	if items[buildingBarStoneQuarryIndex].Staffing != (StaffingRequirements{Peasants: 1}) {
-		t.Fatalf("Stone Quarry staffing = %+v, want 1 Peasant", items[buildingBarStoneQuarryIndex].Staffing)
+	if items[1].Staffing != (StaffingRequirements{Peasants: 1}) {
+		t.Fatalf("Stone Quarry staffing = %+v, want 1 Peasant", items[1].Staffing)
 	}
-	if items[buildingBarIronMineIndex].Sprite != state.structureCatalog.IronMine.Sprite {
+	if items[2].Sprite != state.structureCatalog.IronMine.Sprite {
 		t.Fatal("expected fifth item to use Iron Mine sprite")
 	}
-	if items[buildingBarIronMineIndex].Cost != (Resources{Wood: 10, Stone: 10, Metal: 10}) {
-		t.Fatalf("Iron Mine cost = %+v, want 10 wood 10 stone 10 metal", items[buildingBarIronMineIndex].Cost)
+	if items[2].Cost != (Resources{Wood: 10, Stone: 10, Metal: 10}) {
+		t.Fatalf("Iron Mine cost = %+v, want 10 wood 10 stone 10 metal", items[2].Cost)
 	}
-	if items[buildingBarIronMineIndex].Staffing != (StaffingRequirements{Peasants: 1}) {
-		t.Fatalf("Iron Mine staffing = %+v, want 1 Peasant", items[buildingBarIronMineIndex].Staffing)
+	if items[2].Staffing != (StaffingRequirements{Peasants: 1}) {
+		t.Fatalf("Iron Mine staffing = %+v, want 1 Peasant", items[2].Staffing)
 	}
-	if items[buildingBarBowTowerIndex].Sprite != state.structureCatalog.BowTower.Sprite {
+}
+
+// TestBuildingBarDefensesTabShowsTowers verifies defensive structures are grouped.
+func TestBuildingBarDefensesTabShowsTowers(t *testing.T) {
+	state := newRaidTestState(t)
+	state.ui.buildBarCategory = buildingBarCategoryDefenses
+	items := state.buildingBarItems()
+
+	assertBuildingBarItems(t, state, []buildingBarItemID{buildingBarBowTowerIndex, buildingBarFlameBoltTowerIndex, buildingBarCatapultTowerIndex})
+	if items[0].Sprite != state.structureCatalog.BowTower.Sprite {
 		t.Fatal("expected sixth item to use Bow Tower sprite")
 	}
-	if items[buildingBarBowTowerIndex].Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
-		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[buildingBarBowTowerIndex].Cost)
+	if items[0].Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
+		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[0].Cost)
 	}
-	if items[buildingBarBowTowerIndex].Staffing != (StaffingRequirements{Soldiers: 1}) {
-		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", items[buildingBarBowTowerIndex].Staffing)
+	if items[0].Staffing != (StaffingRequirements{Soldiers: 1}) {
+		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", items[0].Staffing)
 	}
-	if items[buildingBarFlameBoltTowerIndex].Sprite != state.structureCatalog.FlameBoltTower.Sprite {
+	if items[1].Sprite != state.structureCatalog.FlameBoltTower.Sprite {
 		t.Fatal("expected seventh item to use Flame Bolt Tower sprite")
 	}
-	if items[buildingBarFlameBoltTowerIndex].Cost != (Resources{Stone: 30, Metal: 20}) {
-		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[buildingBarFlameBoltTowerIndex].Cost)
+	if items[1].Cost != (Resources{Stone: 30, Metal: 20}) {
+		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", items[1].Cost)
 	}
-	if items[buildingBarFlameBoltTowerIndex].Staffing != (StaffingRequirements{Apprentices: 1}) {
-		t.Fatalf("Flame Bolt Tower staffing = %+v, want 1 Apprentice", items[buildingBarFlameBoltTowerIndex].Staffing)
+	if items[1].Staffing != (StaffingRequirements{Apprentices: 1}) {
+		t.Fatalf("Flame Bolt Tower staffing = %+v, want 1 Apprentice", items[1].Staffing)
 	}
-	if items[buildingBarCatapultTowerIndex].Sprite != state.structureCatalog.CatapultTower.Sprite {
+	if items[2].Sprite != state.structureCatalog.CatapultTower.Sprite {
 		t.Fatal("expected eighth item to use Catapult Tower sprite")
 	}
-	if items[buildingBarCatapultTowerIndex].Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
-		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", items[buildingBarCatapultTowerIndex].Cost)
+	if items[2].Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
+		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", items[2].Cost)
 	}
-	if items[buildingBarCatapultTowerIndex].Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
-		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", items[buildingBarCatapultTowerIndex].Staffing)
+	if items[2].Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
+		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", items[2].Staffing)
 	}
-	for i := 1; i < len(items); i++ {
-		previousBottom := buildingBarItemBottom(items[i-1])
-		if items[i].Bounds.Y <= previousBottom {
-			t.Fatalf("item %d Y = %d, want below previous item bottom %d", i, items[i].Bounds.Y, previousBottom)
+}
+
+// TestBuildingBarTabsExposeCategories verifies tabs are stable and inside the bar.
+func TestBuildingBarTabsExposeCategories(t *testing.T) {
+	state := newRaidTestState(t)
+	tabs := state.buildingBarTabs()
+
+	if len(tabs) != 3 {
+		t.Fatalf("tabs = %d, want 3", len(tabs))
+	}
+	expected := []buildingBarCategory{buildingBarCategoryDefenses, buildingBarCategoryEconomic, buildingBarCategoryHousing}
+	for i, category := range expected {
+		if tabs[i].Category != category {
+			t.Fatalf("tab %d category = %v, want %v", i, tabs[i].Category, category)
 		}
+		if tabs[i].Label != buildingBarCategoryLabel(category) {
+			t.Fatalf("tab %d label = %q, want %q", i, tabs[i].Label, buildingBarCategoryLabel(category))
+		}
+		assertBuildingBarTabInsideBar(t, state, tabs[i])
 	}
 }
 
@@ -272,12 +297,14 @@ func TestBuildingBarHoverTracksIconBounds(t *testing.T) {
 		t.Fatalf("building bar hover = %d, want second item", state.ui.buildBarHover)
 	}
 
+	state.ui.buildBarCategory = buildingBarCategoryDefenses
+	items = state.buildingBarItems()
 	state.updateBuildingBarHover(Input{
-		CursorX: items[buildingBarCatapultTowerIndex].Bounds.X + items[buildingBarCatapultTowerIndex].Bounds.W/2,
-		CursorY: items[buildingBarCatapultTowerIndex].Bounds.Y + items[buildingBarCatapultTowerIndex].Bounds.H/2,
+		CursorX: items[2].Bounds.X + items[2].Bounds.W/2,
+		CursorY: items[2].Bounds.Y + items[2].Bounds.H/2,
 	})
-	if state.ui.buildBarHover != buildingBarCatapultTowerIndex {
-		t.Fatalf("building bar hover = %d, want Catapult Tower item", state.ui.buildBarHover)
+	if state.ui.buildBarHover != 2 {
+		t.Fatalf("building bar hover = %d, want Catapult Tower visible item", state.ui.buildBarHover)
 	}
 }
 
@@ -299,37 +326,82 @@ func TestBuildingBarHighlightRequiresResourcesAndStaff(t *testing.T) {
 		t.Fatal("expected sufficient resources and Peasants to highlight Barracks")
 	}
 
-	state.ui.buildBarHover = buildingBarWoodcutterIndex
+	state.ui.buildBarCategory = buildingBarCategoryEconomic
+	items = state.buildingBarItems()
+	state.ui.buildBarHover = 0
 	state.status.populations.peasants.available = 0
-	if state.buildingBarItemHighlighted(buildingBarWoodcutterIndex, items[buildingBarWoodcutterIndex]) {
+	if state.buildingBarItemHighlighted(0, items[0]) {
 		t.Fatal("expected insufficient Peasants to suppress Woodcutter highlight")
 	}
 	state.status.populations.peasants.available = 2
-	if !state.buildingBarItemHighlighted(buildingBarWoodcutterIndex, items[buildingBarWoodcutterIndex]) {
+	if !state.buildingBarItemHighlighted(0, items[0]) {
 		t.Fatal("expected sufficient resources and Peasant to highlight Woodcutter")
 	}
 
-	state.ui.buildBarHover = buildingBarBowTowerIndex
-	if !state.buildingBarItemHighlighted(buildingBarBowTowerIndex, items[buildingBarBowTowerIndex]) {
+	state.ui.buildBarCategory = buildingBarCategoryDefenses
+	items = state.buildingBarItems()
+	state.ui.buildBarHover = 0
+	if !state.buildingBarItemHighlighted(0, items[0]) {
 		t.Fatal("expected sufficient resources and staff to highlight Bow Tower")
 	}
 
-	state.ui.buildBarHover = buildingBarFlameBoltTowerIndex
-	if !state.buildingBarItemHighlighted(buildingBarFlameBoltTowerIndex, items[buildingBarFlameBoltTowerIndex]) {
+	state.ui.buildBarHover = 1
+	if !state.buildingBarItemHighlighted(1, items[1]) {
 		t.Fatal("expected sufficient resources and staff to highlight Flame Bolt Tower")
 	}
 
-	state.ui.buildBarHover = buildingBarCatapultTowerIndex
-	if state.buildingBarItemHighlighted(buildingBarCatapultTowerIndex, items[buildingBarCatapultTowerIndex]) {
+	state.ui.buildBarHover = 2
+	if state.buildingBarItemHighlighted(2, items[2]) {
 		t.Fatal("expected insufficient resources to suppress Catapult Tower highlight")
 	}
 	state.status.resources = resourceCounts{wood: 80, stone: 80, metal: 30}
-	if !state.buildingBarItemHighlighted(buildingBarCatapultTowerIndex, items[buildingBarCatapultTowerIndex]) {
+	if !state.buildingBarItemHighlighted(2, items[2]) {
 		t.Fatal("expected Catapult Tower to highlight after resources and staff cover it")
 	}
 	state.status.populations.peasants.available = 1
-	if state.buildingBarItemHighlighted(buildingBarCatapultTowerIndex, items[buildingBarCatapultTowerIndex]) {
+	if state.buildingBarItemHighlighted(2, items[2]) {
 		t.Fatal("expected one missing Peasant to suppress Catapult Tower highlight")
+	}
+}
+
+// TestBuildingBarTabClickSwitchesCategory verifies tabs change visible structures.
+func TestBuildingBarTabClickSwitchesCategory(t *testing.T) {
+	state := newRaidTestState(t)
+	tab := state.buildingBarTabs()[1]
+
+	state.Update(Input{
+		CursorX: tab.Bounds.X + tab.Bounds.W/2,
+		CursorY: tab.Bounds.Y + tab.Bounds.H/2,
+		Clicked: true,
+	})
+
+	if state.ui.buildBarCategory != buildingBarCategoryEconomic {
+		t.Fatalf("category = %v, want Economic", state.ui.buildBarCategory)
+	}
+	assertBuildingBarItems(t, state, []buildingBarItemID{buildingBarWoodcutterIndex, buildingBarStoneQuarryIndex, buildingBarIronMineIndex})
+	if state.buildDrag.active {
+		t.Fatal("expected tab click not to start build drag")
+	}
+}
+
+// TestBuildingBarTabClickDoesNotClearSelection verifies category tabs are UI input.
+func TestBuildingBarTabClickDoesNotClearSelection(t *testing.T) {
+	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureBowTower
+	state.Update(clickTileInput(state, homePlotCenter+1, 5))
+	tab := state.buildingBarTabs()[0]
+
+	state.Update(Input{
+		CursorX: tab.Bounds.X + tab.Bounds.W/2,
+		CursorY: tab.Bounds.Y + tab.Bounds.H/2,
+		Clicked: true,
+	})
+
+	if state.selection.kind != selectedItemStructure {
+		t.Fatalf("selection kind = %v, want structure", state.selection.kind)
+	}
+	if state.selection.tile != (tileCoordinate{X: homePlotCenter + 1, Y: 5}) {
+		t.Fatalf("selected tile = %+v, want Bow Tower", state.selection.tile)
 	}
 }
 
@@ -424,9 +496,34 @@ func TestNextRaidButtonAvoidsBuildingBar(t *testing.T) {
 	}
 }
 
-// assertBuildingBarItem verifies a bar item has stable bounds within the bar.
-func assertBuildingBarItem(t *testing.T, state *State, item buildingBarItem, name string) {
+// assertBuildingBarItems verifies visible bar items match stable IDs in order.
+func assertBuildingBarItems(t *testing.T, state *State, ids []buildingBarItemID) {
 	t.Helper()
+	items := state.buildingBarItems()
+	if len(items) != len(ids) {
+		t.Fatalf("building bar items = %d, want %d", len(items), len(ids))
+	}
+	for i, id := range ids {
+		template, ok := state.buildingTemplateForItemID(id)
+		if !ok {
+			t.Fatalf("missing template for item ID %d", id)
+		}
+		assertBuildingBarItem(t, state, items[i], id, template.Name)
+		if i > 0 {
+			previousBottom := buildingBarItemBottom(items[i-1])
+			if items[i].Bounds.Y <= previousBottom {
+				t.Fatalf("item %d Y = %d, want below previous item bottom %d", i, items[i].Bounds.Y, previousBottom)
+			}
+		}
+	}
+}
+
+// assertBuildingBarItem verifies a bar item has stable bounds within the bar.
+func assertBuildingBarItem(t *testing.T, state *State, item buildingBarItem, id buildingBarItemID, name string) {
+	t.Helper()
+	if item.ID != id {
+		t.Fatalf("item ID = %d, want %d", item.ID, id)
+	}
 	if item.Name != name {
 		t.Fatalf("item name = %q, want %q", item.Name, name)
 	}
@@ -441,6 +538,16 @@ func assertBuildingBarItem(t *testing.T, state *State, item buildingBarItem, nam
 	if !bar.Contains(item.Bounds.X, item.Bounds.Y) ||
 		!bar.Contains(item.Bounds.X+item.Bounds.W-1, itemBottom-1) {
 		t.Fatalf("item bounds %+v should fit inside bar %+v", item.Bounds, bar)
+	}
+}
+
+// assertBuildingBarTabInsideBar verifies one category tab stays inside the bar.
+func assertBuildingBarTabInsideBar(t *testing.T, state *State, tab buildingBarTab) {
+	t.Helper()
+	bar := state.buildingBarBounds()
+	if !bar.Contains(tab.Bounds.X, tab.Bounds.Y) ||
+		!bar.Contains(tab.Bounds.X+tab.Bounds.W-1, tab.Bounds.Y+tab.Bounds.H-1) {
+		t.Fatalf("tab bounds %+v should fit inside bar %+v", tab.Bounds, bar)
 	}
 }
 

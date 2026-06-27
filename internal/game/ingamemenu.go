@@ -55,6 +55,7 @@ func (s *State) openIngameMenu() {
 	s.ui.menu.open = true
 	s.ui.menu.hover = -1
 	s.ui.buildBarHover = -1
+	s.ui.buildBarTabHover = buildingBarNoCategory
 }
 
 // closeIngameMenu hides the overlay and restores the previous pause state.

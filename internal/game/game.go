@@ -61,16 +61,18 @@ type silentSoundSink struct{}
 func (silentSoundSink) PlayRaiderDefeated() {}
 
 type gameUI struct {
-	width         int
-	height        int
-	menu          ingameMenu
-	nextRaidHover bool
-	buildBarHover int
-	titleFace     *text.GoTextFace
-	bodyFace      *text.GoTextFace
-	hudFace       *text.GoTextFace
-	costFace      *text.GoTextFace
-	costBoldFace  *text.GoTextFace
+	width            int
+	height           int
+	menu             ingameMenu
+	nextRaidHover    bool
+	buildBarHover    int
+	buildBarTabHover buildingBarCategory
+	buildBarCategory buildingBarCategory
+	titleFace        *text.GoTextFace
+	bodyFace         *text.GoTextFace
+	hudFace          *text.GoTextFace
+	costFace         *text.GoTextFace
+	costBoldFace     *text.GoTextFace
 }
 
 // New creates the initial game state for a Wizard name.
@@ -123,9 +125,11 @@ func (s *State) playRaiderDefeatedSound() {
 // newGameUI creates render-facing state for the current drawable size.
 func newGameUI(source, boldSource *text.GoTextFaceSource, width, height int) gameUI {
 	return gameUI{
-		width:         width,
-		height:        height,
-		buildBarHover: -1,
+		width:            width,
+		height:           height,
+		buildBarHover:    -1,
+		buildBarTabHover: buildingBarNoCategory,
+		buildBarCategory: buildingBarCategoryHousing,
 		titleFace: &text.GoTextFace{
 			Source: source,
 			Size:   ui.GameTitleFontSize,

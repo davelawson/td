@@ -93,7 +93,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "35-economic-buildings", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "36-building-bar-tabs", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -146,13 +146,13 @@ func (a *screenshotApp) Update() error {
 		if target.hoverBuilding {
 			a.app.gameState.Update(game.Input{
 				CursorX: 48,
-				CursorY: topOfGameScene() + 48,
+				CursorY: topOfGameScene() + 158,
 			})
 		}
 		if target.placedHouse {
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
-				CursorY:   topOfGameScene() + 48,
+				CursorY:   topOfGameScene() + 158,
 				Clicked:   true,
 				MouseDown: true,
 			})
@@ -165,13 +165,13 @@ func (a *screenshotApp) Update() error {
 		if target.hoverBarracks {
 			a.app.gameState.Update(game.Input{
 				CursorX: 48,
-				CursorY: topOfGameScene() + 168,
+				CursorY: topOfGameScene() + 278,
 			})
 		}
 		if target.placedBarracks {
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
-				CursorY:   topOfGameScene() + 48,
+				CursorY:   topOfGameScene() + 158,
 				Clicked:   true,
 				MouseDown: true,
 			})
@@ -182,7 +182,7 @@ func (a *screenshotApp) Update() error {
 			})
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
-				CursorY:   topOfGameScene() + 168,
+				CursorY:   topOfGameScene() + 278,
 				Clicked:   true,
 				MouseDown: true,
 			})
@@ -195,7 +195,7 @@ func (a *screenshotApp) Update() error {
 		if target.placedWoodcutter {
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
-				CursorY:   topOfGameScene() + 48,
+				CursorY:   topOfGameScene() + 158,
 				Clicked:   true,
 				MouseDown: true,
 			})
@@ -206,7 +206,14 @@ func (a *screenshotApp) Update() error {
 			})
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
-				CursorY:   topOfGameScene() + 288,
+				CursorY:   topOfGameScene() + 64,
+				Clicked:   true,
+				MouseDown: true,
+			})
+			a.app.gameState.Update(game.Input{})
+			a.app.gameState.Update(game.Input{
+				CursorX:   48,
+				CursorY:   topOfGameScene() + 158,
 				Clicked:   true,
 				MouseDown: true,
 			})
