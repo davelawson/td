@@ -45,13 +45,6 @@ type PopulationCost struct {
 	Peasants    int
 }
 
-// Resources describes the resources required to construct a structure.
-type Resources struct {
-	Wood  int
-	Stone int
-	Metal int
-}
-
 // Structure describes one placed structure instance on the map.
 type Structure struct {
 	Template *StructureTemplate

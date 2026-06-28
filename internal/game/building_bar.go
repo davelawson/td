@@ -141,13 +141,6 @@ func buildingBarTabsHeight() int {
 		(len(buildingBarCategories())-1)*buildingBarTabGap
 }
 
-// canAffordBuildingCost reports whether current resources cover a structure cost.
-func (s *State) canAffordBuildingCost(cost Resources) bool {
-	return s.status.resources.wood >= cost.Wood &&
-		s.status.resources.stone >= cost.Stone &&
-		s.status.resources.metal >= cost.Metal
-}
-
 // canConstructBuilding reports whether current resources and staff cover one item.
 func (s *State) canConstructBuilding(item buildingBarItem) bool {
 	return s.canAffordBuildingCost(item.Cost) &&
@@ -309,13 +302,6 @@ func (s *State) canBuildOnTile(tile tileCoordinate) bool {
 	}
 	target := s.gameMap.Home.Tiles[tile.Y][tile.X]
 	return target.Terrain == terrainEmpty && target.Feature == featureNone
-}
-
-// deductBuildingCost spends the resources required to build a structure.
-func (s *State) deductBuildingCost(cost Resources) {
-	s.status.resources.wood -= cost.Wood
-	s.status.resources.stone -= cost.Stone
-	s.status.resources.metal -= cost.Metal
 }
 
 // drawBuildingBar renders the building picker at the left edge of the scene.

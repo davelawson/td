@@ -3,7 +3,6 @@ package game
 import (
 	"fmt"
 	"math"
-	"strings"
 
 	"td/internal/ui"
 
@@ -182,33 +181,6 @@ func towerSelectionPanel(template StructureTemplate) selectionPanel {
 		})
 	}
 	return selectionPanel{Rows: rows}
-}
-
-// formatResourceCost formats a compact human-readable construction cost.
-func formatResourceCost(cost Resources) string {
-	parts := []string{}
-	if cost.Wood > 0 {
-		parts = append(parts, fmt.Sprintf("%d Wood", cost.Wood))
-	}
-	if cost.Stone > 0 {
-		parts = append(parts, fmt.Sprintf("%d Stone", cost.Stone))
-	}
-	if cost.Metal > 0 {
-		parts = append(parts, fmt.Sprintf("%d Metal", cost.Metal))
-	}
-	if len(parts) == 0 {
-		return "Free"
-	}
-	return strings.Join(parts, ", ")
-}
-
-// formatResourceYield formats Raid-completion resource production.
-func formatResourceYield(yield Resources) string {
-	cost := formatResourceCost(yield)
-	if cost == "Free" {
-		return "Nothing"
-	}
-	return cost + " after each Raid"
 }
 
 // selectedHealthPercent returns rounded health percentage remaining.

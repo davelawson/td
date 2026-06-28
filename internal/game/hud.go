@@ -27,12 +27,6 @@ const (
 	phaseRaid
 )
 
-type resourceCounts struct {
-	wood  int
-	stone int
-	metal int
-}
-
 type populationCount struct {
 	available int
 	total     int
