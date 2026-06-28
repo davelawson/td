@@ -57,7 +57,7 @@ Exploration should give the player information and access. It may reveal terrain
 
 During the calm phase, the wizard can eventually spend resources to explore another Plot adjacent to the current Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and defend along a longer path.
 
-Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom and pan the scene camera to look around the current home Plot, including while paused, but this is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
+Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom the scene camera with the mouse wheel, pan with `WASD`, or press and hold the right mouse button over the game view and drag so the visible world follows the cursor. Camera inspection works while paused, but it is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
 The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum, House, Barracks, economic buildings, and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, population buildings show their cost and population effects, economic buildings show their cost, Peasant requirement, and post-Raid production, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
 
@@ -221,7 +221,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
 - The first gameplay-facing rendered slice is a static home Plot containing only the centered Sanctum as an initial structure, a straight road north, a pine-tree border, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
-- Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom and `WASD` panning are inspection controls only and do not change map data.
+- Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom, `WASD` panning, and right-drag panning are inspection controls only and do not change map data.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
 - A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, economic buildings, and staffed towers until House creates Peasants.
 - The first staffing slice uses available populations to gate tower and economic building construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, economic buildings can produce post-Raid resources, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
@@ -383,6 +383,10 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Use camera zoom and pan as the first map inspection model instead of wizard-character movement.
   Rationale: Camera inspection lets the player examine the starting Plot while keeping exploration, tile selection, resource rules, and character movement out of the first scene-interaction slice.
   Date/Author: 2026-05-13 / Codex
+
+- Decision: Let right-drag panning grab the visible world under the cursor when the drag starts over the game view.
+  Rationale: This matches common map-inspection behavior and keeps panning proportional to the current zoom without turning UI surfaces into camera controls.
+  Date/Author: 2026-06-27 / Codex
 
 - Decision: Start each Fable with a one-Plot Domain containing the centered Sanctum and an outgoing road.
   Rationale: This gives every playthrough a clear initial defended space and a road hook for future exploration, enemy routing, and Domain expansion.

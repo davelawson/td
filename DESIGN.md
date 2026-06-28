@@ -34,7 +34,7 @@ Avoid letting the whole interface become a single purple, beige, or dark-blue pa
 - Selected map objects should have a plainly brighter visual state that is easy to notice without obscuring the sprite, health bar, road, or tile context.
 - Selected-object detail panels should stay compact, anchored in screen space, and readable without becoming command surfaces before commands exist.
 - Building and command bars should stay screen-space, compact, and visually subordinate to the map. Build affordances must only imply actions that are implemented; the current building bar supports informational hover tooltips, affordability-aware hover, and a simple half-sized dragged icon for calm-phase placement, but not upgrades, selling, range previews, or broader construction commands.
-- Camera zoom and pan should affect the map scene only. The top HUD, debug counter, pause label, and in-game overlay should remain readable screen-space UI, and the overlay should block camera controls while it is open.
+- Camera zoom and pan should affect the map scene only. Right-drag panning should start only from the game view, not from the top HUD, building bar, command buttons, selection panel, or overlay. The top HUD, debug counter, pause label, and in-game overlay should remain readable screen-space UI, and the overlay should block camera controls while it is open.
 - Quit behavior must be obvious and should close the app cleanly.
 - Keyboard access should be considered early, even when the first slice only requires pointer input.
 

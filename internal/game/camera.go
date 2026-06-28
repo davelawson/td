@@ -16,6 +16,12 @@ type camera struct {
 	centerY float64
 }
 
+type cameraDragState struct {
+	active      bool
+	lastCursorX int
+	lastCursorY int
+}
+
 type sceneViewport struct {
 	x float64
 	y float64
@@ -61,6 +67,46 @@ func (s *State) applyCameraInput(input Input) {
 	if input.Pan.Right {
 		s.camera.centerX += distance
 	}
+
+	s.applyCameraDragInput(input)
+}
+
+// applyCameraDragInput updates map inspection panning from held right-drag input.
+func (s *State) applyCameraDragInput(input Input) {
+	if !s.cameraDrag.active && input.RightPressed && s.canStartCameraDrag(input.CursorX, input.CursorY) {
+		s.cameraDrag = cameraDragState{
+			active:      true,
+			lastCursorX: input.CursorX,
+			lastCursorY: input.CursorY,
+		}
+	}
+
+	if !s.cameraDrag.active {
+		return
+	}
+	if input.RightReleased || !input.RightDown {
+		s.cameraDrag = cameraDragState{}
+		return
+	}
+
+	deltaX := input.CursorX - s.cameraDrag.lastCursorX
+	deltaY := input.CursorY - s.cameraDrag.lastCursorY
+	scale := plotBaseTileSize * s.camera.zoom
+	if scale > 0 {
+		s.camera.centerX -= float64(deltaX) / scale
+		s.camera.centerY += float64(deltaY) / scale
+	}
+	s.cameraDrag.lastCursorX = input.CursorX
+	s.cameraDrag.lastCursorY = input.CursorY
+}
+
+// canStartCameraDrag reports whether a point begins over the map rather than UI.
+func (s *State) canStartCameraDrag(x, y int) bool {
+	viewport := s.sceneViewport()
+	return viewportContainsPoint(viewport, x, y) &&
+		!s.buildingBarContains(x, y) &&
+		!s.nextRaidButtonContains(x, y) &&
+		!s.selectionPanelContains(x, y)
 }
 
 // sceneViewport returns the screen-space area used for camera-projected map rendering.
@@ -71,6 +117,16 @@ func (s *State) sceneViewport() sceneViewport {
 		w: float64(s.ui.width),
 		h: float64(s.ui.height - topBarHeight),
 	}
+}
+
+// viewportContainsPoint reports whether a point is inside a scene viewport.
+func viewportContainsPoint(viewport sceneViewport, x, y int) bool {
+	screenX := float64(x)
+	screenY := float64(y)
+	return screenX >= viewport.x &&
+		screenX <= viewport.x+viewport.w &&
+		screenY >= viewport.y &&
+		screenY <= viewport.y+viewport.h
 }
 
 // projectRect converts a world-space rectangle into a screen-space rectangle.

@@ -29,6 +29,10 @@ type Input struct {
 	Clicked   bool
 	MouseDown bool
 	Released  bool
+
+	RightPressed  bool
+	RightDown     bool
+	RightReleased bool
 }
 
 // State owns the current game state and logical update rules.
@@ -47,6 +51,7 @@ type State struct {
 	combat           combatState
 	selection        selectedItem
 	buildDrag        buildDragState
+	cameraDrag       cameraDragState
 	ui               gameUI
 }
 

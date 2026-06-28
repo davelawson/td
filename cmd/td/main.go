@@ -133,6 +133,10 @@ func (a *app) updateInput() game.Input {
 		Clicked:     inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft),
 		MouseDown:   ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft),
 		Released:    inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft),
+
+		RightPressed:  inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonRight),
+		RightDown:     ebiten.IsMouseButtonPressed(ebiten.MouseButtonRight),
+		RightReleased: inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonRight),
 	}
 	input.Pan.Up = ebiten.IsKeyPressed(ebiten.KeyW)
 	input.Pan.Down = ebiten.IsKeyPressed(ebiten.KeyS)
