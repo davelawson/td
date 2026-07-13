@@ -1,9 +1,13 @@
 package game
 
-import "testing"
+import (
+	"testing"
 
-// TestSelectedRaiderPanelRows verifies raider selection exposes current combat stats.
-func TestSelectedRaiderPanelRows(t *testing.T) {
+	"td/internal/ui"
+)
+
+// TestSelectedRaiderPanelData verifies raider selection exposes current combat stats.
+func TestSelectedRaiderPanelData(t *testing.T) {
 	state := newRaidTestState(t)
 	state.raid.enemies = []raidEnemy{{
 		id:       41,
@@ -18,16 +22,25 @@ func TestSelectedRaiderPanelRows(t *testing.T) {
 		t.Fatal("expected selected raider panel")
 	}
 
-	assertPanelRow(t, panel, "Raider Type", "Skeleton Sword-and-Shield")
-	assertPanelRow(t, panel, "Health", "25")
-	assertPanelRow(t, panel, "Max Health", "50")
-	assertPanelRow(t, panel, "Health Remaining", "50%")
-	assertPanelRow(t, panel, "Speed", "1.0 tiles/s")
-	assertPanelRow(t, panel, "Sanctum Damage", "1")
+	if panel.Kind != ui.SelectionPanelRaider {
+		t.Fatalf("kind = %v, want raider", panel.Kind)
+	}
+	if panel.Name != "Skeleton Sword-and-Shield" {
+		t.Fatalf("name = %q, want Skeleton Sword-and-Shield", panel.Name)
+	}
+	if panel.Health != 25 || panel.MaxHealth != 50 {
+		t.Fatalf("health = %d/%d, want 25/50", panel.Health, panel.MaxHealth)
+	}
+	if panel.SpeedTilesPerSecond != 1.0 {
+		t.Fatalf("speed = %.1f, want 1.0", panel.SpeedTilesPerSecond)
+	}
+	if panel.SanctumDamage != 1 {
+		t.Fatalf("sanctum damage = %d, want 1", panel.SanctumDamage)
+	}
 }
 
-// TestSelectedHousePanelRows verifies House selection exposes its population effect.
-func TestSelectedHousePanelRows(t *testing.T) {
+// TestSelectedHousePanelData verifies House selection exposes its population effect.
+func TestSelectedHousePanelData(t *testing.T) {
 	state := newRaidTestState(t)
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureHouse
 	state.selection = selectedItem{
@@ -40,15 +53,25 @@ func TestSelectedHousePanelRows(t *testing.T) {
 		t.Fatal("expected selected House panel")
 	}
 
-	assertPanelRow(t, panel, "Structure", "House")
-	assertPanelRow(t, panel, "Cost", "20 Wood")
-	assertPanelRow(t, panel, "Grants Peasants", "2")
-	assertPanelRowAbsent(t, panel, "Range")
-	assertPanelRowAbsent(t, panel, "Damage")
+	if panel.Kind != ui.SelectionPanelPopulationBuilding {
+		t.Fatalf("kind = %v, want population building", panel.Kind)
+	}
+	if panel.Name != "House" {
+		t.Fatalf("name = %q, want House", panel.Name)
+	}
+	if panel.Cost != (ui.ResourceAmounts{Wood: 20}) {
+		t.Fatalf("cost = %+v, want 20 Wood", panel.Cost)
+	}
+	if panel.PopulationGrant != (ui.PopulationAmounts{Peasants: 2}) {
+		t.Fatalf("population grant = %+v, want 2 Peasants", panel.PopulationGrant)
+	}
+	if panel.RangeTiles != 0 || panel.Damage != 0 {
+		t.Fatalf("combat stats = range %.1f damage %d, want empty", panel.RangeTiles, panel.Damage)
+	}
 }
 
-// TestSelectedBarracksPanelRows verifies Barracks selection exposes its conversion effect.
-func TestSelectedBarracksPanelRows(t *testing.T) {
+// TestSelectedBarracksPanelData verifies Barracks selection exposes its conversion effect.
+func TestSelectedBarracksPanelData(t *testing.T) {
 	state := newRaidTestState(t)
 	state.gameMap.Home.Tiles[5][homePlotCenter+3].Feature = featureBarracks
 	state.selection = selectedItem{
@@ -61,16 +84,25 @@ func TestSelectedBarracksPanelRows(t *testing.T) {
 		t.Fatal("expected selected Barracks panel")
 	}
 
-	assertPanelRow(t, panel, "Structure", "Barracks")
-	assertPanelRow(t, panel, "Cost", "10 Wood, 10 Stone")
-	assertPanelRow(t, panel, "Consumes Peasants", "2")
-	assertPanelRow(t, panel, "Grants Soldiers", "2")
-	assertPanelRowAbsent(t, panel, "Range")
-	assertPanelRowAbsent(t, panel, "Damage")
+	if panel.Kind != ui.SelectionPanelPopulationBuilding {
+		t.Fatalf("kind = %v, want population building", panel.Kind)
+	}
+	if panel.Name != "Barracks" {
+		t.Fatalf("name = %q, want Barracks", panel.Name)
+	}
+	if panel.Cost != (ui.ResourceAmounts{Wood: 10, Stone: 10}) {
+		t.Fatalf("cost = %+v, want 10 Wood, 10 Stone", panel.Cost)
+	}
+	if panel.PopulationCost != (ui.PopulationAmounts{Peasants: 2}) {
+		t.Fatalf("population cost = %+v, want 2 Peasants", panel.PopulationCost)
+	}
+	if panel.PopulationGrant != (ui.PopulationAmounts{Soldiers: 2}) {
+		t.Fatalf("population grant = %+v, want 2 Soldiers", panel.PopulationGrant)
+	}
 }
 
-// TestSelectedEconomicBuildingPanelRows verifies resource producers expose yield details.
-func TestSelectedEconomicBuildingPanelRows(t *testing.T) {
+// TestSelectedEconomicBuildingPanelData verifies resource producers expose yield details.
+func TestSelectedEconomicBuildingPanelData(t *testing.T) {
 	state := newRaidTestState(t)
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureStoneQuarry
 	state.selection = selectedItem{
@@ -83,16 +115,25 @@ func TestSelectedEconomicBuildingPanelRows(t *testing.T) {
 		t.Fatal("expected selected Stone Quarry panel")
 	}
 
-	assertPanelRow(t, panel, "Structure", "Stone Quarry")
-	assertPanelRow(t, panel, "Cost", "10 Wood, 10 Stone")
-	assertPanelRow(t, panel, "Required Peasants", "1")
-	assertPanelRow(t, panel, "Produces", "10 Stone after each Raid")
-	assertPanelRowAbsent(t, panel, "Range")
-	assertPanelRowAbsent(t, panel, "Damage")
+	if panel.Kind != ui.SelectionPanelEconomicBuilding {
+		t.Fatalf("kind = %v, want economic building", panel.Kind)
+	}
+	if panel.Name != "Stone Quarry" {
+		t.Fatalf("name = %q, want Stone Quarry", panel.Name)
+	}
+	if panel.Cost != (ui.ResourceAmounts{Wood: 10, Stone: 10}) {
+		t.Fatalf("cost = %+v, want 10 Wood, 10 Stone", panel.Cost)
+	}
+	if panel.Staffing != (ui.PopulationAmounts{Peasants: 1}) {
+		t.Fatalf("staffing = %+v, want 1 Peasant", panel.Staffing)
+	}
+	if panel.ResourceYield != (ui.ResourceAmounts{Stone: 10}) {
+		t.Fatalf("yield = %+v, want 10 Stone", panel.ResourceYield)
+	}
 }
 
-// TestSelectedBowTowerPanelRows verifies Bow Tower selection exposes tower stats.
-func TestSelectedBowTowerPanelRows(t *testing.T) {
+// TestSelectedBowTowerPanelData verifies Bow Tower selection exposes tower stats.
+func TestSelectedBowTowerPanelData(t *testing.T) {
 	state := newRaidTestState(t)
 	state.gameMap.Home.Tiles[5][homePlotCenter+1].Feature = featureBowTower
 	state.selection = selectedItem{
@@ -105,11 +146,18 @@ func TestSelectedBowTowerPanelRows(t *testing.T) {
 		t.Fatal("expected selected Bow Tower panel")
 	}
 
-	assertPanelRow(t, panel, "Tower Type", "Bow Tower")
-	assertPanelRow(t, panel, "Range", "3.0 tiles")
-	assertPanelRow(t, panel, "Attack Speed", "every 1.0s")
-	assertPanelRow(t, panel, "Damage", "10")
-	assertPanelRow(t, panel, "Required Soldiers", "1")
+	if panel.Kind != ui.SelectionPanelTower {
+		t.Fatalf("kind = %v, want tower", panel.Kind)
+	}
+	if panel.Name != "Bow Tower" {
+		t.Fatalf("name = %q, want Bow Tower", panel.Name)
+	}
+	if panel.RangeTiles != 3.0 || panel.FireIntervalSeconds != 1.0 || panel.Damage != 10 {
+		t.Fatalf("tower stats = range %.1f speed %.1f damage %d, want 3.0/1.0/10", panel.RangeTiles, panel.FireIntervalSeconds, panel.Damage)
+	}
+	if panel.Staffing != (ui.PopulationAmounts{Soldiers: 1}) {
+		t.Fatalf("staffing = %+v, want 1 Soldier", panel.Staffing)
+	}
 }
 
 // TestSelectedFlameBoltTowerPanelRows verifies Flame Bolt Tower selection exposes tower stats.
@@ -126,11 +174,18 @@ func TestSelectedFlameBoltTowerPanelRows(t *testing.T) {
 		t.Fatal("expected selected Flame Bolt Tower panel")
 	}
 
-	assertPanelRow(t, panel, "Tower Type", "Flame Bolt Tower")
-	assertPanelRow(t, panel, "Range", "2.5 tiles")
-	assertPanelRow(t, panel, "Attack Speed", "every 1.5s")
-	assertPanelRow(t, panel, "Damage", "20")
-	assertPanelRow(t, panel, "Required Apprentices", "1")
+	if panel.Kind != ui.SelectionPanelTower {
+		t.Fatalf("kind = %v, want tower", panel.Kind)
+	}
+	if panel.Name != "Flame Bolt Tower" {
+		t.Fatalf("name = %q, want Flame Bolt Tower", panel.Name)
+	}
+	if panel.RangeTiles != 2.5 || panel.FireIntervalSeconds != 1.5 || panel.Damage != 20 {
+		t.Fatalf("tower stats = range %.1f speed %.1f damage %d, want 2.5/1.5/20", panel.RangeTiles, panel.FireIntervalSeconds, panel.Damage)
+	}
+	if panel.Staffing != (ui.PopulationAmounts{Apprentices: 1}) {
+		t.Fatalf("staffing = %+v, want 1 Apprentice", panel.Staffing)
+	}
 }
 
 // TestSelectedCatapultTowerPanelRows verifies Catapult Tower selection exposes tower stats.
@@ -147,12 +202,18 @@ func TestSelectedCatapultTowerPanelRows(t *testing.T) {
 		t.Fatal("expected selected Catapult Tower panel")
 	}
 
-	assertPanelRow(t, panel, "Tower Type", "Catapult Tower")
-	assertPanelRow(t, panel, "Range", "5.0 tiles")
-	assertPanelRow(t, panel, "Attack Speed", "every 3.0s")
-	assertPanelRow(t, panel, "Damage", "75")
-	assertPanelRow(t, panel, "Required Soldiers", "1")
-	assertPanelRow(t, panel, "Required Peasants", "2")
+	if panel.Kind != ui.SelectionPanelTower {
+		t.Fatalf("kind = %v, want tower", panel.Kind)
+	}
+	if panel.Name != "Catapult Tower" {
+		t.Fatalf("name = %q, want Catapult Tower", panel.Name)
+	}
+	if panel.RangeTiles != 5.0 || panel.FireIntervalSeconds != 3.0 || panel.Damage != 75 {
+		t.Fatalf("tower stats = range %.1f speed %.1f damage %d, want 5.0/3.0/75", panel.RangeTiles, panel.FireIntervalSeconds, panel.Damage)
+	}
+	if panel.Staffing != (ui.PopulationAmounts{Soldiers: 1, Peasants: 2}) {
+		t.Fatalf("staffing = %+v, want 1 Soldier and 2 Peasants", panel.Staffing)
+	}
 }
 
 // TestSelectedSanctumPanelRows verifies Sanctum selection exposes only basic structure identity.
@@ -168,10 +229,12 @@ func TestSelectedSanctumPanelRows(t *testing.T) {
 		t.Fatal("expected selected Sanctum panel")
 	}
 
-	if len(panel.Rows) != 1 {
-		t.Fatalf("panel rows = %d, want 1", len(panel.Rows))
+	if panel.Kind != ui.SelectionPanelStructure {
+		t.Fatalf("kind = %v, want structure", panel.Kind)
 	}
-	assertPanelRow(t, panel, "Structure", "Sanctum")
+	if panel.Name != "Sanctum" {
+		t.Fatalf("name = %q, want Sanctum", panel.Name)
+	}
 }
 
 // TestSelectionPanelClickDoesNotClearSelection verifies panel clicks are blocked as UI input.
@@ -196,48 +259,5 @@ func TestSelectionPanelClickDoesNotClearSelection(t *testing.T) {
 	}
 	if state.selection.tile != (tileCoordinate{X: homePlotCenter + 1, Y: 5}) {
 		t.Fatalf("selected tile = %+v, want Bow Tower", state.selection.tile)
-	}
-}
-
-// TestFormatResourceCost verifies selection panels format construction costs.
-func TestFormatResourceCost(t *testing.T) {
-	tests := []struct {
-		cost Resources
-		want string
-	}{
-		{cost: Resources{}, want: "Free"},
-		{cost: Resources{Wood: 20}, want: "20 Wood"},
-		{cost: Resources{Wood: 10, Stone: 10}, want: "10 Wood, 10 Stone"},
-		{cost: Resources{Wood: 10, Stone: 10, Metal: 10}, want: "10 Wood, 10 Stone, 10 Metal"},
-		{cost: Resources{Wood: 30, Stone: 10, Metal: 10}, want: "30 Wood, 10 Stone, 10 Metal"},
-	}
-	for _, test := range tests {
-		if got := formatResourceCost(test.cost); got != test.want {
-			t.Fatalf("formatResourceCost(%+v) = %q, want %q", test.cost, got, test.want)
-		}
-	}
-}
-
-// assertPanelRow verifies one label and value pair exists in a selection panel.
-func assertPanelRow(t *testing.T, panel selectionPanel, label, value string) {
-	t.Helper()
-	for _, row := range panel.Rows {
-		if row.Label == label {
-			if row.Value != value {
-				t.Fatalf("%s value = %q, want %q", label, row.Value, value)
-			}
-			return
-		}
-	}
-	t.Fatalf("missing panel row %q in %+v", label, panel.Rows)
-}
-
-// assertPanelRowAbsent verifies one label does not exist in a selection panel.
-func assertPanelRowAbsent(t *testing.T, panel selectionPanel, label string) {
-	t.Helper()
-	for _, row := range panel.Rows {
-		if row.Label == label {
-			t.Fatalf("unexpected panel row %q in %+v", label, panel.Rows)
-		}
 	}
 }

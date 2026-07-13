@@ -34,7 +34,8 @@ Use these commands from the repository root:
 - `DESIGN.md` records the medieval wizardry design direction and UI review expectations.
 - `GAME.md` records intended game design decisions and open gameplay questions regardless of implementation state.
 - `go.mod` and `go.sum` define the Go module and runtime dependencies.
-- `internal/game/` contains testable game state, prototype map data, camera state, selected-object state and detail-panel behavior, visual building-bar behavior, scene projection and rendering, asset-catalog ownership for active games, and logical update behavior.
+- `internal/game/` contains testable game state, prototype map data, camera state, selected-object state and detail data, visual building-bar behavior, scene projection and rendering, asset-catalog ownership for active games, and logical update behavior.
+- `internal/ui/` contains shared UI colors, font sizes, text helpers, widgets, and generic selected-object panel presentation.
 - `internal/menu/` contains testable menu hit-testing, action-selection, screen-routing, and Wizard name input behavior.
 - `PLANS.md` defines how ExecPlans are written and maintained.
 - `PRODUCT.md` records current user-visible product truth.
