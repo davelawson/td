@@ -1,9 +1,6 @@
 package game
 
-import (
-	"math/rand"
-	"sort"
-)
+import "sort"
 
 const (
 	plotSize       = 15
@@ -18,8 +15,15 @@ type Map struct {
 
 // Plot owns a fixed 15x15 group of Tiles.
 type Plot struct {
+	Biome plotBiome
 	Tiles [plotSize][plotSize]Tile
 }
+
+type plotBiome int
+
+const (
+	biomeGrasslands plotBiome = iota
+)
 
 // plotCoordinate identifies one Plot, with the home Plot at (0,0).
 type plotCoordinate struct {
@@ -42,6 +46,7 @@ const (
 	terrainEmpty tileTerrain = iota
 	terrainRoad
 	terrainForest
+	terrainBoulder
 )
 
 type tileFeature int
@@ -67,42 +72,6 @@ func NewDefaultMap() Map {
 	}
 	gameMap.ensurePlots()
 	return gameMap
-}
-
-// NewDefaultHomePlot creates the grassland starting Plot with a Sanctum and north road.
-func NewDefaultHomePlot() Plot {
-	return newDefaultHomePlotWithTweakSource(randomTileTweak)
-}
-
-// newDefaultHomePlotWithTweakSource creates a home Plot with caller-provided Tile tweaks.
-func newDefaultHomePlotWithTweakSource(nextTweak func() uint16) Plot {
-	var plot Plot
-	for y := 0; y < plotSize; y++ {
-		for x := 0; x < plotSize; x++ {
-			plot.Tiles[y][x] = newTile(nextTweak)
-		}
-	}
-	for y := 0; y <= homePlotCenter; y++ {
-		plot.Tiles[y][homePlotCenter].Terrain = terrainRoad
-	}
-	plot.Tiles[homePlotCenter][homePlotCenter].Feature = featureSanctum
-	return plot
-}
-
-// NewEmptyGrasslandPlot creates an explored Plot with empty grass Tiles.
-func NewEmptyGrasslandPlot() Plot {
-	return newEmptyGrasslandPlotWithTweakSource(randomTileTweak)
-}
-
-// newEmptyGrasslandPlotWithTweakSource creates an empty Plot with caller-provided Tile tweaks.
-func newEmptyGrasslandPlotWithTweakSource(nextTweak func() uint16) Plot {
-	var plot Plot
-	for y := 0; y < plotSize; y++ {
-		for x := 0; x < plotSize; x++ {
-			plot.Tiles[y][x] = newTile(nextTweak)
-		}
-	}
-	return plot
 }
 
 // ensurePlots initializes the explored Plot map for tests that construct Map values directly.
@@ -132,7 +101,7 @@ func (m *Map) revealPlot(coord plotCoordinate) {
 	if _, ok := m.Plots[coord]; ok {
 		return
 	}
-	plot := NewEmptyGrasslandPlot()
+	plot := NewGrasslandsPlot()
 	applyNorthRoadIfNeeded(coord, &plot)
 	m.Plots[coord] = &plot
 	m.clearSharedEdges(coord)
@@ -226,16 +195,4 @@ func (m *Map) exploredPlotCoordinates() []plotCoordinate {
 		return coords[i].X < coords[j].X
 	})
 	return coords
-}
-
-// newTile creates one Tile with its prototype variation tweak assigned.
-func newTile(nextTweak func() uint16) Tile {
-	return Tile{
-		Tweak: nextTweak(),
-	}
-}
-
-// randomTileTweak returns a random unsigned 16-bit value for Tile variation.
-func randomTileTweak() uint16 {
-	return uint16(rand.Intn(1 << 16))
 }

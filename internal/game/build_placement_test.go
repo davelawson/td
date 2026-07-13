@@ -401,6 +401,25 @@ func TestBuildDragRejectsForestTile(t *testing.T) {
 	}
 }
 
+// TestBuildDragRejectsBoulderTile verifies Boulder Tiles are not buildable.
+func TestBuildDragRejectsBoulderTile(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
+	initialResources := state.status.resources
+	tile := tileCoordinate{X: 1, Y: 0}
+	state.gameMap.Home.Tiles[tile.Y][tile.X].Terrain = terrainBoulder
+
+	state.Update(pressBuildingBarItemInput(state, buildingBarBowTowerIndex))
+	state.Update(releaseTileInput(state, tile.X, tile.Y))
+
+	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureNone {
+		t.Fatalf("Boulder tile feature = %v, want none", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
+	}
+	if state.status.resources != initialResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, initialResources)
+	}
+}
+
 // TestBuildDragRejectsActiveRaid verifies tower placement is calm-phase only.
 func TestBuildDragRejectsActiveRaid(t *testing.T) {
 	state := newRaidTestState(t)

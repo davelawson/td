@@ -41,12 +41,17 @@ func (s *State) drawPlotTile(screen *ebiten.Image, viewport sceneViewport, plot 
 		tileColor = colors.roadTile
 	case terrainForest:
 		tileColor = colors.forestTile
+	case terrainBoulder:
+		tileColor = colors.boulderTile
 	}
 	vector.FillRect(screen, rect.x, rect.y, rect.w, rect.h, tileColor, false)
 	vector.StrokeRect(screen, rect.x, rect.y, rect.w, rect.h, 1, colors.tileGrid, false)
 
 	if tile.Terrain == terrainForest {
 		s.drawPineTree(screen, rect.x, rect.y, rect.w, tile)
+	}
+	if tile.Terrain == terrainBoulder {
+		s.drawBoulder(screen, rect.x, rect.y, rect.w, tile)
 	}
 	selected := s.selectedStructure(tileCoordinate{Plot: plot, X: x, Y: y})
 	if tile.Feature == featureSanctum {
@@ -118,18 +123,35 @@ func (s *State) drawExploreButtons(screen *ebiten.Image, viewport sceneViewport)
 // drawPineTree renders a tree sprite variant chosen from the Tile tweak.
 func (s *State) drawPineTree(screen *ebiten.Image, tileX, tileY, tileSize float32, tile Tile) {
 	trees := s.assetCatalog.Sprite.Terrain.PineTrees
-	tree := trees[pineTreeSpriteIndex(tile.Tweak, len(trees))]
+	tree := trees[terrainSpriteIndex(tile.Tweak, len(trees))]
 	if tree == nil || tileSize <= 0 {
 		return
 	}
 
-	spriteWidth := float64(tree.Bounds().Dx())
-	spriteHeight := float64(tree.Bounds().Dy())
 	targetSize := float64(tileSize) * 0.92
+	drawTerrainSprite(screen, tree, tileX, tileY, tileSize, targetSize, tile.Tweak)
+}
+
+// drawBoulder renders a Boulder sprite variant chosen from the Tile tweak.
+func (s *State) drawBoulder(screen *ebiten.Image, tileX, tileY, tileSize float32, tile Tile) {
+	boulders := s.assetCatalog.Sprite.Terrain.Boulders
+	boulder := boulders[terrainSpriteIndex(tile.Tweak, len(boulders))]
+	if boulder == nil || tileSize <= 0 {
+		return
+	}
+
+	targetSize := float64(tileSize) * 0.78
+	drawTerrainSprite(screen, boulder, tileX, tileY, tileSize, targetSize, tile.Tweak)
+}
+
+// drawTerrainSprite renders one terrain sprite with optional tweak-driven mirroring.
+func drawTerrainSprite(screen *ebiten.Image, sprite *ebiten.Image, tileX, tileY, tileSize float32, targetSize float64, tweak uint16) {
+	spriteWidth := float64(sprite.Bounds().Dx())
+	spriteHeight := float64(sprite.Bounds().Dy())
 	scale := targetSize / spriteWidth
 	options := &ebiten.DrawImageOptions{}
 	targetWidth := spriteWidth * scale
-	if treeSpriteFlipped(tile.Tweak) {
+	if terrainSpriteFlipped(tweak) {
 		options.GeoM.Scale(-scale, scale)
 		options.GeoM.Translate(
 			float64(tileX)+(float64(tileSize)+targetWidth)/2,
@@ -142,19 +164,19 @@ func (s *State) drawPineTree(screen *ebiten.Image, tileX, tileY, tileSize float3
 			float64(tileY)+(float64(tileSize)-spriteHeight*scale)/2,
 		)
 	}
-	screen.DrawImage(tree, options)
+	screen.DrawImage(sprite, options)
 }
 
-// pineTreeSpriteIndex returns the terrain sprite variant selected by the Tile tweak.
-func pineTreeSpriteIndex(tweak uint16, variants int) int {
+// terrainSpriteIndex returns the terrain sprite variant selected by the Tile tweak.
+func terrainSpriteIndex(tweak uint16, variants int) int {
 	if variants <= 0 {
 		return 0
 	}
 	return int(tweak&^treeHorizontalFlipMask) % variants
 }
 
-// treeSpriteFlipped reports whether the Tile tweak requests horizontal tree flipping.
-func treeSpriteFlipped(tweak uint16) bool {
+// terrainSpriteFlipped reports whether the Tile tweak requests horizontal sprite flipping.
+func terrainSpriteFlipped(tweak uint16) bool {
 	return tweak&treeHorizontalFlipMask != 0
 }
 

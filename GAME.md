@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. Newly explored Plots are immediately usable grassland, and exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
+The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. Every current Plot uses the grasslands biome; newly explored grasslands Plots are immediately usable and generate mostly empty grass with sparse Forest and Boulder Tiles. Exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -90,12 +90,15 @@ World positions use Tile units. The center of the Sanctum Tile is the origin `(0
 
 Plot contents should be readable at a glance. A Plot can mix terrain types, but each Plot should have a dominant character that helps the player reason about it before inspecting every Tile, such as wooded, rocky, wetland, open meadow, hill, ruin, or lair. This dominant character is a design label, not necessarily a separate data type.
 
+The first implemented dominant character is a biome. A biome is a stored Plot label that controls how terrain is generated when the Plot is explored. The only current biome is `grasslands`. The starting home Plot stores the grasslands biome but remains authored as open grassland with its Sanctum and north road. Newly explored grasslands Plots generate mostly empty Grass with sparse Forest and Boulder Tiles; road and shared-edge rules can overwrite generated terrain so roads stay readable and adjacent explored Plots join cleanly. Boulder is currently terrain only: it blocks construction but is not a Stone resource node.
+
 The starting Plot should be mostly buildable and forgiving. It should contain the Sanctum, at least one outgoing road, some nearby buildable Grass, and enough visible resource access to support the first build decisions. It should not start with Water or Mountain terrain blocking all useful placement around the Sanctum.
 
 The terrain types are:
 
 - `Grass`
 - `Forest`
+- `Boulder`
 - `Mountain`
 - `Water`
 
@@ -135,7 +138,7 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a 260-pixel building bar on the left side of the playable scene. It partitions structures into `Housing`, `Economic`, and `Defenses` tabs, with `Housing` selected by default. Housing shows House, Barracks, and Dorm. Economic shows Woodcutter, Stone Quarry, and Iron Mine. Defenses shows Bow Tower, Flame Bolt Tower, and Catapult Tower. Visible entries use structure sprites with colour-coded prototype construction costs and a compact population row for requirements, costs, or grants displayed to the right of each icon. Hovering a building icon shows an informational tooltip with that structure's description, cost, staffing requirement, and implemented production, population effect, or combat stats. Hovering an eligible icon also brightens that icon and emphasizes its cost row. Buildable icon squares use green outlines. Icons for buildings without sufficient resources, population, or staff use red square outlines and are drawn at 70% opacity. During calm play, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads or forest. Occupied Tiles, road Tiles, forest Tiles, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
+The first build-facing UI is a 260-pixel building bar on the left side of the playable scene. It partitions structures into `Housing`, `Economic`, and `Defenses` tabs, with `Housing` selected by default. Housing shows House, Barracks, and Dorm. Economic shows Woodcutter, Stone Quarry, and Iron Mine. Defenses shows Bow Tower, Flame Bolt Tower, and Catapult Tower. Visible entries use structure sprites with colour-coded prototype construction costs and a compact population row for requirements, costs, or grants displayed to the right of each icon. Hovering a building icon shows an informational tooltip with that structure's description, cost, staffing requirement, and implemented production, population effect, or combat stats. Hovering an eligible icon also brightens that icon and emphasizes its cost row. Buildable icon squares use green outlines. Icons for buildings without sufficient resources, population, or staff use red square outlines and are drawn at 70% opacity. During calm play, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads, forest, or Boulder. Occupied Tiles, road Tiles, forest Tiles, Boulder Tiles, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
 
 Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus two Peasants. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
 
@@ -224,7 +227,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
 - The first gameplay-facing rendered slice starts with an open-grassland home Plot containing only the centered Sanctum as an initial structure, a straight road north, free calm-phase exploration buttons on unexplored adjacent Plot borders, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom, `WASD` panning, and right-drag panning are inspection controls only and do not change map data.
-- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Revealed Plots are immediately buildable grassland. The first implementation collapses scouting and claiming into one action.
+- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Revealed Plots use the grasslands biome, are immediately usable, and generate mostly empty grass with sparse Forest and Boulder Tiles. The first implementation collapses scouting and claiming into one action.
 - Northward exploration along Plot `X=0` extends the visible center road and moves deterministic Raid spawning to the farthest explored north road. Non-north explored Plots do not add Raid paths yet.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
 - A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Dorm, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
@@ -402,6 +405,12 @@ Record game design decisions here when they become durable enough to guide imple
 
 - Decision: Render the first home Plot as open grassland without a tree perimeter.
   Rationale: A grass perimeter keeps the starting Plot fully usable and lets it join explored neighboring grassland without an artificial terrain boundary.
+  Date/Author: 2026-07-13 / Codex
+- Decision: Store a biome on each Plot and use grasslands as the first generated biome.
+  Rationale: Biomes give Plot generation a durable design hook while keeping the current slice small; grasslands preserves mostly buildable early expansion with a little terrain variation.
+  Date/Author: 2026-07-13 / Codex
+- Decision: Add Boulder as non-buildable generated terrain rather than a resource node.
+  Rationale: This provides another readable obstacle in grasslands without adding gathering, depletion, or Stone economy rules prematurely.
   Date/Author: 2026-07-13 / Codex
 
 - Decision: Store prototype Tile sprite variation as a `Tweak` value on each Tile.

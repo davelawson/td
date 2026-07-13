@@ -40,6 +40,8 @@ The Iron Mine structure sprite lives at `assets/sprites/structures/iron-mine.png
 
 Future structure prompts should continue to ask for a single isolated readable subject, no scenery, no text, no watermark, no cast shadow, and no background after processing.
 
+The Boulder terrain sprites live at `assets/sprites/terrains/boulder-1.png` through `assets/sprites/terrains/boulder-4.png`. They were generated as isolated low-detail gray pixel-art boulders on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized onto 64x64 transparent PNG canvases. Future terrain obstacle sprites should match the existing pine-tree and Boulder terrain style: isolated subject, transparent background, clear silhouette, no ground patch, no cast shadow, and readable at 50% scale.
+
 ## Open Questions
 
 - When should the project introduce an asset pipeline, sprite atlas, animation workflow, or custom font?

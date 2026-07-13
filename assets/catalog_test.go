@@ -308,6 +308,24 @@ func TestNewCatalogLoadsPineTreeSprites(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsBoulderSprites verifies the required Boulder terrain sprites are embedded.
+func TestNewCatalogLoadsBoulderSprites(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for i, boulder := range catalog.Sprite.Terrain.Boulders {
+		if boulder == nil {
+			t.Fatalf("expected Boulder sprite %d to load", i+1)
+		}
+		width, height := boulder.Bounds().Dx(), boulder.Bounds().Dy()
+		if width != 64 || height != 64 {
+			t.Fatalf("Boulder sprite %d size = %dx%d, want 64x64", i+1, width, height)
+		}
+	}
+}
+
 // TestNewCatalogLoadsRaiderDefeatedAudio verifies the required defeat sound is embedded.
 func TestNewCatalogLoadsRaiderDefeatedAudio(t *testing.T) {
 	catalog, err := NewCatalog()

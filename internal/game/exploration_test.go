@@ -40,8 +40,8 @@ func TestInitialExploreButtonsTargetOrthogonalNeighbors(t *testing.T) {
 	}
 }
 
-// TestExploreClickRevealsAdjacentGrasslandAndClearsSharedEdge verifies the reveal action.
-func TestExploreClickRevealsAdjacentGrasslandAndClearsSharedEdge(t *testing.T) {
+// TestExploreClickRevealsAdjacentGrasslandsAndClearsSharedEdge verifies the reveal action.
+func TestExploreClickRevealsAdjacentGrasslandsAndClearsSharedEdge(t *testing.T) {
 	state := newRaidTestState(t)
 	target := plotCoordinate{X: 1, Y: 0}
 
@@ -51,8 +51,8 @@ func TestExploreClickRevealsAdjacentGrasslandAndClearsSharedEdge(t *testing.T) {
 	if !ok {
 		t.Fatal("expected east plot to be explored")
 	}
-	if plot.Tiles[homePlotCenter][homePlotCenter].Terrain != terrainEmpty {
-		t.Fatalf("east plot center terrain = %v, want empty grass", plot.Tiles[homePlotCenter][homePlotCenter].Terrain)
+	if plot.Biome != biomeGrasslands {
+		t.Fatalf("east plot biome = %v, want grasslands", plot.Biome)
 	}
 	if plot.Tiles[homePlotCenter][homePlotCenter].Feature != featureNone {
 		t.Fatalf("east plot center feature = %v, want none", plot.Tiles[homePlotCenter][homePlotCenter].Feature)
@@ -123,11 +123,12 @@ func TestBuildDragPlacesStructureOnExploredPlot(t *testing.T) {
 	targetPlot := plotCoordinate{X: 1, Y: 0}
 	targetTile := tileCoordinate{Plot: targetPlot, X: 2, Y: 5}
 	state.gameMap.revealPlot(targetPlot)
+	plot, _ := state.gameMap.plot(targetPlot)
+	plot.Tiles[targetTile.Y][targetTile.X].Terrain = terrainEmpty
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarHouseIndex))
 	state.Update(releasePlotTileInput(state, targetTile))
 
-	plot, _ := state.gameMap.plot(targetPlot)
 	if plot.Tiles[targetTile.Y][targetTile.X].Feature != featureHouse {
 		t.Fatalf("tile feature = %v, want House", plot.Tiles[targetTile.Y][targetTile.X].Feature)
 	}

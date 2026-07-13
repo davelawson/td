@@ -185,8 +185,8 @@ func TestDefaultHomePlotInteriorIsOtherwiseEmpty(t *testing.T) {
 	}
 }
 
-// TestPineTreeSpriteIndexUsesLowTweakBits verifies tree variant selection ignores the flip bit.
-func TestPineTreeSpriteIndexUsesLowTweakBits(t *testing.T) {
+// TestTerrainSpriteIndexUsesLowTweakBits verifies terrain variant selection ignores the flip bit.
+func TestTerrainSpriteIndexUsesLowTweakBits(t *testing.T) {
 	tests := []struct {
 		name  string
 		tweak uint16
@@ -199,19 +199,19 @@ func TestPineTreeSpriteIndexUsesLowTweakBits(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := pineTreeSpriteIndex(tt.tweak, 4); got != tt.want {
-				t.Fatalf("pineTreeSpriteIndex(%d, 4) = %d, want %d", tt.tweak, got, tt.want)
+			if got := terrainSpriteIndex(tt.tweak, 4); got != tt.want {
+				t.Fatalf("terrainSpriteIndex(%d, 4) = %d, want %d", tt.tweak, got, tt.want)
 			}
 		})
 	}
 }
 
-// TestTreeSpriteFlippedUsesHighTweakBit verifies the high tweak bit controls mirroring.
-func TestTreeSpriteFlippedUsesHighTweakBit(t *testing.T) {
-	if treeSpriteFlipped(0x7fff) {
+// TestTerrainSpriteFlippedUsesHighTweakBit verifies the high tweak bit controls mirroring.
+func TestTerrainSpriteFlippedUsesHighTweakBit(t *testing.T) {
+	if terrainSpriteFlipped(0x7fff) {
 		t.Fatal("expected tweak below high bit to avoid horizontal flip")
 	}
-	if !treeSpriteFlipped(0x8000) {
+	if !terrainSpriteFlipped(0x8000) {
 		t.Fatal("expected high bit to request horizontal flip")
 	}
 }
