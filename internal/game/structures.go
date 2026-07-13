@@ -57,6 +57,7 @@ type StructureCatalog struct {
 	Sanctum        StructureTemplate
 	House          StructureTemplate
 	Barracks       StructureTemplate
+	Dorm           StructureTemplate
 	Woodcutter     StructureTemplate
 	StoneQuarry    StructureTemplate
 	IronMine       StructureTemplate
@@ -86,6 +87,14 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Cost:            Resources{Wood: 10, Stone: 10},
 			PopulationCost:  PopulationCost{Peasants: 2},
 			PopulationGrant: PopulationGrant{Soldiers: 2},
+		},
+		Dorm: StructureTemplate{
+			Name:            "Dorm",
+			Description:     "Houses Peasants studying to become Apprentices.",
+			Sprite:          assetCatalog.Sprite.Structure.Dorm,
+			Cost:            Resources{Wood: 10, Stone: 10},
+			PopulationCost:  PopulationCost{Peasants: 1},
+			PopulationGrant: PopulationGrant{Apprentices: 1},
 		},
 		Woodcutter: StructureTemplate{
 			Name:          "Woodcutter",

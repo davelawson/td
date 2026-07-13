@@ -101,6 +101,37 @@ func TestSelectedBarracksPanelData(t *testing.T) {
 	}
 }
 
+// TestSelectedDormPanelData verifies Dorm selection exposes its conversion effect.
+func TestSelectedDormPanelData(t *testing.T) {
+	state := newRaidTestState(t)
+	state.gameMap.Home.Tiles[5][homePlotCenter+3].Feature = featureDorm
+	state.selection = selectedItem{
+		kind: selectedItemStructure,
+		tile: tileCoordinate{X: homePlotCenter + 3, Y: 5},
+	}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected Dorm panel")
+	}
+
+	if panel.Kind != ui.SelectionPanelPopulationBuilding {
+		t.Fatalf("kind = %v, want population building", panel.Kind)
+	}
+	if panel.Name != "Dorm" {
+		t.Fatalf("name = %q, want Dorm", panel.Name)
+	}
+	if panel.Cost != (ui.ResourceAmounts{Wood: 10, Stone: 10}) {
+		t.Fatalf("cost = %+v, want 10 Wood, 10 Stone", panel.Cost)
+	}
+	if panel.PopulationCost != (ui.PopulationAmounts{Peasants: 1}) {
+		t.Fatalf("population cost = %+v, want 1 Peasant", panel.PopulationCost)
+	}
+	if panel.PopulationGrant != (ui.PopulationAmounts{Apprentices: 1}) {
+		t.Fatalf("population grant = %+v, want 1 Apprentice", panel.PopulationGrant)
+	}
+}
+
 // TestSelectedEconomicBuildingPanelData verifies resource producers expose yield details.
 func TestSelectedEconomicBuildingPanelData(t *testing.T) {
 	state := newRaidTestState(t)

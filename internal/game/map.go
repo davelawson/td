@@ -39,6 +39,7 @@ const (
 	featureSanctum
 	featureHouse
 	featureBarracks
+	featureDorm
 	featureWoodcutter
 	featureStoneQuarry
 	featureIronMine

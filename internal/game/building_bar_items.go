@@ -8,6 +8,7 @@ type buildingBarItemID = int
 const (
 	buildingBarHouseIndex buildingBarItemID = iota
 	buildingBarBarracksIndex
+	buildingBarDormIndex
 	buildingBarWoodcutterIndex
 	buildingBarStoneQuarryIndex
 	buildingBarIronMineIndex
@@ -59,7 +60,7 @@ func buildingBarCategoryLabel(category buildingBarCategory) string {
 // buildingBarCategoryForItem returns the tab that contains a stable item.
 func buildingBarCategoryForItem(id buildingBarItemID) buildingBarCategory {
 	switch id {
-	case buildingBarHouseIndex, buildingBarBarracksIndex:
+	case buildingBarHouseIndex, buildingBarBarracksIndex, buildingBarDormIndex:
 		return buildingBarCategoryHousing
 	case buildingBarWoodcutterIndex, buildingBarStoneQuarryIndex, buildingBarIronMineIndex:
 		return buildingBarCategoryEconomic
@@ -74,7 +75,7 @@ func buildingBarCategoryForItem(id buildingBarItemID) buildingBarCategory {
 func buildingBarItemIDsForCategory(category buildingBarCategory) []buildingBarItemID {
 	switch category {
 	case buildingBarCategoryHousing:
-		return []buildingBarItemID{buildingBarHouseIndex, buildingBarBarracksIndex}
+		return []buildingBarItemID{buildingBarHouseIndex, buildingBarBarracksIndex, buildingBarDormIndex}
 	case buildingBarCategoryEconomic:
 		return []buildingBarItemID{buildingBarWoodcutterIndex, buildingBarStoneQuarryIndex, buildingBarIronMineIndex}
 	case buildingBarCategoryDefenses:
@@ -91,6 +92,8 @@ func buildingFeatureForItemID(id buildingBarItemID) (tileFeature, bool) {
 		return featureHouse, true
 	case buildingBarBarracksIndex:
 		return featureBarracks, true
+	case buildingBarDormIndex:
+		return featureDorm, true
 	case buildingBarWoodcutterIndex:
 		return featureWoodcutter, true
 	case buildingBarStoneQuarryIndex:
@@ -115,6 +118,8 @@ func (s *State) buildingTemplateForItemID(id buildingBarItemID) (StructureTempla
 		return s.structureCatalog.House, true
 	case buildingBarBarracksIndex:
 		return s.structureCatalog.Barracks, true
+	case buildingBarDormIndex:
+		return s.structureCatalog.Dorm, true
 	case buildingBarWoodcutterIndex:
 		return s.structureCatalog.Woodcutter, true
 	case buildingBarStoneQuarryIndex:

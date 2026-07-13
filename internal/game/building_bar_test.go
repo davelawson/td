@@ -37,7 +37,7 @@ func TestBuildingBarDefaultsToHousing(t *testing.T) {
 	}
 	items := state.buildingBarItems()
 
-	assertBuildingBarItems(t, state, []buildingBarItemID{buildingBarHouseIndex, buildingBarBarracksIndex})
+	assertBuildingBarItems(t, state, []buildingBarItemID{buildingBarHouseIndex, buildingBarBarracksIndex, buildingBarDormIndex})
 	if items[0].Sprite != state.structureCatalog.House.Sprite {
 		t.Fatal("expected first item to use House sprite")
 	}
@@ -61,6 +61,18 @@ func TestBuildingBarDefaultsToHousing(t *testing.T) {
 	}
 	if items[1].PopulationGrant != (PopulationGrant{Soldiers: 2}) {
 		t.Fatalf("Barracks population grant = %+v, want 2 Soldiers", items[1].PopulationGrant)
+	}
+	if items[2].Sprite != state.structureCatalog.Dorm.Sprite {
+		t.Fatal("expected third item to use Dorm sprite")
+	}
+	if items[2].Cost != (Resources{Wood: 10, Stone: 10}) {
+		t.Fatalf("Dorm cost = %+v, want 10 wood 10 stone", items[2].Cost)
+	}
+	if items[2].PopulationCost != (PopulationCost{Peasants: 1}) {
+		t.Fatalf("Dorm population cost = %+v, want 1 Peasant", items[2].PopulationCost)
+	}
+	if items[2].PopulationGrant != (PopulationGrant{Apprentices: 1}) {
+		t.Fatalf("Dorm population grant = %+v, want 1 Apprentice", items[2].PopulationGrant)
 	}
 }
 
@@ -229,6 +241,18 @@ func TestBuildingBarPopulationMetadataItemsShowsConversion(t *testing.T) {
 	}
 	if items[1].Value != "+2" || items[1].Sprite != state.assetCatalog.Sprite.Icon.Soldier {
 		t.Fatalf("second metadata item = %+v, want +2 Soldiers", items[1])
+	}
+
+	item = state.buildingBarItems()[2]
+	items = state.buildingBarPopulationMetadataItems(item)
+	if len(items) != 2 {
+		t.Fatalf("Dorm metadata items = %d, want 2", len(items))
+	}
+	if items[0].Value != "-1" || items[0].Sprite != state.assetCatalog.Sprite.Icon.Peasant {
+		t.Fatalf("first Dorm metadata item = %+v, want -1 Peasant", items[0])
+	}
+	if items[1].Value != "+1" || items[1].Sprite != state.assetCatalog.Sprite.Icon.Apprentice {
+		t.Fatalf("second Dorm metadata item = %+v, want +1 Apprentice", items[1])
 	}
 }
 

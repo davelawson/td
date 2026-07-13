@@ -54,11 +54,17 @@ func TestBuildingBarIconAlphaTracksConstructionCapacity(t *testing.T) {
 	if alpha := state.buildingBarIconAlpha(items[1]); alpha != 0.70 {
 		t.Fatalf("Barracks alpha = %.2f, want 0.70 without Peasants", alpha)
 	}
+	if alpha := state.buildingBarIconAlpha(items[2]); alpha != 0.70 {
+		t.Fatalf("Dorm alpha = %.2f, want 0.70 without Peasant", alpha)
+	}
 
 	setAvailablePopulations(state, 0, 0, 2)
 	items = state.buildingBarItems()
 	if alpha := state.buildingBarIconAlpha(items[1]); alpha != 1 {
 		t.Fatalf("Barracks alpha = %.2f, want 1.00 with Peasants", alpha)
+	}
+	if alpha := state.buildingBarIconAlpha(items[2]); alpha != 1 {
+		t.Fatalf("Dorm alpha = %.2f, want 1.00 with Peasant", alpha)
 	}
 
 	state.ui.buildBarCategory = buildingBarCategoryDefenses
@@ -79,11 +85,17 @@ func TestBuildingBarItemOutlineColorTracksConstructionCapacity(t *testing.T) {
 	if got := state.buildingBarItemOutlineColor(items[1]); got != colors.buildBlocked {
 		t.Fatalf("Barracks outline = %#v, want blocked red %#v", got, colors.buildBlocked)
 	}
+	if got := state.buildingBarItemOutlineColor(items[2]); got != colors.buildBlocked {
+		t.Fatalf("Dorm outline = %#v, want blocked red %#v", got, colors.buildBlocked)
+	}
 
 	setAvailablePopulations(state, 0, 0, 2)
 	items = state.buildingBarItems()
 	if got := state.buildingBarItemOutlineColor(items[1]); got != colors.buildable {
 		t.Fatalf("Barracks outline = %#v, want buildable green with Peasants %#v", got, colors.buildable)
+	}
+	if got := state.buildingBarItemOutlineColor(items[2]); got != colors.buildable {
+		t.Fatalf("Dorm outline = %#v, want buildable green with Peasant %#v", got, colors.buildable)
 	}
 
 	state.ui.buildBarCategory = buildingBarCategoryDefenses

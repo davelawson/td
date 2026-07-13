@@ -213,6 +213,23 @@ func TestNewCatalogLoadsBarracksSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsDormSprite verifies the required Dorm sprite is embedded.
+func TestNewCatalogLoadsDormSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dorm := catalog.Sprite.Structure.Dorm
+	if dorm == nil {
+		t.Fatal("expected Dorm sprite to load")
+	}
+	width, height := dorm.Bounds().Dx(), dorm.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("Dorm sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsEconomicBuildingSprites verifies the required economic sprites are embedded.
 func TestNewCatalogLoadsEconomicBuildingSprites(t *testing.T) {
 	catalog, err := NewCatalog()

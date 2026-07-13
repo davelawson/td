@@ -148,18 +148,6 @@ func selectionPanelRows(data SelectionPanelData) ([]selectionPanelRow, bool) {
 }
 
 // TODO: create individual structs for each selection panel subject type
-func createRaiderSelectionPanelRows(data RaiderSelectionPanelData) []selectionPanelRow {
-	return []selectionPanelRow{
-		{Label: "Raider Type", Value: selectedName(data.Name)},
-		{Label: "Health", Value: fmt.Sprintf("%d", data.Health)},
-		{Label: "Max Health", Value: fmt.Sprintf("%d", data.MaxHealth)},
-		{Label: "Health Remaining", Value: fmt.Sprintf("%d%%", selectedHealthPercent(data.Health, data.MaxHealth))},
-		{Label: "Speed", Value: fmt.Sprintf("%.1f tiles/s", data.SpeedTilesPerSecond)},
-		{Label: "Sanctum Damage", Value: fmt.Sprintf("%d", data.SanctumDamage)},
-	}
-}
-
-// TODO: create individual structs for each selection panel subject type
 func raiderSelectionPanelRows(data SelectionPanelData) []selectionPanelRow {
 	return []selectionPanelRow{
 		{Label: "Raider Type", Value: selectedName(data.Name)},

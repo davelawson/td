@@ -30,6 +30,8 @@ The House structure sprite lives at `assets/sprites/structures/house.png`. It wa
 
 The Barracks structure sprite lives at `assets/sprites/structures/barracks.png`. It was generated as a centered low-detail medieval timber-and-stone barracks on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG.
 
+The Dorm structure sprite lives at `assets/sprites/structures/dorm.png`. It was generated as a centered low-detail medieval wizardry dormitory with timber-and-stone construction, blue roof, lit windows, and small apprentice study details on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG.
+
 The Woodcutter structure sprite lives at `assets/sprites/structures/woodcutter.png`. It was generated as a centered low-detail medieval lumber-camp hut with stacked logs and woodcutting props on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG.
 
 The Stone Quarry structure sprite lives at `assets/sprites/structures/stone-quarry.png`. It was generated as a centered low-detail medieval quarry worksite with a timber hoist, shed roof, and stone blocks on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized to 64x64 PNG.

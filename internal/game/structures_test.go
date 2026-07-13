@@ -141,6 +141,45 @@ func TestNewStructureCatalogIncludesBarracks(t *testing.T) {
 	}
 }
 
+// TestNewStructureCatalogIncludesDorm verifies the Dorm template values.
+func TestNewStructureCatalogIncludesDorm(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	catalog := NewStructureCatalog(assetCatalog)
+	dorm := catalog.Dorm
+
+	if dorm.Name != "Dorm" {
+		t.Fatalf("Dorm name = %q, want %q", dorm.Name, "Dorm")
+	}
+	if dorm.Sprite == nil {
+		t.Fatal("expected Dorm sprite to be assigned")
+	}
+	if dorm.Sprite != assetCatalog.Sprite.Structure.Dorm {
+		t.Fatal("expected Dorm sprite to reference the loaded asset catalog sprite")
+	}
+	if dorm.Cost != (Resources{Wood: 10, Stone: 10}) {
+		t.Fatalf("Dorm cost = %+v, want 10 wood 10 stone", dorm.Cost)
+	}
+	if dorm.Staffing != (StaffingRequirements{}) {
+		t.Fatalf("Dorm staffing = %+v, want none", dorm.Staffing)
+	}
+	if dorm.PopulationCost != (PopulationCost{Peasants: 1}) {
+		t.Fatalf("Dorm population cost = %+v, want 1 Peasant", dorm.PopulationCost)
+	}
+	if dorm.PopulationGrant != (PopulationGrant{Apprentices: 1}) {
+		t.Fatalf("Dorm population grant = %+v, want 1 Apprentice", dorm.PopulationGrant)
+	}
+	if dorm.ResourceYield != (Resources{}) {
+		t.Fatalf("Dorm resource yield = %+v, want none", dorm.ResourceYield)
+	}
+	if dorm.canFireProjectiles() {
+		t.Fatal("expected Dorm not to have projectile combat stats")
+	}
+}
+
 // TestNewStructureCatalogIncludesEconomicBuildings verifies the economic templates.
 func TestNewStructureCatalogIncludesEconomicBuildings(t *testing.T) {
 	assetCatalog, err := assets.NewCatalog()

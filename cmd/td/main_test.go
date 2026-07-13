@@ -30,8 +30,10 @@ type screenshotTarget struct {
 	selectedRaider   bool
 	hoverBuilding    bool
 	hoverBarracks    bool
+	hoverDorm        bool
 	placedHouse      bool
 	placedBarracks   bool
+	placedDorm       bool
 	placedWoodcutter bool
 	path             string
 }
@@ -94,7 +96,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "41-selection-panel-ui-refactor", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "42-dorm", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -106,6 +108,8 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 			{wizardName: "Merlin", placedWoodcutter: true, path: filepath.Join(basePath, "placed-woodcutter.png")},
 			{wizardName: "Merlin", hoverBarracks: true, placedHouse: true, path: filepath.Join(basePath, "barracks-icon.png")},
 			{wizardName: "Merlin", placedBarracks: true, path: filepath.Join(basePath, "placed-barracks.png")},
+			{wizardName: "Merlin", hoverDorm: true, placedHouse: true, path: filepath.Join(basePath, "dorm-icon.png")},
+			{wizardName: "Merlin", placedDorm: true, path: filepath.Join(basePath, "placed-dorm.png")},
 			{wizardName: "Merlin", selectedSanctum: true, path: filepath.Join(basePath, "selected-sanctum.png")},
 			{wizardName: "Merlin", activeRaid: true, path: filepath.Join(basePath, "active-raid.png")},
 			{wizardName: "Merlin", activeRaid: true, selectedRaider: true, path: filepath.Join(basePath, "selected-raider.png")},
@@ -170,6 +174,12 @@ func (a *screenshotApp) Update() error {
 				CursorY: topOfGameScene() + 234,
 			})
 		}
+		if target.hoverDorm {
+			a.app.gameState.Update(game.Input{
+				CursorX: 48,
+				CursorY: topOfGameScene() + 310,
+			})
+		}
 		if target.placedBarracks {
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
@@ -185,6 +195,30 @@ func (a *screenshotApp) Update() error {
 			a.app.gameState.Update(game.Input{
 				CursorX:   48,
 				CursorY:   topOfGameScene() + 234,
+				Clicked:   true,
+				MouseDown: true,
+			})
+			a.app.gameState.Update(game.Input{
+				CursorX:  1130,
+				CursorY:  475,
+				Released: true,
+			})
+		}
+		if target.placedDorm {
+			a.app.gameState.Update(game.Input{
+				CursorX:   48,
+				CursorY:   topOfGameScene() + 158,
+				Clicked:   true,
+				MouseDown: true,
+			})
+			a.app.gameState.Update(game.Input{
+				CursorX:  1068,
+				CursorY:  475,
+				Released: true,
+			})
+			a.app.gameState.Update(game.Input{
+				CursorX:   48,
+				CursorY:   topOfGameScene() + 310,
 				Clicked:   true,
 				MouseDown: true,
 			})

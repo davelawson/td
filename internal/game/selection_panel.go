@@ -55,6 +55,8 @@ func (s *State) selectedStructurePanel() (ui.SelectionPanelData, bool) {
 		return populationBuildingSelectionPanel(s.structureCatalog.House), true
 	case featureBarracks:
 		return populationBuildingSelectionPanel(s.structureCatalog.Barracks), true
+	case featureDorm:
+		return populationBuildingSelectionPanel(s.structureCatalog.Dorm), true
 	case featureWoodcutter:
 		return economicBuildingSelectionPanel(s.structureCatalog.Woodcutter), true
 	case featureStoneQuarry:

@@ -145,6 +145,86 @@ func TestBuildDragPlacesBarracksAndConvertsPeasants(t *testing.T) {
 	}
 }
 
+// TestDormDragRequiresPeasant verifies Dorm conversion needs source population.
+func TestDormDragRequiresPeasant(t *testing.T) {
+	state := newRaidTestState(t)
+
+	state.Update(pressBuildingBarItemInput(state, buildingBarDormIndex))
+
+	if state.buildDrag.active {
+		t.Fatal("expected Dorm drag not to start without a Peasant")
+	}
+}
+
+// TestBuildDragPlacesDormAndConvertsPeasant verifies Dorm population conversion.
+func TestBuildDragPlacesDormAndConvertsPeasant(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 0, 1)
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+
+	state.Update(pressBuildingBarItemInput(state, buildingBarDormIndex))
+	state.Update(releaseTileInput(state, tile.X, tile.Y))
+
+	if state.buildDrag.active {
+		t.Fatal("expected drag to clear after release")
+	}
+	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureDorm {
+		t.Fatalf("tile feature = %v, want Dorm", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
+	}
+	if state.status.resources.wood != 90 || state.status.resources.stone != 40 || state.status.resources.metal != 20 {
+		t.Fatalf("resources = %+v, want wood 90 stone 40 metal 20", state.status.resources)
+	}
+	if state.status.populations.peasants != (populationCount{available: 0, total: 0}) {
+		t.Fatalf("peasants = %+v, want 0/0 after building Dorm", state.status.populations.peasants)
+	}
+	if state.status.populations.apprentices != (populationCount{available: 1, total: 1}) {
+		t.Fatalf("apprentices = %+v, want 1/1 after building Dorm", state.status.populations.apprentices)
+	}
+}
+
+// TestDormInvalidReleasePreservesPopulations verifies conversion is atomic.
+func TestDormInvalidReleasePreservesPopulations(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 0, 1)
+	initialResources := state.status.resources
+	initialPopulations := state.status.populations
+
+	state.Update(pressBuildingBarItemInput(state, buildingBarDormIndex))
+	state.Update(Input{CursorX: -100, CursorY: -100, Released: true})
+
+	if state.buildDrag.active {
+		t.Fatal("expected invalid release to clear drag")
+	}
+	if state.status.resources != initialResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, initialResources)
+	}
+	if state.status.populations != initialPopulations {
+		t.Fatalf("populations = %+v, want unchanged %+v", state.status.populations, initialPopulations)
+	}
+}
+
+// TestHouseThenDormEnablesFlameBoltTower verifies the first Apprentice-producing workflow.
+func TestHouseThenDormEnablesFlameBoltTower(t *testing.T) {
+	state := newRaidTestState(t)
+
+	state.Update(pressBuildingBarItemInput(state, buildingBarHouseIndex))
+	state.Update(releaseTileInput(state, homePlotCenter+2, 5))
+	state.Update(pressBuildingBarItemInput(state, buildingBarDormIndex))
+	state.Update(releaseTileInput(state, homePlotCenter+3, 5))
+	state.Update(pressBuildingBarItemInput(state, buildingBarFlameBoltTowerIndex))
+	state.Update(releaseTileInput(state, homePlotCenter+4, 5))
+
+	if state.gameMap.Home.Tiles[5][homePlotCenter+4].Feature != featureFlameBoltTower {
+		t.Fatalf("tile feature = %v, want Flame Bolt Tower", state.gameMap.Home.Tiles[5][homePlotCenter+4].Feature)
+	}
+	if state.status.populations.apprentices != (populationCount{available: 0, total: 1}) {
+		t.Fatalf("apprentices = %+v, want 0/1 after staffing Flame Bolt Tower", state.status.populations.apprentices)
+	}
+	if state.status.populations.peasants != (populationCount{available: 1, total: 1}) {
+		t.Fatalf("peasants = %+v, want 1/1 after Dorm conversion", state.status.populations.peasants)
+	}
+}
+
 // TestBarracksInvalidReleasePreservesPopulations verifies conversion is atomic.
 func TestBarracksInvalidReleasePreservesPopulations(t *testing.T) {
 	state := newRaidTestState(t)

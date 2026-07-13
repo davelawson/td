@@ -34,6 +34,17 @@ func TestBuildingTooltipContentForAllBuildingMenuItems(t *testing.T) {
 			},
 		},
 		{
+			category: buildingBarCategoryHousing,
+			index:    2,
+			title:    "Dorm",
+			lines: []string{
+				"Houses Peasants studying to become Apprentices.",
+				"Cost: 10 Wood, 10 Stone",
+				"Staffing: None",
+				"Effect: -1 Peasant, +1 Apprentice",
+			},
+		},
+		{
 			category: buildingBarCategoryEconomic,
 			index:    0,
 			title:    "Woodcutter",
