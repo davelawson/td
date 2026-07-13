@@ -145,21 +145,20 @@ func TestDefaultHomePlotRoadRunsNorth(t *testing.T) {
 	}
 }
 
-// TestDefaultHomePlotTreeBorder verifies edge Tiles are forest except the road opening.
-func TestDefaultHomePlotTreeBorder(t *testing.T) {
+// TestDefaultHomePlotIsOtherwiseGrassland verifies every non-road Tile is empty grass.
+func TestDefaultHomePlotIsOtherwiseGrassland(t *testing.T) {
 	plot := NewDefaultHomePlot()
 
 	for y := 0; y < plotSize; y++ {
 		for x := 0; x < plotSize; x++ {
 			tile := plot.Tiles[y][x]
 			onNorthRoad := x == homePlotCenter && y <= homePlotCenter
-			onEdge := x == 0 || y == 0 || x == plotSize-1 || y == plotSize-1
 
-			if onEdge && !onNorthRoad && tile.Terrain != terrainForest {
-				t.Fatalf("tile (%d,%d) terrain = %v, want forest edge", x, y, tile.Terrain)
-			}
 			if onNorthRoad && tile.Terrain != terrainRoad {
 				t.Fatalf("tile (%d,%d) terrain = %v, want road", x, y, tile.Terrain)
+			}
+			if !onNorthRoad && tile.Terrain != terrainEmpty {
+				t.Fatalf("tile (%d,%d) terrain = %v, want empty grass", x, y, tile.Terrain)
 			}
 		}
 	}
@@ -229,7 +228,7 @@ func TestUpdatesDoNotChangeHomePlot(t *testing.T) {
 	state.Update(Input{})
 	state.Update(Input{})
 
-	if state.gameMap != initial {
+	if !mapsEqual(state.gameMap, initial) {
 		t.Fatal("expected logical updates to leave the prototype map unchanged")
 	}
 }
@@ -364,7 +363,7 @@ func TestCameraChangesDoNotChangeHomePlot(t *testing.T) {
 	state.Update(inputWithWheelAndPan(2, true, false, true, false))
 	state.Update(inputWithWheelAndPan(-4, false, true, false, true))
 
-	if state.gameMap != initial {
+	if !mapsEqual(state.gameMap, initial) {
 		t.Fatal("expected camera changes to leave the prototype map unchanged")
 	}
 }

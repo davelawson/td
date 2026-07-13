@@ -175,7 +175,7 @@ func TestCameraRightDragDoesNotChangeHomePlot(t *testing.T) {
 	state.Update(rightDragInput(cursorX, cursorY, true, true, false))
 	state.Update(rightDragInput(cursorX+54, cursorY+54, false, true, false))
 
-	if state.gameMap != initial {
+	if !mapsEqual(state.gameMap, initial) {
 		t.Fatal("expected right-drag camera movement to leave the map unchanged")
 	}
 }

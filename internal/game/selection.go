@@ -19,7 +19,8 @@ func (s *State) updateSelection(input Input) {
 	if !input.Clicked ||
 		s.nextRaidButtonContains(input.CursorX, input.CursorY) ||
 		s.buildingBarContains(input.CursorX, input.CursorY) ||
-		s.selectionPanelContains(input.CursorX, input.CursorY) {
+		s.selectionPanelContains(input.CursorX, input.CursorY) ||
+		s.exploreButtonContains(input.CursorX, input.CursorY) {
 		return
 	}
 
@@ -54,18 +55,24 @@ func (s *State) raiderAtScreenPosition(x, y int) (int, bool) {
 	return 0, false
 }
 
-// structureAtScreenPosition returns the home Plot structure tile at a screen point.
+// structureAtScreenPosition returns the explored structure tile at a screen point.
 func (s *State) structureAtScreenPosition(x, y int) (tileCoordinate, bool) {
 	viewport := s.sceneViewport()
-	for tileY := 0; tileY < plotSize; tileY++ {
-		for tileX := 0; tileX < plotSize; tileX++ {
-			if s.gameMap.Home.Tiles[tileY][tileX].Feature == featureNone {
-				continue
-			}
-			worldWest, worldNorth, worldW, worldH := tileWorldRect(tileX, tileY)
-			rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
-			if rectContainsPoint(rect, x, y) {
-				return tileCoordinate{X: tileX, Y: tileY}, true
+	for _, plotCoord := range s.gameMap.exploredPlotCoordinates() {
+		plot, ok := s.gameMap.plot(plotCoord)
+		if !ok {
+			continue
+		}
+		for tileY := 0; tileY < plotSize; tileY++ {
+			for tileX := 0; tileX < plotSize; tileX++ {
+				if plot.Tiles[tileY][tileX].Feature == featureNone {
+					continue
+				}
+				worldWest, worldNorth, worldW, worldH := plotTileWorldRect(plotCoord, tileX, tileY)
+				rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
+				if rectContainsPoint(rect, x, y) {
+					return tileCoordinate{Plot: plotCoord, X: tileX, Y: tileY}, true
+				}
 			}
 		}
 	}
@@ -73,8 +80,8 @@ func (s *State) structureAtScreenPosition(x, y int) (tileCoordinate, bool) {
 }
 
 // selectedStructure reports whether a structure tile is currently selected.
-func (s *State) selectedStructure(x, y int) bool {
-	return s.selection.kind == selectedItemStructure && s.selection.tile.X == x && s.selection.tile.Y == y
+func (s *State) selectedStructure(tile tileCoordinate) bool {
+	return s.selection.kind == selectedItemStructure && s.selection.tile == tile
 }
 
 // selectedRaider reports whether a raider is currently selected.

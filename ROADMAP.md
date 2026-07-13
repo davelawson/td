@@ -24,7 +24,7 @@ The secondary user is the developer maintaining the prototype. Success for this 
 
 ## Current Phase
 
-The current phase is still early prototype foundation. Tower and economic building construction requires and reserves available inhabitants. House construction provides the first population-seeding path by converting Wood into Peasants, Barracks construction converts Peasants into Soldiers, Dorm construction converts a Peasant into an Apprentice, and Woodcutter, Stone Quarry, and Iron Mine provide the first post-Raid resource production. Broader recruitment remains a missing capability for richer population growth, but every current tower staffing role now has a normal-play source.
+The current phase is still early prototype foundation. Calm-phase exploration can reveal adjacent empty grassland Plots for free, and northward exploration extends the current Raid path. Tower and economic building construction requires and reserves available inhabitants. House construction provides the first population-seeding path by converting Wood into Peasants, Barracks construction converts Peasants into Soldiers, Dorm construction converts a Peasant into an Apprentice, and Woodcutter, Stone Quarry, and Iron Mine provide the first post-Raid resource production. Broader recruitment remains a missing capability for richer population growth, but every current tower staffing role now has a normal-play source.
 
 The immediate product goal is not to make a full tower-defense encounter. The next work should extend the basic Raid baseline with one observable gameplay-facing slice at a time while preserving the small, testable codebase.
 
@@ -39,7 +39,7 @@ The completed foundation plans have established the runnable app, expanded menu 
 
 ## Later Opportunities
 
-Later roadmap opportunities include larger exploration spaces, resource nodes, inhabitant recruitment and work assignments, base-building placement rules, magical tower archetypes, richer enemy waves, combat resolution, UI panels, art assets, broader audio such as music and volume controls, progression, and eventually platform packaging.
+Later roadmap opportunities include richer exploration spaces, exploration costs, scouting-versus-claiming choices, resource nodes, inhabitant recruitment and work assignments, base-building placement rules, magical tower archetypes, richer enemy waves, combat resolution, UI panels, art assets, broader audio such as music and volume controls, progression, and eventually platform packaging.
 
 Campaign structure and save/load may become important after the prototype has enough systems to preserve meaningful progress. They are intentionally not part of the first phase.
 

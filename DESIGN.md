@@ -31,6 +31,8 @@ Avoid letting the whole interface become a single purple, beige, or dark-blue pa
 - Text must remain readable at the target window size. The current desktop target opens at 1920x1080, and menu text should remain raw-pixel-sized when the window is enlarged instead of stretching with the window.
 - In-game HUD text should be compact, high-contrast, and restrained. It should expose essential play status without covering the defended field or competing with the in-game overlay menu.
 - Static map scenes should keep tile boundaries, roads, and the Sanctum readable before adding decorative terrain or production art.
+- Exploration affordances should be legible as map controls. The current magnifying-glass buttons sit on borders between explored and unexplored orthogonal Plots, and they should remain visually distinct from Tiles, structures, roads, and screen-space UI.
+- Adjacent explored Plots should render as one continuous field. Do not draw per-Plot frames, gutters, or padding once both sides of a border are explored.
 - Selected map objects should have a plainly brighter visual state that is easy to notice without obscuring the sprite, health bar, road, or tile context.
 - Selected-object detail panels should stay compact, anchored in screen space, and readable without becoming command surfaces before commands exist.
 - Building and command bars should stay screen-space, compact, and visually subordinate to the map. Build affordances must only imply actions that are implemented; the current building bar supports informational hover tooltips, affordability-aware hover, and a simple half-sized dragged icon for calm-phase placement, but not upgrades, selling, range previews, or broader construction commands.
@@ -47,5 +49,5 @@ For Ebitengine desktop work, visual evidence can be a screenshot saved under the
 ## Open Questions
 
 - Should the game eventually use pixel art, painterly 2D, or another asset style?
-- How should the early camera scaling policy evolve when the world grows beyond one static home Plot?
+- How should the early camera scaling policy evolve as exploration creates larger Domains?
 - Should early menus use custom font assets, or wait until gameplay systems exist?

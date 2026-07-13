@@ -190,6 +190,7 @@ func (s *State) Update(input Input) Action {
 	s.updateBuildingBarHover(input)
 	s.updateBuildDrag(input)
 	s.applyCameraInput(input)
+	s.updateExploration(input)
 	s.updateSelection(input)
 	if input.TogglePause {
 		s.paused = !s.paused
@@ -208,7 +209,7 @@ func (s *State) Update(input Input) Action {
 // Draw renders the current game screen.
 func (s *State) Draw(screen *ebiten.Image) {
 	screen.Fill(colors.background)
-	s.drawHomePlot(screen)
+	s.drawExploredPlots(screen)
 	s.drawRaidEnemies(screen)
 	s.drawProjectiles(screen)
 	s.drawTopBar(screen)

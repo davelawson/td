@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
+The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. Newly explored Plots are immediately usable grassland, and exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -55,13 +55,13 @@ The exact boundaries between exploration, building, and defense are not decided 
 
 Exploration should give the player information and access. It may reveal terrain, enemy routes, resource nodes, buildable areas, hazards, or future attack pressure.
 
-During the calm phase, the wizard can eventually spend resources to explore another Plot adjacent to the current Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and defend along a longer path.
+During the calm phase, the wizard can explore another Plot adjacent to the current Domain. The first implemented slice makes exploration free and immediate: clicking a magnifying-glass button on a border between explored and unexplored Plots reveals the adjacent Plot, and the revealed Plot is treated as part of the usable Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and, when expanding north, defend along a longer path.
 
 Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom the scene camera with the mouse wheel, pan with `WASD`, or press and hold the right mouse button over the game view and drag so the visible world follows the cursor. Camera inspection works while paused, but it is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
 The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum, House, Barracks, Dorm, economic buildings, and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, population buildings show their cost and population effects, economic buildings show their cost, Peasant requirement, and post-Raid production, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
 
-Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots, and how newly explored Plots are connected to enemy paths and roads.
+Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots after the free prototype slice, and how non-north explored Plots are connected to enemy paths and roads.
 
 ### Map
 
@@ -69,16 +69,16 @@ The map is built on a grid. Each grid square is called a Tile. Tiles are grouped
 
 Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
 
-At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot contains the centered Sanctum as its only initial structure, a straight road north to the Plot edge, and a pine-tree border around the Plot edge except at the road opening. The player must build every combat tower.
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot is open grassland containing the centered Sanctum as its only initial structure and a straight road north to the Plot edge. The player must build every combat tower.
 
-Plots exist in one of these high-level states:
+In the intended full design, Plots exist in one of these high-level states:
 
 - `Unknown`: the Plot has not been explored. Its detailed Tiles, resources, roads, hazards, and structures are not visible to the player.
 - `Scouted`: the Plot has been explored enough to reveal its terrain, resources, and road exits, but it is not yet part of the Domain.
 - `Claimed`: the Plot belongs to the Domain. The wizard can build structures there during calm phases, and roads within the Plot can become part of Raid paths.
 - `Lair`: the Plot contains the current Chapter Rival's Lair. Claiming this Plot triggers the final Raid of the Chapter.
 
-Exploring a Plot changes it from `Unknown` to `Scouted`. Claiming a scouted Plot changes it to `Claimed` and expands the Domain. The first prototype may collapse scouting and claiming into one action if that keeps the initial loop simpler, but the design should preserve the distinction because it creates room for future choices: reveal a risky area now, or spend more to actually incorporate it into the defended Domain.
+Exploring a Plot changes it from `Unknown` to `Scouted`. Claiming a scouted Plot changes it to `Claimed` and expands the Domain. The first implemented exploration prototype collapses scouting and claiming into one action: clicking an explore button immediately reveals the adjacent Plot and makes it buildable. The design should preserve the distinction for later versions because it creates room for future choices: reveal a risky area now, or spend more to actually incorporate it into the defended Domain.
 
 Plots are adjacent orthogonally, not diagonally, for exploration and Domain expansion. A new Plot can only be explored if it touches at least one Claimed Plot on its north, south, east, or west edge. This keeps expansion readable and prevents disconnected pockets of Domain from appearing before there is a deliberate system for them.
 
@@ -86,7 +86,7 @@ Each Plot edge has one possible road connection point: the middle Tile of that e
 
 Roads are the primary way enemies move during Raids. When a Plot is claimed, any road segment that connects back to the Sanctum can become part of the defended route. Expanding toward richer resources or the Rival's Lair may lengthen that route, creating the intended tradeoff between growth and exposure.
 
-World positions use Tile units. The center of the Sanctum Tile is the origin `(0, 0)`, one Tile is one world unit, floating point positions are allowed, and positive Y points north. For example, `(0, 1.5)` is the common edge between the first and second road Tiles north of the Sanctum. Enemy positions should use this world-coordinate model instead of storing only path progress.
+World positions use Tile units. The center of the Sanctum Tile is the origin `(0, 0)`, one Tile is one world unit, floating point positions are allowed, and positive Y points north. Plots use the same world-coordinate model: the home Plot is at Plot coordinate `(0, 0)`, the Plot directly north is `(0, 1)`, the Plot directly east is `(1, 0)`, and so on. For example, `(0, 1.5)` is the common edge between the first and second road Tiles north of the Sanctum. Enemy positions should use this world-coordinate model instead of storing only path progress.
 
 Plot contents should be readable at a glance. A Plot can mix terrain types, but each Plot should have a dominant character that helps the player reason about it before inspecting every Tile, such as wooded, rocky, wetland, open meadow, hill, ruin, or lair. This dominant character is a design label, not necessarily a separate data type.
 
@@ -222,8 +222,10 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice is a static home Plot containing only the centered Sanctum as an initial structure, a straight road north, a pine-tree border, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
+- The first gameplay-facing rendered slice starts with an open-grassland home Plot containing only the centered Sanctum as an initial structure, a straight road north, free calm-phase exploration buttons on unexplored adjacent Plot borders, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom, `WASD` panning, and right-drag panning are inspection controls only and do not change map data.
+- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Revealed Plots are immediately buildable grassland. The first implementation collapses scouting and claiming into one action.
+- Northward exploration along Plot `X=0` extends the visible center road and moves deterministic Raid spawning to the farthest explored north road. Non-north explored Plots do not add Raid paths yet.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
 - A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Dorm, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
 - The first staffing slice uses available populations to gate tower and economic building construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, Dorm can convert a Peasant into an Apprentice, economic buildings can produce post-Raid resources, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
@@ -231,15 +233,15 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 
 ## Open Game Design Questions
 
-- Which resources are spent to explore an adjacent Plot?
-- How do newly explored Plots connect to roads and enemy paths?
+- Which resources, if any, are spent to explore an adjacent Plot after the free prototype reveal?
+- How do non-north newly explored Plots connect to roads and enemy paths?
 - How is the Rival's Lair revealed or signaled to the player?
 - What movement, build, resource, and road rules apply to each terrain type?
 - Should the entire map be defined at the start of a Fable, or should Plots and Tiles be generated as the wizard explores?
 - Should the map be able to expand indefinitely, or should each Fable use bounded map dimensions?
 - Should the durable map model be one 2D Tile array, with Plots acting only as convenience groupings over that array?
 - If maps can expand after creation, how should the map data structure grow while preserving existing Tile, Plot, road, and Domain state?
-- Should scouting and claiming be separate actions in the first playable implementation, or should early exploration immediately claim a Plot?
+- When should scouting and claiming become separate actions after the first implementation collapsed them into one reveal-and-claim action?
 - How are Plot dominant characters generated, selected, or presented to the player?
 - How many road exits can a Plot have, and can roads branch inside a Plot after entering through edge-center connector Tiles?
 - Are Wood, Stone, and Metal enough for interesting choices, or are additional resources needed?
@@ -398,9 +400,9 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: This gives every playthrough a clear initial defended space and a road hook for future exploration, enemy routing, and Domain expansion.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Render the first home Plot with a pine-tree border around the Plot edge except where the north road exits.
-  Rationale: The tree border makes the starting Domain read as a small clearing while preserving the existing road connector for future path and expansion rules.
-  Date/Author: 2026-05-13 / Codex
+- Decision: Render the first home Plot as open grassland without a tree perimeter.
+  Rationale: A grass perimeter keeps the starting Plot fully usable and lets it join explored neighboring grassland without an artificial terrain boundary.
+  Date/Author: 2026-07-13 / Codex
 
 - Decision: Store prototype Tile sprite variation as a `Tweak` value on each Tile.
   Rationale: Keeping visual variation in map data lets rendering choose stable per-Tile sprite variants without turning the tweak into a gameplay mechanic.

@@ -39,15 +39,21 @@ func (s *State) grantEnemyResources(enemy raidEnemy) {
 
 // grantEconomicBuildingResources awards placed economic building yields after a defeated Raid.
 func (s *State) grantEconomicBuildingResources() {
-	for y := 0; y < plotSize; y++ {
-		for x := 0; x < plotSize; x++ {
-			yield, ok := s.economicBuildingYield(s.gameMap.Home.Tiles[y][x].Feature)
-			if !ok {
-				continue
+	for _, plotCoord := range s.gameMap.exploredPlotCoordinates() {
+		plot, ok := s.gameMap.plot(plotCoord)
+		if !ok {
+			continue
+		}
+		for y := 0; y < plotSize; y++ {
+			for x := 0; x < plotSize; x++ {
+				yield, ok := s.economicBuildingYield(plot.Tiles[y][x].Feature)
+				if !ok {
+					continue
+				}
+				s.status.resources.wood += yield.Wood
+				s.status.resources.stone += yield.Stone
+				s.status.resources.metal += yield.Metal
 			}
-			s.status.resources.wood += yield.Wood
-			s.status.resources.stone += yield.Stone
-			s.status.resources.metal += yield.Metal
 		}
 	}
 }

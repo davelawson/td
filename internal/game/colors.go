@@ -28,6 +28,7 @@ var colors = struct {
 	resourceMetal  color.Color
 	buildable      color.Color
 	buildBlocked   color.Color
+	exploreButton  color.Color
 	selectionPanel color.Color
 	overlay        color.Color
 }{
@@ -52,6 +53,7 @@ var colors = struct {
 	resourceMetal:  ui.ResourceMetal,
 	buildable:      color.RGBA{R: 92, G: 220, B: 104, A: 255},
 	buildBlocked:   color.RGBA{R: 224, G: 76, B: 65, A: 255},
+	exploreButton:  color.RGBA{R: 218, G: 198, B: 132, A: 245},
 	selectionPanel: ui.SelectionPanelBackground,
 	overlay:        ui.TransparentBlack,
 }

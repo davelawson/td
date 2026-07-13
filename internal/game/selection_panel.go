@@ -47,8 +47,12 @@ func (s *State) selectedStructurePanel() (ui.SelectionPanelData, bool) {
 	if tile.X < 0 || tile.X >= plotSize || tile.Y < 0 || tile.Y >= plotSize {
 		return ui.SelectionPanelData{}, false
 	}
+	plot, ok := s.gameMap.plot(tile.Plot)
+	if !ok {
+		return ui.SelectionPanelData{}, false
+	}
 
-	switch s.gameMap.Home.Tiles[tile.Y][tile.X].Feature {
+	switch plot.Tiles[tile.Y][tile.X].Feature {
 	case featureSanctum:
 		return structureSelectionPanel(s.structureCatalog.Sanctum), true
 	case featureHouse:

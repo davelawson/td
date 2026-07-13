@@ -35,6 +35,7 @@ type screenshotTarget struct {
 	placedBarracks   bool
 	placedDorm       bool
 	placedWoodcutter bool
+	exploredNorth    bool
 	path             string
 }
 
@@ -96,13 +97,14 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "42-dorm", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "43-exploring-additional-plots", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
+			{wizardName: "Merlin", exploredNorth: true, path: filepath.Join(basePath, "explored-north.png")},
 			{wizardName: "Merlin", hoverBuilding: true, path: filepath.Join(basePath, "house-icon.png")},
 			{wizardName: "Merlin", placedHouse: true, path: filepath.Join(basePath, "placed-house.png")},
 			{wizardName: "Merlin", placedWoodcutter: true, path: filepath.Join(basePath, "placed-woodcutter.png")},
@@ -148,6 +150,14 @@ func (a *screenshotApp) Update() error {
 			for i := 0; i < 45; i++ {
 				a.app.gameState.Update(game.Input{})
 			}
+		}
+		if target.exploredNorth {
+			a.app.gameState.Update(game.Input{
+				CursorX: defaultWindowWidth / 2,
+				CursorY: topOfGameScene() + (defaultWindowHeight-topOfGameScene())/2 - 405,
+				Clicked: true,
+			})
+			a.app.gameState.Update(game.Input{WheelY: -10})
 		}
 		if target.hoverBuilding {
 			a.app.gameState.Update(game.Input{

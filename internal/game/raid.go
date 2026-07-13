@@ -88,7 +88,7 @@ func (s *State) spawnRaidEnemy() {
 	s.raid.enemies = append(s.raid.enemies, raidEnemy{
 		id:       s.raid.nextEnemyID,
 		template: template,
-		position: raidEnemySpawnPosition(),
+		position: s.raidEnemySpawnPosition(),
 		health:   template.MaxHealth,
 	})
 	s.raid.nextEnemyID++
@@ -158,9 +158,20 @@ func (s *State) raidEnemiesRemaining() int {
 	return s.raid.pendingEnemies + len(s.raid.enemies)
 }
 
-// raidEnemySpawnPosition returns the current north-road enemy spawn point.
+// raidEnemySpawnPosition returns the current north-road enemy spawn point for tests.
 func raidEnemySpawnPosition() coord {
 	return coord{X: 0, Y: float64(homePlotCenter)}
+}
+
+// raidEnemySpawnPosition returns the north-road enemy spawn point for explored central north Plots.
+func (s *State) raidEnemySpawnPosition() coord {
+	northPlotY := 0
+	for _, plotCoord := range s.gameMap.exploredPlotCoordinates() {
+		if plotCoord.X == 0 && plotCoord.Y > northPlotY {
+			northPlotY = plotCoord.Y
+		}
+	}
+	return coord{X: 0, Y: float64(northPlotY*plotSize + homePlotCenter)}
 }
 
 // raidEnemyReachedSanctum reports whether the enemy has contacted the Sanctum.

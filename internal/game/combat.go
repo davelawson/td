@@ -15,12 +15,6 @@ type combatState struct {
 	projectiles    []combatProjectile
 }
 
-// tileCoordinate identifies one Tile in the home Plot.
-type tileCoordinate struct {
-	X int
-	Y int
-}
-
 // combatProjectile describes one active projectile tracking an original target.
 type combatProjectile struct {
 	targetID                     int
@@ -66,30 +60,36 @@ func (s *State) updateTowerCooldowns(deltaSeconds float64) {
 
 // fireCombatTowers launches projectiles from ready combat towers with targets in range.
 func (s *State) fireCombatTowers() {
-	for y := 0; y < plotSize; y++ {
-		for x := 0; x < plotSize; x++ {
-			template, ok := s.combatTowerTemplate(s.gameMap.Home.Tiles[y][x].Feature)
-			if !ok || !template.canFireProjectiles() {
-				continue
+	for _, plotCoord := range s.gameMap.exploredPlotCoordinates() {
+		plot, ok := s.gameMap.plot(plotCoord)
+		if !ok {
+			continue
+		}
+		for y := 0; y < plotSize; y++ {
+			for x := 0; x < plotSize; x++ {
+				template, ok := s.combatTowerTemplate(plot.Tiles[y][x].Feature)
+				if !ok || !template.canFireProjectiles() {
+					continue
+				}
+				key := tileCoordinate{Plot: plotCoord, X: x, Y: y}
+				if s.combat.towerCooldowns[key] > 0 {
+					continue
+				}
+				towerPosition := plotTileWorldCenter(plotCoord, x, y)
+				target, ok := s.findTowerTarget(towerPosition, template.RangeTiles)
+				if !ok {
+					continue
+				}
+				s.combat.projectiles = append(s.combat.projectiles, combatProjectile{
+					targetID:                     target.id,
+					position:                     towerPosition,
+					damage:                       template.Damage,
+					speedTilesPerSecond:          template.ProjectileSpeedTilesPerSecond,
+					sprite:                       template.ProjectileSprite,
+					damageAllEnemiesInTargetTile: template.DamageAllEnemiesInTargetTile,
+				})
+				s.combat.towerCooldowns[key] = template.FireIntervalSeconds
 			}
-			key := tileCoordinate{X: x, Y: y}
-			if s.combat.towerCooldowns[key] > 0 {
-				continue
-			}
-			towerPosition := tileWorldCenter(x, y)
-			target, ok := s.findTowerTarget(towerPosition, template.RangeTiles)
-			if !ok {
-				continue
-			}
-			s.combat.projectiles = append(s.combat.projectiles, combatProjectile{
-				targetID:                     target.id,
-				position:                     towerPosition,
-				damage:                       template.Damage,
-				speedTilesPerSecond:          template.ProjectileSpeedTilesPerSecond,
-				sprite:                       template.ProjectileSprite,
-				damageAllEnemiesInTargetTile: template.DamageAllEnemiesInTargetTile,
-			})
-			s.combat.towerCooldowns[key] = template.FireIntervalSeconds
 		}
 	}
 }
@@ -179,14 +179,16 @@ func (s *State) damageEnemiesInTargetTile(targetPosition coord, damage int) {
 	}
 }
 
-// tileAtWorldPosition returns the home Plot Tile containing a world position.
+// tileAtWorldPosition returns the explored Plot Tile containing a world position.
 func tileAtWorldPosition(position coord) (tileCoordinate, bool) {
-	x := int(math.Floor(position.X + homePlotCenter + 0.5))
-	y := int(math.Floor(homePlotCenter - position.Y + 0.5))
+	plotX := int(math.Floor((position.X + float64(homePlotCenter) + 0.5) / float64(plotSize)))
+	plotY := int(math.Floor((position.Y + float64(homePlotCenter) + 0.5) / float64(plotSize)))
+	x := int(math.Floor(position.X + float64(homePlotCenter) + 0.5 - float64(plotX*plotSize)))
+	y := int(math.Floor(float64(plotY*plotSize+homePlotCenter) + 0.5 - position.Y))
 	if x < 0 || y < 0 || x >= plotSize || y >= plotSize {
 		return tileCoordinate{}, false
 	}
-	return tileCoordinate{X: x, Y: y}, true
+	return tileCoordinate{Plot: plotCoordinate{X: plotX, Y: plotY}, X: x, Y: y}, true
 }
 
 // enemyIndexByID returns the active enemy slice index for an enemy ID.

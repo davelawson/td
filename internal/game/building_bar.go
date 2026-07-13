@@ -237,7 +237,7 @@ func (s *State) placeDraggedBuilding(x, y int) {
 	if !ok || !s.canConstructBuilding(item) || !s.canBuildTowersNow() || s.buildDropBlockedByUI(x, y) {
 		return
 	}
-	tile, ok := s.homePlotTileAtScreenPosition(x, y)
+	tile, ok := s.exploredTileAtScreenPosition(x, y)
 	if !ok || !s.canBuildOnTile(tile) {
 		return
 	}
@@ -250,14 +250,17 @@ func (s *State) placeDraggedBuilding(x, y int) {
 	s.deductPopulationCost(item.PopulationCost)
 	s.reserveStaffing(item.Staffing)
 	s.grantPopulation(item.PopulationGrant)
-	s.gameMap.Home.Tiles[tile.Y][tile.X].Feature = feature
+	if plot, ok := s.gameMap.plot(tile.Plot); ok {
+		plot.Tiles[tile.Y][tile.X].Feature = feature
+	}
 }
 
 // buildDropBlockedByUI reports whether a drop point is on screen-space game UI.
 func (s *State) buildDropBlockedByUI(x, y int) bool {
 	return s.buildingBarContains(x, y) ||
 		s.nextRaidButtonContains(x, y) ||
-		s.selectionPanelContains(x, y)
+		s.selectionPanelContains(x, y) ||
+		s.exploreButtonContains(x, y)
 }
 
 // draggedBuildingItem returns the building-bar item currently attached to the cursor.
@@ -280,15 +283,17 @@ func (s *State) draggedBuildingItem() (buildingBarItem, bool) {
 	}, true
 }
 
-// homePlotTileAtScreenPosition returns the home Plot Tile under a screen point.
-func (s *State) homePlotTileAtScreenPosition(x, y int) (tileCoordinate, bool) {
+// exploredTileAtScreenPosition returns the explored Tile under a screen point.
+func (s *State) exploredTileAtScreenPosition(x, y int) (tileCoordinate, bool) {
 	viewport := s.sceneViewport()
-	for tileY := 0; tileY < plotSize; tileY++ {
-		for tileX := 0; tileX < plotSize; tileX++ {
-			worldWest, worldNorth, worldW, worldH := tileWorldRect(tileX, tileY)
-			rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
-			if rectContainsPoint(rect, x, y) {
-				return tileCoordinate{X: tileX, Y: tileY}, true
+	for _, plotCoord := range s.gameMap.exploredPlotCoordinates() {
+		for tileY := 0; tileY < plotSize; tileY++ {
+			for tileX := 0; tileX < plotSize; tileX++ {
+				worldWest, worldNorth, worldW, worldH := plotTileWorldRect(plotCoord, tileX, tileY)
+				rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
+				if rectContainsPoint(rect, x, y) {
+					return tileCoordinate{Plot: plotCoord, X: tileX, Y: tileY}, true
+				}
 			}
 		}
 	}
@@ -300,7 +305,11 @@ func (s *State) canBuildOnTile(tile tileCoordinate) bool {
 	if tile.X < 0 || tile.Y < 0 || tile.X >= plotSize || tile.Y >= plotSize {
 		return false
 	}
-	target := s.gameMap.Home.Tiles[tile.Y][tile.X]
+	plot, ok := s.gameMap.plot(tile.Plot)
+	if !ok {
+		return false
+	}
+	target := plot.Tiles[tile.Y][tile.X]
 	return target.Terrain == terrainEmpty && target.Feature == featureNone
 }
 

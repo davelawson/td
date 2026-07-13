@@ -8,27 +8,31 @@ import (
 const (
 	treeHorizontalFlipMask   uint16 = 0x8000
 	selectedSpriteBrightness        = 1.65
+	exploreButtonSize               = 0.78
+	exploreButtonStroke             = 0.08
 )
 
-// drawHomePlot renders the static home Plot from map state.
-func (s *State) drawHomePlot(screen *ebiten.Image) {
+// drawExploredPlots renders every explored Plot from map state.
+func (s *State) drawExploredPlots(screen *ebiten.Image) {
 	viewport := s.sceneViewport()
-	margin := 18 / plotBaseTileSize
-	size := float64(plotSize)
-	backdrop := s.projectRect(viewport, -size/2-margin, size/2+margin, size+margin*2, size+margin*2)
-	vector.FillRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, colors.plotBackdrop, false)
-	vector.StrokeRect(screen, backdrop.x, backdrop.y, backdrop.w, backdrop.h, 3, colors.fieldEdge, false)
+	for _, plotCoord := range s.gameMap.exploredPlotCoordinates() {
+		plot, ok := s.gameMap.plot(plotCoord)
+		if !ok {
+			continue
+		}
 
-	for y := 0; y < plotSize; y++ {
-		for x := 0; x < plotSize; x++ {
-			s.drawHomePlotTile(screen, viewport, x, y, s.gameMap.Home.Tiles[y][x])
+		for y := 0; y < plotSize; y++ {
+			for x := 0; x < plotSize; x++ {
+				s.drawPlotTile(screen, viewport, plotCoord, x, y, plot.Tiles[y][x])
+			}
 		}
 	}
+	s.drawExploreButtons(screen, viewport)
 }
 
-// drawHomePlotTile renders one Tile in the static home Plot.
-func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x, y int, tile Tile) {
-	worldWest, worldNorth, worldW, worldH := tileWorldRect(x, y)
+// drawPlotTile renders one Tile in an explored Plot.
+func (s *State) drawPlotTile(screen *ebiten.Image, viewport sceneViewport, plot plotCoordinate, x, y int, tile Tile) {
+	worldWest, worldNorth, worldW, worldH := plotTileWorldRect(plot, x, y)
 	rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
 
 	tileColor := colors.emptyTile
@@ -44,7 +48,7 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	if tile.Terrain == terrainForest {
 		s.drawPineTree(screen, rect.x, rect.y, rect.w, tile)
 	}
-	selected := s.selectedStructure(x, y)
+	selected := s.selectedStructure(tileCoordinate{Plot: plot, X: x, Y: y})
 	if tile.Feature == featureSanctum {
 		s.drawSanctum(screen, rect.x, rect.y, rect.w, selected)
 	}
@@ -74,6 +78,40 @@ func (s *State) drawHomePlotTile(screen *ebiten.Image, viewport sceneViewport, x
 	}
 	if tile.Feature == featureCatapultTower {
 		s.drawStructureSprite(screen, s.structureCatalog.CatapultTower.Sprite, rect.x, rect.y, rect.w, selected)
+	}
+}
+
+// drawExploreButtons renders border reveal controls for unexplored adjacent Plots.
+func (s *State) drawExploreButtons(screen *ebiten.Image, viewport sceneViewport) {
+	for _, button := range s.exploreButtons() {
+		rect := s.projectRect(
+			viewport,
+			button.Center.X-exploreButtonSize/2,
+			button.Center.Y+exploreButtonSize/2,
+			exploreButtonSize,
+			exploreButtonSize,
+		)
+		if rect.w <= 0 || rect.h <= 0 {
+			continue
+		}
+		cx := rect.x + rect.w/2
+		cy := rect.y + rect.h/2
+		radius := rect.w / 2
+		vector.FillCircle(screen, cx, cy, radius, colors.plotBackdrop, false)
+		vector.StrokeCircle(screen, cx, cy, radius, 3, colors.exploreButton, false)
+
+		lensRadius := rect.w * 0.19
+		vector.StrokeCircle(screen, cx-rect.w*0.08, cy-rect.h*0.08, lensRadius, 3, colors.exploreButton, false)
+		vector.StrokeLine(
+			screen,
+			cx+rect.w*0.06,
+			cy+rect.h*0.06,
+			cx+rect.w*0.22,
+			cy+rect.h*0.22,
+			float32(exploreButtonStroke*float64(rect.w)),
+			colors.exploreButton,
+			false,
+		)
 	}
 }
 
