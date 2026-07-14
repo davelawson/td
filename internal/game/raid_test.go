@@ -1,12 +1,13 @@
 package game
 
 import (
+	"math"
 	"testing"
 
 	"td/internal/ui"
 )
 
-// TestNextRaidButtonStartsFirstRaid verifies the game UI starts a Raid immediately.
+// TestNextRaidButtonStartsFirstRaid verifies the game UI initializes a generated Raid.
 func TestNextRaidButtonStartsFirstRaid(t *testing.T) {
 	state := newRaidTestState(t)
 
@@ -18,25 +19,42 @@ func TestNextRaidButtonStartsFirstRaid(t *testing.T) {
 	if state.raid.number != 1 {
 		t.Fatalf("raid number = %d, want 1", state.raid.number)
 	}
-	if got, want := state.raidEnemiesRemaining(), firstRaidEnemyCount; got != want {
+	if got, want := state.raidEnemiesRemaining(), 3; got != want {
 		t.Fatalf("remaining enemies = %d, want %d", got, want)
 	}
-	if len(state.raid.enemies) != 1 {
-		t.Fatalf("active enemies = %d, want 1", len(state.raid.enemies))
+	if len(state.raid.enemies) != 0 {
+		t.Fatalf("active enemies = %d, want none before the first threshold", len(state.raid.enemies))
 	}
-	if state.raid.enemies[0].template != &state.enemyCatalog.SkeletonSwordShield {
-		t.Fatal("expected spawned enemy to reference the skeleton sword-and-shield template")
+	if state.raid.progress <= 0 || state.raid.progress >= 1 {
+		t.Fatalf("progress = %f, want one active update above zero", state.raid.progress)
 	}
-	if state.raid.enemies[0].template.Sprite == nil {
-		t.Fatal("expected spawned enemy to reference the skeleton sprite")
-	}
-	wantPosition := raidEnemySpawnPosition()
-	wantPosition.Y -= state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
-	if got := state.raid.enemies[0].position; got != wantPosition {
-		t.Fatalf("spawned enemy position = %+v, want %+v", got, wantPosition)
+	if state.raid.template.challengeRating != 4 || state.raid.template.progressDurationSeconds != 9 {
+		t.Fatalf("generated Raid = %+v, want challenge 4 and duration 9", state.raid.template)
 	}
 	if state.status.phase != phaseRaid {
 		t.Fatalf("phase = %v, want %v", state.status.phase, phaseRaid)
+	}
+}
+
+// TestRaidStartsAtZeroWithoutActiveEnemies verifies generation does not spawn immediately.
+func TestRaidStartsAtZeroWithoutActiveEnemies(t *testing.T) {
+	state := newRaidTestState(t)
+
+	state.startNextRaid()
+
+	if state.raid.progress != 0 {
+		t.Fatalf("progress = %f, want 0", state.raid.progress)
+	}
+	if len(state.raid.enemies) != 0 {
+		t.Fatalf("active enemies = %d, want 0", len(state.raid.enemies))
+	}
+	if got, want := state.raid.pendingEnemies, 3; got != want {
+		t.Fatalf("pending enemies = %d, want %d", got, want)
+	}
+
+	state.updateRaid()
+	if !state.raid.active {
+		t.Fatal("expected an empty pre-threshold Raid interval to remain active")
 	}
 }
 
@@ -50,52 +68,47 @@ func TestNextRaidButtonDoesNotQueueWhileActive(t *testing.T) {
 	if state.raid.number != 1 {
 		t.Fatalf("raid number = %d, want 1", state.raid.number)
 	}
-	if got, want := state.raidEnemiesRemaining(), firstRaidEnemyCount; got != want {
+	if got, want := state.raidEnemiesRemaining(), 3; got != want {
 		t.Fatalf("remaining enemies = %d, want %d", got, want)
 	}
 }
 
-// TestRaidSpawnsEnemiesOnStagger verifies enemies do not all spawn at once.
-func TestRaidSpawnsEnemiesOnStagger(t *testing.T) {
+// TestRaidProgressSpawnsAtFirstThreshold verifies exact equality schedules an enemy.
+func TestRaidProgressSpawnsAtFirstThreshold(t *testing.T) {
 	state := newRaidTestState(t)
 	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
 	state.startNextRaid()
-	if got, want := state.raid.enemies[0].position, raidEnemySpawnPosition(); got != want {
-		t.Fatalf("initial enemy position = %+v, want %+v", got, want)
+
+	state.updateRaidProgress(state.raid.template.progressDurationSeconds/2 - 0.01)
+	if len(state.raid.enemies) != 0 {
+		t.Fatalf("active enemies before threshold = %d, want 0", len(state.raid.enemies))
 	}
 
-	advanceRaidUpdates(state, raidSpawnInterval-1)
+	state.updateRaidProgress(0.01)
 	if len(state.raid.enemies) != 1 {
-		t.Fatalf("active enemies before stagger = %d, want 1", len(state.raid.enemies))
+		t.Fatalf("active enemies at threshold = %d, want 1", len(state.raid.enemies))
 	}
-
-	advanceRaidUpdates(state, 1)
-	if len(state.raid.enemies) != 2 {
-		t.Fatalf("active enemies after stagger = %d, want 2", len(state.raid.enemies))
+	if state.raid.enemies[0].template != &state.enemyCatalog.SkeletonSwordShield {
+		t.Fatal("expected first threshold to spawn a Skeleton")
 	}
-	if state.raid.enemies[1].template != &state.enemyCatalog.Zombie {
-		t.Fatal("expected second first-Raid enemy to reference the zombie template")
-	}
-	if state.raid.enemies[1].template.Sprite == nil {
-		t.Fatal("expected staggered enemy to reference the zombie sprite")
+	if got, want := state.raid.enemies[0].position, raidEnemySpawnPosition(); got != want {
+		t.Fatalf("spawn position = %+v, want %+v", got, want)
 	}
 }
 
-// TestFirstRaidAlternatesZombiesOnEverySecondSpawn verifies Raid 1 composition.
-func TestFirstRaidAlternatesZombiesOnEverySecondSpawn(t *testing.T) {
+// TestRaidProgressSpawnsSimultaneousRulesInTemplateOrder verifies the full baseline roster.
+func TestRaidProgressSpawnsSimultaneousRulesInTemplateOrder(t *testing.T) {
 	state := newRaidTestState(t)
 	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
 	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
 
 	state.startNextRaid()
-	advanceRaidUpdates(state, raidSpawnInterval*(firstRaidEnemyCount-1))
+	state.updateRaidProgress(state.raid.template.progressDurationSeconds)
 
 	want := []*EnemyTemplate{
 		&state.enemyCatalog.SkeletonSwordShield,
-		&state.enemyCatalog.Zombie,
 		&state.enemyCatalog.SkeletonSwordShield,
 		&state.enemyCatalog.Zombie,
-		&state.enemyCatalog.SkeletonSwordShield,
 	}
 	if len(state.raid.enemies) != len(want) {
 		t.Fatalf("active enemies = %d, want %d", len(state.raid.enemies), len(want))
@@ -108,25 +121,28 @@ func TestFirstRaidAlternatesZombiesOnEverySecondSpawn(t *testing.T) {
 			t.Fatalf("enemy %d health = %d, want %d", i, state.raid.enemies[i].health, template.MaxHealth)
 		}
 	}
+	if state.raid.progress != 1 || state.raid.pendingEnemies != 0 || !state.raid.active {
+		t.Fatalf("completed schedule state = %+v, want active cleanup at 100%%", state.raid)
+	}
 }
 
-// TestLaterRaidsRemainSkeletonOnly verifies zombie alternation is limited to Raid 1.
-func TestLaterRaidsRemainSkeletonOnly(t *testing.T) {
+// TestRaidGenerationUsesLiveSettlementInputs verifies State passes total population and all Plots.
+func TestRaidGenerationUsesLiveSettlementInputs(t *testing.T) {
 	state := newRaidTestState(t)
-	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
-	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
+	state.status.populations.apprentices = populationCount{available: 0, total: 2}
+	state.status.populations.soldiers = populationCount{available: 1, total: 3}
+	state.status.populations.peasants = populationCount{available: 0, total: 4}
+	state.gameMap.revealPlot(plotCoordinate{X: 1, Y: 0})
 	state.raid.number = 1
 
 	state.startNextRaid()
-	advanceRaidUpdates(state, raidSpawnInterval*2)
 
-	if state.raid.number != 2 {
-		t.Fatalf("raid number = %d, want 2", state.raid.number)
+	want := generateRaid(2, 9, 2)
+	if math.Abs(state.raid.template.challengeRating-want.challengeRating) > 0.000000001 {
+		t.Fatalf("challenge = %f, want %f", state.raid.template.challengeRating, want.challengeRating)
 	}
-	for i, enemy := range state.raid.enemies {
-		if enemy.template != &state.enemyCatalog.SkeletonSwordShield {
-			t.Fatalf("enemy %d template = %q, want skeleton", i, enemy.template.Name)
-		}
+	if state.raid.pendingEnemies != want.totalEnemies() {
+		t.Fatalf("pending enemies = %d, want %d", state.raid.pendingEnemies, want.totalEnemies())
 	}
 }
 
@@ -134,6 +150,7 @@ func TestLaterRaidsRemainSkeletonOnly(t *testing.T) {
 func TestRaidEnemiesMoveTowardSanctum(t *testing.T) {
 	state := newRaidTestState(t)
 	state.startNextRaid()
+	state.updateRaidProgress(state.raid.template.progressDurationSeconds / 2)
 	start := state.raid.enemies[0].position
 
 	state.Update(Input{})
@@ -309,16 +326,12 @@ func TestRaidDoesNotAdvanceWhilePaused(t *testing.T) {
 	state := newRaidTestState(t)
 	state.startNextRaid()
 	state.Update(Input{TogglePause: true})
-	position := state.raid.enemies[0].position
-	countdown := state.raid.spawnCountdown
+	progress := state.raid.progress
 
 	state.Update(Input{})
 
-	if state.raid.enemies[0].position != position {
-		t.Fatalf("enemy position = %+v, want %+v", state.raid.enemies[0].position, position)
-	}
-	if state.raid.spawnCountdown != countdown {
-		t.Fatalf("spawn countdown = %d, want %d", state.raid.spawnCountdown, countdown)
+	if state.raid.progress != progress {
+		t.Fatalf("progress = %f, want paused %f", state.raid.progress, progress)
 	}
 }
 
@@ -327,16 +340,12 @@ func TestRaidDoesNotAdvanceWhileIngameMenuOpen(t *testing.T) {
 	state := newRaidTestState(t)
 	state.startNextRaid()
 	state.Update(Input{ToggleMenu: true})
-	position := state.raid.enemies[0].position
-	countdown := state.raid.spawnCountdown
+	progress := state.raid.progress
 
 	state.Update(Input{})
 
-	if state.raid.enemies[0].position != position {
-		t.Fatalf("enemy position = %+v, want %+v", state.raid.enemies[0].position, position)
-	}
-	if state.raid.spawnCountdown != countdown {
-		t.Fatalf("spawn countdown = %d, want %d", state.raid.spawnCountdown, countdown)
+	if state.raid.progress != progress {
+		t.Fatalf("progress = %f, want overlay-frozen %f", state.raid.progress, progress)
 	}
 }
 

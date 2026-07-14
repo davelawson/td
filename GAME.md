@@ -140,7 +140,7 @@ Structures can only be built in explored Plots. Expanding the Domain gives the w
 
 The first build-facing UI is a 260-pixel building bar on the left side of the playable scene. It partitions structures into `Housing`, `Economic`, and `Defenses` tabs, with `Housing` selected by default. Housing shows House, Barracks, and Dorm. Economic shows Woodcutter, Stone Quarry, and Iron Mine. Defenses shows Bow Tower, Flame Bolt Tower, and Catapult Tower. Visible entries use structure sprites with colour-coded prototype construction costs and a compact population row for requirements, costs, or grants displayed to the right of each icon. Hovering a building icon shows an informational tooltip with that structure's description, cost, staffing requirement, and implemented production, population effect, or combat stats. Hovering an eligible icon also brightens that icon and emphasizes its cost row. Buildable icon squares use green outlines. Icons for buildings without sufficient resources, population, or staff use red square outlines and are drawn at 70% opacity. During Management, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads, Tree, or Boulder. Occupied Tiles, road Tiles, Tree Tiles, Boulder Tiles, Labour, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused Management still allows building, but the in-game overlay blocks it.
 
-Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus two Peasants. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
+Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus one Peasant. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
 
 The House is the first population-provider building. It costs 20 Wood, requires no staff, has no combat stats, and immediately grants 2 Peasants by increasing both available and total Peasant population. House population is not removed because structure removal does not yet exist.
 
@@ -180,23 +180,25 @@ The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's 
 
 During a Raid, the in-game top bar should show how many enemies remain in the current assault. This can be formatted before enemy simulation exists, but real values should come from the Raid system once it is implemented.
 
-The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button ends unpaused Management and starts the next Raid immediately. Raid 1 has five enemies in this exact spawn order: skeleton, zombie, skeleton, zombie, skeleton. Each later Raid adds two enemies and remains skeleton-only until a fuller wave-composition design exists. One enemy appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. There are no alternate paths yet.
+The implemented Raid behavior is deliberately deterministic and scales from current settlement state. A `Next Raid` button ends unpaused Management and generates the next Raid from three integer inputs: Raid number, total settlement population across Apprentices, Soldiers, and Peasants, and the count of all explored Plots including home. The challenge rating is `1.2^(raidNumber-1) * 1.2^(plotsExplored-1) * (1 + population/10) + 3`, with population divided as a floating-point value. Raid and Plot inputs are treated as at least 1 and population as at least 0.
+
+A generated Raid begins at 0 percent progress and advances to 100 percent over `5 + challenge` seconds. Its progress-scaled score is `progress * challenge`. Every time that score reaches another whole multiple of 2, a Skeleton enters; every time it reaches another whole multiple of 4, a Zombie enters. Exact equality counts, and when rules cross together Skeletons are released before Zombies. This release schedule changes only enemy quantities and timing: individual health, speed, damage interaction, rewards, and sprites still come from the existing enemy templates. The top bar continues to report pending plus active enemies and does not display challenge or progress. Enemies use the current straight north road, entering from the farthest explored north-center road edge and moving south to the centered Sanctum. There are no alternate paths yet.
 
 The first Raid slice stores each active enemy's current world position directly. On the starting road, enemies spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Movement speed comes from `EnemyTemplate.SpeedTilesPerSecond`, is measured in Tiles per second, and is converted through the fixed logical update duration. Maximum health comes from `EnemyTemplate.MaxHealth`, and combat-defeat rewards come from `EnemyTemplate.Resources`. The current skeleton template has 50 health, moves at 1.0 Tiles per second, and rewards 5 Wood and 2 Stone. The current zombie template has 75 health, moves at 0.7 Tiles per second, and rewards 4 Wood, 3 Stone, and 1 Metal.
 
 The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. The Catapult Tower range is 5.0 Tiles, damage is 75 to every active enemy in the target's Tile, fire interval is 3.0 seconds, and projectile speed is 3.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
-If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources. When a Raid ends with all enemies defeated, the next Day begins, Labour pays each placed economic building once, and Management opens immediately. A breached Raid does not advance the Day or perform Labour.
+If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources. A Raid cannot succeed during an empty interval before progress reaches 100 percent. Once progress is complete, success waits until all scheduled and active enemies are gone; the next Day then begins, Labour pays each placed economic building once, and Management opens immediately. A breached Raid does not advance the Day or perform Labour.
 
-Open decisions include enemy archetypes, whether a Raid can include multiple waves or paths, how Raid difficulty scales with Domain expansion, whether towers or resources can remove enemies before they reach the Sanctum, and what longer-term recovery or loss flow follows a breached Sanctum.
+Open decisions include additional enemy archetypes, whether a Raid can include multiple waves or paths, how the challenge formula and thresholds should be balanced from play, and what longer-term recovery or loss flow follows a breached Sanctum.
 
 ### Tower Types
 
 Tower types define the defensive structures the wizard can build in the Domain.
 
-- `Bow Tower`: costs 30 Wood, 10 Stone, and 10 Metal; requires one Soldier; has 3.0-Tile range; deals 10 damage; fires every 1.0 second; and launches projectiles at 9.0 Tiles per second.
+- `Bow Tower`: costs 20 Wood and 10 Stone; requires one Soldier; has 3.0-Tile range; deals 10 damage; fires every 1.0 second; and launches projectiles at 9.0 Tiles per second.
 - `Flame Bolt Tower`: costs 30 Stone and 20 Metal; requires one Apprentice; has 2.5-Tile range; deals 20 damage; fires every 1.5 seconds; and launches projectiles at 7.0 Tiles per second.
-- `Catapult Tower`: costs 40 Wood, 60 Stone, and 25 Metal; requires one Soldier and two Peasants; has 5.0-Tile range; deals 75 damage to every active enemy in the struck Tile; fires every 3.0 seconds; and launches projectiles at 3.0 Tiles per second.
+- `Catapult Tower`: costs 40 Wood, 60 Stone, and 25 Metal; requires one Soldier and one Peasant; has 5.0-Tile range; deals 75 damage to every active enemy in the struck Tile; fires every 3.0 seconds; and launches projectiles at 3.0 Tiles per second.
 
 Open decisions include upgrade paths, specialized targeting modes, what other tower types exist, and whether these first prototype costs remain balanced once resource gathering and spending exist.
 
@@ -229,7 +231,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom, `WASD` panning, and right-drag panning are inspection controls only and do not change map data.
 - The first exploration slice uses free magnifying-glass border buttons during Management, including paused Management, to reveal orthogonally adjacent Plots. Each frontier Plot independently receives a stable grasslands-or-hills assignment before exploration and displays its name outward beside the button; the label is informational and only the circle reveals. Home and revealed Plots generate 91% empty grass by weight. Grasslands uses 6% Tree and 3% Boulder; hills uses 3% Tree and 6% Boulder. The first implementation collapses scouting and claiming into one action.
 - Northward exploration along Plot `X=0` extends the visible center road and moves deterministic Raid spawning to the farthest explored north road. Non-north explored Plots do not add Raid paths yet.
-- The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
+- The Raid slice deterministically generates a challenge from Raid number, total settlement population, and explored Plot count, then releases sprite-backed Skeletons and Zombies at score thresholds on the current straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
 - A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Dorm, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
 - The first staffing slice uses available populations to gate tower and economic building construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, Dorm can convert a Peasant into an Apprentice, economic buildings can produce Labour resources, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
 - Woodcutter, Stone Quarry, and Iron Mine are the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource during Labour after a successful Raid. The Iron Mine produces Metal, not a separate Iron resource.
@@ -252,7 +254,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Should later exploration add an on-map wizard character, remain camera-inspection driven, or combine both?
 - How many arcane barrier charges does the Sanctum have, and can those charges be restored or increased?
 - How does the Domain expand, contract, or change over time?
-- What enemy archetypes, spawn rules, and pathing rules should Raids use after the first placeholder north-road slice?
+- What additional enemy archetypes, threshold rules, and pathing rules should extend the current generated north-road Raids?
 - How should future tower stats, damage types, and targeting modes evolve beyond the first Bow Tower baseline?
 - What are the first full win and loss conditions beyond basic Raid completion and Sanctum breach?
 - Which additional worker jobs should resolve during Labour after economic production?
@@ -296,9 +298,13 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: A moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Metal for the Bow Tower, 30 Stone and 20 Metal for the Flame Bolt Tower, and 40 Wood, 60 Stone, and 25 Metal for the Catapult Tower.
-  Rationale: These costs make current tower options visible in the resource economy and now drive the first limited tower placement action, with Catapult positioned as an expensive siege option.
+- Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Metal for the Bow Tower, 30 Stone and 20 Metal for the Flame Bolt Tower, and 40 Wood, 60 Stone, and 25 Metal for the Catapult Tower. Superseded on 2026-07-14 by the revised Bow cost.
+  Rationale: These costs made the initial tower options visible in the resource economy, with Catapult positioned as an expensive siege option.
   Date/Author: 2026-05-26 / Codex
+
+- Decision: Revise the Bow Tower cost to 20 Wood and 10 Stone, and require one Soldier plus one Peasant for the Catapult Tower.
+  Rationale: The current structure templates use these values for Management construction and staffing checks.
+  Date/Author: 2026-07-14 / User
 
 - Decision: Use second-based Bow Tower combat stats for the first automated tower slice: 3.0-Tile range, 10 damage, 1.0-second fire interval, and 9.0-Tiles-per-second projectile speed.
   Rationale: Real-time units keep structure stats independent of frame or update counts, and the chosen values made then-current 20-health skeletons die in two hits while keeping projectile travel visible.
@@ -359,13 +365,17 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: Tile-area impact matches the grid-based map model and keeps the existing deterministic target selection rule instead of adding a new targeting mode.
   Date/Author: 2026-05-26 / Codex
 
-- Decision: Use deterministic placeholder Raids as the first enemy-wave slice.
-  Rationale: A fixed enemy count, fixed stagger, and fixed north-road path make Raid behavior visible and testable before adding pathfinding, rewards, or enemy variety.
+- Decision: Use deterministic placeholder Raids as the first enemy-wave slice. Superseded on 2026-07-14 by settlement-scaled Raid templates.
+  Rationale: A fixed enemy count, fixed stagger, and fixed north-road path made initial Raid behavior visible and testable before dynamic generation existed.
   Date/Author: 2026-05-15 / Codex
 
-- Decision: Add zombies as the second enemy archetype in Raid 1.
-  Rationale: Spawning zombies in the second and fourth first-Raid positions adds visible enemy variety while keeping the current deterministic north-road Raid model. Zombies are slower and tougher than skeletons, with 75 health and 0.7 Tiles-per-second speed.
+- Decision: Add zombies as the second enemy archetype in Raid 1. Superseded on 2026-07-14 by a Zombie threshold used in every generated Raid.
+  Rationale: Fixed first-Raid positions introduced visible variety before threshold-based generation. Zombies remain slower and tougher than Skeletons, with 75 health and 0.7 Tiles-per-second speed.
   Date/Author: 2026-05-17 / Codex
+
+- Decision: Generate deterministic scaling Raid templates from Raid number, total settlement population, and all explored Plots.
+  Rationale: `1.2^(raidNumber-1) * 1.2^(plotsExplored-1) * (1 + population/10) + 3` connects progression, growth, and expansion to pressure. A `5 + challenge` second progress window releases Skeletons at score multiples of 2 and Zombies at score multiples of 4, giving the template capacity to scale without modifying individual enemy stats.
+  Date/Author: 2026-07-14 / User and Codex
 
 - Decision: A zero-Barricade Sanctum breach clears the active Raid and prevents further Raid starts in the first slice.
   Rationale: This gives the prototype a concrete failure state without prematurely designing game-over routing, recovery, or campaign consequences.

@@ -138,6 +138,7 @@ func TestNorthExplorationAddsRoadAndExtendsRaidSpawn(t *testing.T) {
 	}
 
 	state.startNextRaid()
+	state.spawnRaidEnemy(raidEnemySkeletonSwordShield)
 
 	if got, want := state.raid.enemies[0].position, (coord{X: 0, Y: float64(plotSize + homePlotCenter)}); got != want {
 		t.Fatalf("spawn position = %+v, want %+v", got, want)

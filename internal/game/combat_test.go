@@ -10,8 +10,9 @@ func TestSpawnRaidEnemyAssignsHealthAndStableIDs(t *testing.T) {
 	state := newRaidTestState(t)
 
 	state.startNextRaid()
+	state.spawnRaidEnemy(raidEnemySkeletonSwordShield)
 	first := state.raid.enemies[0]
-	state.spawnRaidEnemy()
+	state.spawnRaidEnemy(raidEnemyZombie)
 	second := state.raid.enemies[1]
 
 	if first.id != 0 || second.id != 1 {

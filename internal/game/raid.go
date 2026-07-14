@@ -1,17 +1,12 @@
 package game
 
-const (
-	firstRaidEnemyCount = 5
-	raidEnemyGrowth     = 2
-	raidSpawnInterval   = 45
-)
-
 type raidState struct {
 	active         bool
 	breached       bool
 	number         int
+	template       raidTemplate
+	progress       float64
 	pendingEnemies int
-	spawnCountdown int
 	nextEnemyID    int
 	enemies        []raidEnemy
 }
@@ -29,13 +24,16 @@ func (s *State) startNextRaid() {
 		return
 	}
 
-	s.raid.number++
+	nextRaidNumber := s.raid.number + 1
+	template := generateRaid(nextRaidNumber, s.settlementPopulation(), len(s.gameMap.exploredPlotCoordinates()))
+	s.raid.number = nextRaidNumber
 	s.raid.active = true
-	s.raid.pendingEnemies = raidEnemyCount(s.raid.number)
+	s.raid.template = template
+	s.raid.progress = 0
+	s.raid.pendingEnemies = template.totalEnemies()
 	s.raid.nextEnemyID = 0
 	s.raid.enemies = nil
 	s.resetCombatForRaid()
-	s.spawnRaidEnemy()
 	s.status.phase = phaseRaid
 }
 
@@ -44,47 +42,51 @@ func (s *State) canStartRaid() bool {
 	return s.status.phase == phaseManagement && !s.paused && !s.raid.active && !s.raid.breached
 }
 
-// raidEnemyCount returns the scripted enemy count for a Raid number.
-func raidEnemyCount(number int) int {
-	if number < 1 {
-		return firstRaidEnemyCount
-	}
-	return firstRaidEnemyCount + (number-1)*raidEnemyGrowth
-}
-
 // updateRaid advances spawning, movement, Sanctum contact, and completion.
 func (s *State) updateRaid() {
 	if !s.raid.active {
 		return
 	}
 
-	s.updateRaidSpawning()
+	s.updateRaidProgress(gameUpdateSeconds)
 	s.updateCombat()
 	s.updateRaidEnemies()
-	if s.raid.active && s.raid.pendingEnemies == 0 && len(s.raid.enemies) == 0 {
+	if s.raid.active && s.raid.progress >= 1 && s.raid.pendingEnemies == 0 && len(s.raid.enemies) == 0 {
 		s.completeRaid()
 	}
 }
 
-// updateRaidSpawning advances the staggered enemy spawn timer.
-func (s *State) updateRaidSpawning() {
-	if s.raid.pendingEnemies == 0 {
+// updateRaidProgress advances the generated schedule and spawns newly reached enemies.
+func (s *State) updateRaidProgress(deltaSeconds float64) {
+	if !s.raid.active || s.raid.progress >= 1 || deltaSeconds <= 0 || s.raid.template.progressDurationSeconds <= 0 {
 		return
 	}
 
-	s.raid.spawnCountdown--
-	if s.raid.spawnCountdown <= 0 {
-		s.spawnRaidEnemy()
+	previousProgress := s.raid.progress
+	s.raid.progress += deltaSeconds / s.raid.template.progressDurationSeconds
+	if s.raid.progress > 1 {
+		s.raid.progress = 1
+	}
+	previousScore := previousProgress * s.raid.template.challengeRating
+	currentScore := s.raid.progress * s.raid.template.challengeRating
+	for _, rule := range s.raid.template.enemyRules {
+		newEnemies := scheduledEnemyCount(currentScore, rule) - scheduledEnemyCount(previousScore, rule)
+		for i := 0; i < newEnemies; i++ {
+			s.spawnRaidEnemy(rule.kind)
+		}
 	}
 }
 
-// spawnRaidEnemy adds one enemy at the road edge and resets the spawn timer.
-func (s *State) spawnRaidEnemy() {
+// spawnRaidEnemy adds one generated enemy at the current road edge.
+func (s *State) spawnRaidEnemy(kind raidEnemyKind) {
 	if s.raid.pendingEnemies == 0 {
 		return
 	}
 
-	template := s.nextRaidEnemyTemplate()
+	template, ok := s.enemyTemplateForRaidKind(kind)
+	if !ok {
+		return
+	}
 	s.raid.enemies = append(s.raid.enemies, raidEnemy{
 		id:       s.raid.nextEnemyID,
 		template: template,
@@ -93,15 +95,25 @@ func (s *State) spawnRaidEnemy() {
 	})
 	s.raid.nextEnemyID++
 	s.raid.pendingEnemies--
-	s.raid.spawnCountdown = raidSpawnInterval
 }
 
-// nextRaidEnemyTemplate returns the template for the next deterministic spawn.
-func (s *State) nextRaidEnemyTemplate() *EnemyTemplate {
-	if s.raid.number == 1 && s.raid.nextEnemyID%2 == 1 {
-		return &s.enemyCatalog.Zombie
+// enemyTemplateForRaidKind maps a generated enemy kind to the active catalog.
+func (s *State) enemyTemplateForRaidKind(kind raidEnemyKind) (*EnemyTemplate, bool) {
+	switch kind {
+	case raidEnemySkeletonSwordShield:
+		return &s.enemyCatalog.SkeletonSwordShield, true
+	case raidEnemyZombie:
+		return &s.enemyCatalog.Zombie, true
+	default:
+		return nil, false
 	}
-	return &s.enemyCatalog.SkeletonSwordShield
+}
+
+// settlementPopulation returns total inhabitants across every settlement role.
+func (s *State) settlementPopulation() int {
+	return s.status.populations.apprentices.total +
+		s.status.populations.soldiers.total +
+		s.status.populations.peasants.total
 }
 
 // updateRaidEnemies moves active enemies and applies Sanctum contact rules.

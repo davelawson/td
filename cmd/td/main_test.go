@@ -98,7 +98,7 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "51-peaceful-phase-split", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "52-dynamic-raid-generation", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
@@ -149,7 +149,7 @@ func (a *screenshotApp) Update() error {
 				CursorY: defaultWindowHeight - 68,
 				Clicked: true,
 			})
-			for i := 0; i < 45; i++ {
+			for i := 0; i < 330; i++ {
 				a.app.gameState.Update(game.Input{})
 			}
 		}
@@ -326,8 +326,12 @@ func (a *screenshotApp) Draw(screen *ebiten.Image) {
 		return
 	}
 
-	a.app.Draw(screen)
+	rendered := ebiten.NewImage(defaultWindowWidth, defaultWindowHeight)
+	a.app.Draw(rendered)
 	target := a.targets[a.index]
+	frame := image.NewRGBA(image.Rect(0, 0, defaultWindowWidth, defaultWindowHeight))
+	rendered.ReadPixels(frame.Pix)
+	screen.DrawImage(rendered, nil)
 
 	if err := os.MkdirAll(filepath.Dir(target.path), 0o755); err != nil {
 		panic(err)
@@ -338,8 +342,6 @@ func (a *screenshotApp) Draw(screen *ebiten.Image) {
 	}
 	defer file.Close()
 
-	frame := image.NewRGBA(image.Rect(0, 0, defaultWindowWidth, defaultWindowHeight))
-	screen.ReadPixels(frame.Pix)
 	if err := png.Encode(file, frame); err != nil {
 		panic(err)
 	}
