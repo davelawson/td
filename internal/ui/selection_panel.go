@@ -14,10 +14,8 @@ const (
 	selectionPanelMargin       = 42
 	selectionPanelWidth        = 390
 	selectionPanelPadding      = 18
-	selectionPanelTitleGap     = 36
 	selectionPanelRowHeight    = 46
 	selectionPanelBottomPad    = 16
-	selectionPanelTitle        = "Selection"
 	selectionPanelUnknownValue = "Unknown"
 )
 
@@ -85,7 +83,7 @@ func SelectionPanelBounds(width, height int, data SelectionPanelData) (Button[in
 	if !ok {
 		return Button[int]{}, false
 	}
-	panelHeight := selectionPanelPadding + selectionPanelTitleGap + len(rows)*selectionPanelRowHeight + selectionPanelBottomPad
+	panelHeight := selectionPanelPadding + len(rows)*selectionPanelRowHeight + selectionPanelBottomPad
 	return Button[int]{
 		X: width - selectionPanelMargin - selectionPanelWidth,
 		Y: height - selectionPanelMargin - panelHeight,
@@ -118,14 +116,11 @@ func DrawSelectionPanel(screen *ebiten.Image, face *text.GoTextFace, width, heig
 	vector.FillRect(screen, x, y, w, h, SelectionPanelBackground, false)
 	vector.StrokeRect(screen, x, y, w, h, 3, Bronze, false)
 
-	titleX := float64(bounds.X + selectionPanelPadding)
-	titleY := float64(bounds.Y + selectionPanelPadding - 1)
-	DrawText(screen, selectionPanelTitle, face, titleX, titleY, LightBronze)
-
-	rowY := float64(bounds.Y + selectionPanelPadding + selectionPanelTitleGap)
+	rowX := float64(bounds.X + selectionPanelPadding)
+	rowY := float64(bounds.Y + selectionPanelPadding)
 	for _, row := range rows {
-		DrawText(screen, row.Label, face, titleX, rowY, MutedParchment)
-		DrawText(screen, row.Value, face, titleX+20, rowY+20, Parchment)
+		DrawText(screen, row.Label, face, rowX, rowY, MutedParchment)
+		DrawText(screen, row.Value, face, rowX+20, rowY+20, Parchment)
 		rowY += selectionPanelRowHeight
 	}
 }

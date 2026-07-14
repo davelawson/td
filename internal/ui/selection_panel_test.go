@@ -150,8 +150,8 @@ func TestSelectionPanelBounds(t *testing.T) {
 	if !ok {
 		t.Fatal("expected selection panel bounds")
 	}
-	if bounds.X != 1488 || bounds.Y != 738 || bounds.W != 390 || bounds.H != 300 {
-		t.Fatalf("bounds = %+v, want X:1488 Y:738 W:390 H:300", bounds)
+	if bounds.X != 1488 || bounds.Y != 774 || bounds.W != 390 || bounds.H != 264 {
+		t.Fatalf("bounds = %+v, want X:1488 Y:774 W:390 H:264", bounds)
 	}
 	if !SelectionPanelContains(1920, 1080, data, bounds.X+bounds.W/2, bounds.Y+bounds.H/2) {
 		t.Fatal("expected center point inside selection panel")
