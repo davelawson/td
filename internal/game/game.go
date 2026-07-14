@@ -73,6 +73,7 @@ type gameUI struct {
 	buildBarHover    int
 	buildBarTabHover ui.BuildingBarCategory
 	buildBarCategory ui.BuildingBarCategory
+	marketTradeHover ui.MarketTradeAction
 	titleFace        *text.GoTextFace
 	bodyFace         *text.GoTextFace
 	hudFace          *text.GoTextFace
@@ -135,6 +136,7 @@ func newGameUI(source, boldSource *text.GoTextFaceSource, width, height int) gam
 		buildBarHover:    -1,
 		buildBarTabHover: ui.BuildingBarNoCategory,
 		buildBarCategory: ui.BuildingBarCategoryHousing,
+		marketTradeHover: ui.MarketTradeNoAction,
 		titleFace: &text.GoTextFace{
 			Source: source,
 			Size:   ui.GameTitleFontSize,
@@ -190,6 +192,7 @@ func (s *State) Update(input Input) Action {
 	s.updateBuildingBarHover(input)
 	s.updateBuildDrag(input)
 	s.applyCameraInput(input)
+	s.updateMarketControls(input)
 	s.updateExploration(input)
 	s.updateSelection(input)
 	if input.TogglePause {
@@ -216,6 +219,7 @@ func (s *State) Draw(screen *ebiten.Image) {
 	s.drawBuildingBar(screen)
 	s.drawBuildingTooltip(screen)
 	s.drawBuildDrag(screen)
+	s.drawMarketControls(screen)
 	s.drawRaidControls(screen)
 	s.drawCounter(screen)
 	s.drawSelectionPanel(screen)

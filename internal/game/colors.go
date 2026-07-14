@@ -27,7 +27,8 @@ var colors = struct {
 	topBarEdge     color.Color
 	resourceWood   color.Color
 	resourceStone  color.Color
-	resourceMetal  color.Color
+	resourceIron   color.Color
+	resourceGold   color.Color
 	exploreButton  color.Color
 	selectionPanel color.Color
 	overlay        color.Color
@@ -52,7 +53,8 @@ var colors = struct {
 	topBarEdge:     ui.Bronze,
 	resourceWood:   ui.ResourceWood,
 	resourceStone:  ui.ResourceStone,
-	resourceMetal:  ui.ResourceMetal,
+	resourceIron:   ui.ResourceIron,
+	resourceGold:   ui.ResourceGold,
 	exploreButton:  color.RGBA{R: 218, G: 198, B: 132, A: 245},
 	selectionPanel: ui.SelectionPanelBackground,
 	overlay:        ui.TransparentBlack,

@@ -11,7 +11,7 @@ func TestEconomicBuildingsConsumeMatchingTerrainForYield(t *testing.T) {
 	}{
 		{name: "woodcutter", feature: featureWoodcutter, terrain: terrainTree, resource: func(r resourceCounts) int { return r.wood }},
 		{name: "stone quarry", feature: featureStoneQuarry, terrain: terrainBoulder, resource: func(r resourceCounts) int { return r.stone }},
-		{name: "iron mine", feature: featureIronMine, terrain: terrainIronDeposit, resource: func(r resourceCounts) int { return r.metal }},
+		{name: "iron mine", feature: featureIronMine, terrain: terrainIronDeposit, resource: func(r resourceCounts) int { return r.iron }},
 	}
 
 	for _, test := range tests {

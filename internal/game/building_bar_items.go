@@ -12,6 +12,7 @@ const (
 	buildingBarWoodcutterIndex     = ui.BuildingBarWoodcutter
 	buildingBarStoneQuarryIndex    = ui.BuildingBarStoneQuarry
 	buildingBarIronMineIndex       = ui.BuildingBarIronMine
+	buildingBarMarketIndex         = ui.BuildingBarMarket
 	buildingBarBowTowerIndex       = ui.BuildingBarBowTower
 	buildingBarFlameBoltTowerIndex = ui.BuildingBarFlameBoltTower
 	buildingBarCatapultTowerIndex  = ui.BuildingBarCatapultTower
@@ -32,6 +33,8 @@ func buildingFeatureForItemID(id buildingBarItemID) (tileFeature, bool) {
 		return featureStoneQuarry, true
 	case buildingBarIronMineIndex:
 		return featureIronMine, true
+	case buildingBarMarketIndex:
+		return featureMarket, true
 	case buildingBarBowTowerIndex:
 		return featureBowTower, true
 	case buildingBarFlameBoltTowerIndex:
@@ -58,6 +61,8 @@ func (s *State) buildingTemplateForItemID(id buildingBarItemID) (StructureTempla
 		return s.structureCatalog.StoneQuarry, true
 	case buildingBarIronMineIndex:
 		return s.structureCatalog.IronMine, true
+	case buildingBarMarketIndex:
+		return s.structureCatalog.Market, true
 	case buildingBarBowTowerIndex:
 		return s.structureCatalog.BowTower, true
 	case buildingBarFlameBoltTowerIndex:

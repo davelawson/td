@@ -383,8 +383,8 @@ func TestPostRaidLabourGrantsEconomicBuildingResources(t *testing.T) {
 	if state.status.resources.stone != startingResources.stone+10 {
 		t.Fatalf("stone = %d, want %d", state.status.resources.stone, startingResources.stone+10)
 	}
-	if state.status.resources.metal != startingResources.metal+10 {
-		t.Fatalf("metal = %d, want %d", state.status.resources.metal, startingResources.metal+10)
+	if state.status.resources.iron != startingResources.iron+10 {
+		t.Fatalf("iron = %d, want %d", state.status.resources.iron, startingResources.iron+10)
 	}
 }
 

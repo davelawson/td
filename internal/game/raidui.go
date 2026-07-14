@@ -26,7 +26,7 @@ const (
 // updateRaidControls applies pointer hover and button clicks for Raid controls.
 func (s *State) updateRaidControls(input Input) {
 	s.ui.nextRaidHover = s.nextRaidButtonContains(input.CursorX, input.CursorY)
-	if input.Clicked && s.ui.nextRaidHover {
+	if input.Clicked && s.ui.nextRaidHover && !s.marketControlsContains(input.CursorX, input.CursorY) {
 		s.startNextRaid()
 	}
 }

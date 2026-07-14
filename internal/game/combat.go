@@ -210,7 +210,7 @@ func (s *State) damageEnemy(index int, damage int) {
 	if s.raid.enemies[index].health > 0 {
 		return
 	}
-	s.grantEnemyResources(s.raid.enemies[index])
+	s.grantEnemyGold(s.raid.enemies[index])
 	s.playRaiderDefeatedSound()
 	copy(s.raid.enemies[index:], s.raid.enemies[index+1:])
 	s.raid.enemies = s.raid.enemies[:len(s.raid.enemies)-1]

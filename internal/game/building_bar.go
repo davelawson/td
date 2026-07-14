@@ -176,6 +176,7 @@ func (s *State) buildDropBlockedByUI(x, y int) bool {
 	return s.buildingBarContains(x, y) ||
 		s.nextRaidButtonContains(x, y) ||
 		s.selectionPanelContains(x, y) ||
+		s.marketControlsContains(x, y) ||
 		s.exploreButtonContains(x, y)
 }
 

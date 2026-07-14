@@ -16,10 +16,10 @@ func TestBuildingTooltipContentForAllBuildingMenuItems(t *testing.T) {
 		{BuildingBarCategoryHousing, 2, "Dorm", []string{"Houses Peasants studying to become Apprentices.", "Cost: 10 Wood, 10 Stone", "Staffing: None", "Effect: -1 Peasant, +1 Apprentice"}},
 		{BuildingBarCategoryEconomic, 0, "Woodcutter", []string{"Assigns a Peasant to bring in Wood during Labour.", "Cost: 10 Wood", "Staffing: 1 Peasant", "Production: +10 Wood during each Labour phase"}},
 		{BuildingBarCategoryEconomic, 1, "Stone Quarry", []string{"Assigns a Peasant to quarry Stone during Labour.", "Cost: 10 Wood, 10 Stone", "Staffing: 1 Peasant", "Production: +10 Stone during each Labour phase"}},
-		{BuildingBarCategoryEconomic, 2, "Iron Mine", []string{"Assigns a Peasant to extract Metal during Labour.", "Cost: 10 Wood, 10 Stone, 10 Metal", "Staffing: 1 Peasant", "Production: +10 Metal during each Labour phase"}},
+		{BuildingBarCategoryEconomic, 2, "Iron Mine", []string{"Assigns a Peasant to extract Iron during Labour.", "Cost: 10 Wood, 10 Stone, 10 Iron", "Staffing: 1 Peasant", "Production: +10 Iron during each Labour phase"}},
 		{BuildingBarCategoryDefenses, 0, "Bow Tower", []string{"A staffed archer tower that fires quick arrows.", "Cost: 20 Wood, 10 Stone", "Staffing: 1 Soldier", "Range: 3.0 Tiles", "Damage: 10", "Fire: every 1.0s", "Projectile: 9.0 Tiles/s"}},
-		{BuildingBarCategoryDefenses, 1, "Flame Bolt Tower", []string{"An apprentice-staffed tower that hurls focused fire.", "Cost: 30 Stone, 20 Metal", "Staffing: 1 Apprentice", "Range: 2.5 Tiles", "Damage: 20", "Fire: every 1.5s", "Projectile: 7.0 Tiles/s"}},
-		{BuildingBarCategoryDefenses, 2, "Catapult Tower", []string{"A heavy crewed tower that crushes enemies in one Tile.", "Cost: 40 Wood, 60 Stone, 25 Metal", "Staffing: 1 Soldier, 1 Peasant", "Range: 5.0 Tiles", "Damage: 30", "Fire: every 6.0s", "Projectile: 3.0 Tiles/s", "Area: damages every enemy in the target Tile"}},
+		{BuildingBarCategoryDefenses, 1, "Flame Bolt Tower", []string{"An apprentice-staffed tower that hurls focused fire.", "Cost: 30 Stone, 20 Iron", "Staffing: 1 Apprentice", "Range: 2.5 Tiles", "Damage: 20", "Fire: every 1.5s", "Projectile: 7.0 Tiles/s"}},
+		{BuildingBarCategoryDefenses, 2, "Catapult Tower", []string{"A heavy crewed tower that crushes enemies in one Tile.", "Cost: 40 Wood, 60 Stone, 25 Iron", "Staffing: 1 Soldier, 1 Peasant", "Range: 5.0 Tiles", "Damage: 30", "Fire: every 6.0s", "Projectile: 3.0 Tiles/s", "Area: damages every enemy in the target Tile"}},
 	}
 
 	for _, tc := range cases {

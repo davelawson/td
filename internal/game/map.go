@@ -63,6 +63,7 @@ const (
 	featureWoodcutter
 	featureStoneQuarry
 	featureIronMine
+	featureMarket
 	featureBowTower
 	featureFlameBoltTower
 	featureCatapultTower

@@ -116,7 +116,7 @@ func buildingTooltipBounds(width, height, top int, itemBounds Button[int], lineC
 	return Button[int]{X: x, Y: y, W: buildingTooltipWidth, H: tooltipHeight}
 }
 
-// buildingResourcesTooltipText formats resources in stable Wood, Stone, Metal order.
+// buildingResourcesTooltipText formats resources in stable Wood, Stone, Iron, Gold order.
 func buildingResourcesTooltipText(resources ResourceAmounts) string {
 	parts := []string{}
 	if resources.Wood > 0 {
@@ -125,8 +125,11 @@ func buildingResourcesTooltipText(resources ResourceAmounts) string {
 	if resources.Stone > 0 {
 		parts = append(parts, buildingCountLabel(resources.Stone, "Stone", "Stone"))
 	}
-	if resources.Metal > 0 {
-		parts = append(parts, buildingCountLabel(resources.Metal, "Metal", "Metal"))
+	if resources.Iron > 0 {
+		parts = append(parts, buildingCountLabel(resources.Iron, "Iron", "Iron"))
+	}
+	if resources.Gold > 0 {
+		parts = append(parts, buildingCountLabel(resources.Gold, "Gold", "Gold"))
 	}
 	if len(parts) == 0 {
 		return "None"
@@ -180,8 +183,11 @@ func buildingResourceYieldTooltipText(resources ResourceAmounts) string {
 	if resources.Stone > 0 {
 		parts = append(parts, "+"+buildingCountLabel(resources.Stone, "Stone", "Stone"))
 	}
-	if resources.Metal > 0 {
-		parts = append(parts, "+"+buildingCountLabel(resources.Metal, "Metal", "Metal"))
+	if resources.Iron > 0 {
+		parts = append(parts, "+"+buildingCountLabel(resources.Iron, "Iron", "Iron"))
+	}
+	if resources.Gold > 0 {
+		parts = append(parts, "+"+buildingCountLabel(resources.Gold, "Gold", "Gold"))
 	}
 	return strings.Join(parts, ", ")
 }

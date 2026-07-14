@@ -14,8 +14,8 @@ func TestBuildingBarModelAdaptsStructureCatalog(t *testing.T) {
 	if model.SelectedCategory != ui.BuildingBarCategoryHousing {
 		t.Fatalf("selected category = %v, want Housing", model.SelectedCategory)
 	}
-	if len(model.Items) != 9 {
-		t.Fatalf("items = %d, want 9", len(model.Items))
+	if len(model.Items) != 10 {
+		t.Fatalf("items = %d, want 10", len(model.Items))
 	}
 
 	cases := []struct {
@@ -32,10 +32,11 @@ func TestBuildingBarModelAdaptsStructureCatalog(t *testing.T) {
 		{ui.BuildingBarDorm, "Dorm", ui.ResourceAmounts{Wood: 10, Stone: 10}, ui.PopulationAmounts{}, ui.PopulationAmounts{Peasants: 1}, ui.PopulationAmounts{Apprentices: 1}, false},
 		{ui.BuildingBarWoodcutter, "Woodcutter", ui.ResourceAmounts{Wood: 10}, ui.PopulationAmounts{Peasants: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
 		{ui.BuildingBarStoneQuarry, "Stone Quarry", ui.ResourceAmounts{Wood: 10, Stone: 10}, ui.PopulationAmounts{Peasants: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
-		{ui.BuildingBarIronMine, "Iron Mine", ui.ResourceAmounts{Wood: 10, Stone: 10, Metal: 10}, ui.PopulationAmounts{Peasants: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
+		{ui.BuildingBarIronMine, "Iron Mine", ui.ResourceAmounts{Wood: 10, Stone: 10, Iron: 10}, ui.PopulationAmounts{Peasants: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
+		{ui.BuildingBarMarket, "Market", ui.ResourceAmounts{Wood: 30}, ui.PopulationAmounts{Soldiers: 1, Peasants: 2}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
 		{ui.BuildingBarBowTower, "Bow Tower", ui.ResourceAmounts{Wood: 20, Stone: 10}, ui.PopulationAmounts{Soldiers: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
-		{ui.BuildingBarFlameBoltTower, "Flame Bolt Tower", ui.ResourceAmounts{Stone: 30, Metal: 20}, ui.PopulationAmounts{Apprentices: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
-		{ui.BuildingBarCatapultTower, "Catapult Tower", ui.ResourceAmounts{Wood: 40, Stone: 60, Metal: 25}, ui.PopulationAmounts{Soldiers: 1, Peasants: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
+		{ui.BuildingBarFlameBoltTower, "Flame Bolt Tower", ui.ResourceAmounts{Stone: 30, Iron: 20}, ui.PopulationAmounts{Apprentices: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
+		{ui.BuildingBarCatapultTower, "Catapult Tower", ui.ResourceAmounts{Wood: 40, Stone: 60, Iron: 25}, ui.PopulationAmounts{Soldiers: 1, Peasants: 1}, ui.PopulationAmounts{}, ui.PopulationAmounts{}, false},
 	}
 
 	for _, tc := range cases {
@@ -54,7 +55,7 @@ func TestBuildingBarModelAdaptsStructureCatalog(t *testing.T) {
 func TestBuildingBarModelRecomputesAvailability(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 1, 1, 2)
-	state.status.resources = resourceCounts{wood: 80, stone: 80, metal: 30}
+	state.status.resources = resourceCounts{wood: 80, stone: 80, iron: 30}
 
 	model := state.buildingBarModel()
 	for _, action := range ui.BuildingBarActions() {

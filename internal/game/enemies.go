@@ -12,7 +12,7 @@ type EnemyTemplate struct {
 	MaxHealth           int
 	SpeedTilesPerSecond float64
 	SanctumDamage       int
-	Resources           Resources
+	GoldDrop            int
 	SpriteKey           string
 	Sprite              *ebiten.Image
 }
@@ -33,7 +33,7 @@ func NewEnemyCatalog(assetCatalog assets.Catalog) EnemyCatalog {
 			MaxHealth:           50,
 			SpeedTilesPerSecond: 1.0,
 			SanctumDamage:       1,
-			Resources:           Resources{Wood: 5, Stone: 2},
+			GoldDrop:            1,
 			SpriteKey:           "skeleton-sword-shield",
 			Sprite:              assetCatalog.Sprite.Enemy.SkeletonSwordShield,
 		},
@@ -42,7 +42,7 @@ func NewEnemyCatalog(assetCatalog assets.Catalog) EnemyCatalog {
 			MaxHealth:           75,
 			SpeedTilesPerSecond: 0.7,
 			SanctumDamage:       1,
-			Resources:           Resources{Wood: 4, Stone: 3, Metal: 1},
+			GoldDrop:            2,
 			SpriteKey:           "zombie",
 			Sprite:              assetCatalog.Sprite.Enemy.Zombie,
 		},
@@ -51,7 +51,7 @@ func NewEnemyCatalog(assetCatalog assets.Catalog) EnemyCatalog {
 			MaxHealth:           40,
 			SpeedTilesPerSecond: 1.5,
 			SanctumDamage:       1,
-			Resources:           Resources{Wood: 4, Metal: 1},
+			GoldDrop:            3,
 			SpriteKey:           "ghoul",
 			Sprite:              assetCatalog.Sprite.Enemy.Ghoul,
 		},
@@ -60,7 +60,7 @@ func NewEnemyCatalog(assetCatalog assets.Catalog) EnemyCatalog {
 			MaxHealth:           125,
 			SpeedTilesPerSecond: 0.9,
 			SanctumDamage:       1,
-			Resources:           Resources{Stone: 5, Metal: 2},
+			GoldDrop:            5,
 			SpriteKey:           "armoured-skeleton",
 			Sprite:              assetCatalog.Sprite.Enemy.ArmouredSkeleton,
 		},

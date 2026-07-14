@@ -214,11 +214,11 @@ func TestNewStructureCatalogIncludesEconomicBuildings(t *testing.T) {
 		},
 		{
 			name:        "Iron Mine",
-			description: "Consumes the nearest Iron Deposit in the explored Domain to produce Metal during Labour.",
+			description: "Consumes the nearest Iron Deposit in the explored Domain to produce Iron during Labour.",
 			template:    catalog.IronMine,
 			sprite:      assetCatalog.Sprite.Structure.IronMine,
-			cost:        Resources{Wood: 10, Stone: 10, Metal: 10},
-			yield:       Resources{Metal: 10},
+			cost:        Resources{Wood: 10, Stone: 10, Iron: 10},
+			yield:       Resources{Iron: 10},
 		},
 	}
 	for _, test := range tests {
@@ -262,8 +262,8 @@ func TestNewStructureCatalogIncludesFlameBoltTower(t *testing.T) {
 	if flameBoltTower.Sprite != assetCatalog.Sprite.Structure.FlameBoltTower {
 		t.Fatal("expected Flame Bolt Tower sprite to reference the loaded asset catalog sprite")
 	}
-	if flameBoltTower.Cost != (Resources{Stone: 30, Metal: 20}) {
-		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 metal", flameBoltTower.Cost)
+	if flameBoltTower.Cost != (Resources{Stone: 30, Iron: 20}) {
+		t.Fatalf("Flame Bolt Tower cost = %+v, want 30 stone 20 iron", flameBoltTower.Cost)
 	}
 	if flameBoltTower.Staffing != (StaffingRequirements{Apprentices: 1}) {
 		t.Fatalf("Flame Bolt Tower staffing = %+v, want 1 Apprentice", flameBoltTower.Staffing)
@@ -301,8 +301,8 @@ func TestNewStructureCatalogIncludesCatapultTower(t *testing.T) {
 	if catapultTower.Sprite != assetCatalog.Sprite.Structure.CatapultTower {
 		t.Fatal("expected Catapult Tower sprite to reference the loaded asset catalog sprite")
 	}
-	if catapultTower.Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
-		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", catapultTower.Cost)
+	if catapultTower.Cost != (Resources{Wood: 40, Stone: 60, Iron: 25}) {
+		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 iron", catapultTower.Cost)
 	}
 	if catapultTower.Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 1}) {
 		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 1 Peasant", catapultTower.Staffing)

@@ -114,7 +114,8 @@ func (s *State) setPrototypeGameStatus() {
 		resources: resourceCounts{
 			wood:  100,
 			stone: 50,
-			metal: 20,
+			iron:  20,
+			gold:  0,
 		},
 		populations: populationCounts{
 			apprentices: populationCount{},
@@ -171,7 +172,8 @@ func (s *State) resourceHUDItems() []resourceHUDItem {
 	return []resourceHUDItem{
 		{Name: "Wood", Count: s.status.resources.wood, Sprite: s.assetCatalog.Sprite.Icon.Wood, Color: colors.resourceWood},
 		{Name: "Stone", Count: s.status.resources.stone, Sprite: s.assetCatalog.Sprite.Icon.Stone, Color: colors.resourceStone},
-		{Name: "Metal", Count: s.status.resources.metal, Sprite: s.assetCatalog.Sprite.Icon.Metal, Color: colors.resourceMetal},
+		{Name: "Iron", Count: s.status.resources.iron, Sprite: s.assetCatalog.Sprite.Icon.Iron, Color: colors.resourceIron},
+		{Name: "Gold", Count: s.status.resources.gold, Sprite: s.assetCatalog.Sprite.Icon.Gold, Color: colors.resourceGold},
 	}
 }
 

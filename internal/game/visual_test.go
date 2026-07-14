@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -208,6 +210,33 @@ func TestCaptureGhoulAndArmouredSkeletonScreenshot(t *testing.T) {
 	path := filepath.Join(
 		"..", "..", "plans", "59-ghouls-and-armoured-skeletons", "screenshots", "ghoul-and-armoured-skeleton.png",
 	)
+	captureStateScreenshot(t, state, path)
+}
+
+// TestCaptureSelectedMarketScreenshot writes focused Gold and Market evidence when enabled.
+func TestCaptureSelectedMarketScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clearNaturalTerrain(&state.gameMap.Home)
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: homePlotCenter - 2}
+	state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainEmpty, Feature: featureMarket}
+	state.selection = selectedItem{kind: selectedItemStructure, tile: tile}
+	state.status.resources.gold = 5
+	state.status.populations.soldiers = populationCount{total: 1}
+	state.status.populations.peasants = populationCount{total: 2}
+	state.ui.buildBarCategory = ui.BuildingBarCategoryEconomic
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok || panel.Kind != ui.SelectionPanelMarket || !state.marketControlsVisible() {
+		t.Fatalf("selected Market evidence unavailable: panel %+v available %v controls %v", panel, ok, state.marketControlsVisible())
+	}
+	path := filepath.Join("..", "..", "plans", "60-gold-and-market", "screenshots", "selected-market.png")
 	captureStateScreenshot(t, state, path)
 }
 

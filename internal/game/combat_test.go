@@ -188,11 +188,8 @@ func TestProjectileHitRemovesDefeatedEnemy(t *testing.T) {
 	if sink.raiderDefeated != 1 {
 		t.Fatalf("raider defeated sounds = %d, want 1", sink.raiderDefeated)
 	}
-	wantResources := resourceCounts{
-		wood:  startingResources.wood + state.enemyCatalog.SkeletonSwordShield.Resources.Wood,
-		stone: startingResources.stone + state.enemyCatalog.SkeletonSwordShield.Resources.Stone,
-		metal: startingResources.metal + state.enemyCatalog.SkeletonSwordShield.Resources.Metal,
-	}
+	wantResources := startingResources
+	wantResources.gold += state.enemyCatalog.SkeletonSwordShield.GoldDrop
 	if state.status.resources != wantResources {
 		t.Fatalf("resources = %+v, want %+v", state.status.resources, wantResources)
 	}

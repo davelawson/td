@@ -106,7 +106,8 @@ func (s *State) canStartCameraDrag(x, y int) bool {
 	return viewportContainsPoint(viewport, x, y) &&
 		!s.buildingBarContains(x, y) &&
 		!s.nextRaidButtonContains(x, y) &&
-		!s.selectionPanelContains(x, y)
+		!s.selectionPanelContains(x, y) &&
+		!s.marketControlsContains(x, y)
 }
 
 // sceneViewport returns the screen-space area used for camera-projected map rendering.

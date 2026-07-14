@@ -26,8 +26,8 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.status.phase != phaseManagement {
 		t.Fatalf("phase = %v, want %v", state.status.phase, phaseManagement)
 	}
-	if state.status.resources.wood != 100 || state.status.resources.stone != 50 || state.status.resources.metal != 20 {
-		t.Fatalf("resources = %+v, want wood 100 stone 50 metal 20", state.status.resources)
+	if state.status.resources.wood != 100 || state.status.resources.stone != 50 || state.status.resources.iron != 20 {
+		t.Fatalf("resources = %+v, want wood 100 stone 50 iron 20", state.status.resources)
 	}
 	if state.gameMap.Home.Tiles[homePlotCenter][homePlotCenter].Feature != featureSanctum {
 		t.Fatal("expected new state to store the default home Plot")

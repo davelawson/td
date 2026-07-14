@@ -15,8 +15,8 @@ func TestStateResourceHUDItems(t *testing.T) {
 	}
 
 	items := state.resourceHUDItems()
-	if len(items) != 3 {
-		t.Fatalf("resource item count = %d, want 3", len(items))
+	if len(items) != 4 {
+		t.Fatalf("resource item count = %d, want 4", len(items))
 	}
 	tests := []struct {
 		name  string
@@ -25,7 +25,8 @@ func TestStateResourceHUDItems(t *testing.T) {
 	}{
 		{name: "Wood", count: 100, color: colors.resourceWood},
 		{name: "Stone", count: 50, color: colors.resourceStone},
-		{name: "Metal", count: 20, color: colors.resourceMetal},
+		{name: "Iron", count: 20, color: colors.resourceIron},
+		{name: "Gold", count: 0, color: colors.resourceGold},
 	}
 	for i, test := range tests {
 		item := items[i]

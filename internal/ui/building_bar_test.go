@@ -44,7 +44,7 @@ func TestBuildingBarCategoriesAndActionsHaveStableOrder(t *testing.T) {
 		actions  []BuildingBarAction
 	}{
 		{BuildingBarCategoryHousing, []BuildingBarAction{BuildingBarHouse, BuildingBarBarracks, BuildingBarDorm}},
-		{BuildingBarCategoryEconomic, []BuildingBarAction{BuildingBarWoodcutter, BuildingBarStoneQuarry, BuildingBarIronMine}},
+		{BuildingBarCategoryEconomic, []BuildingBarAction{BuildingBarWoodcutter, BuildingBarStoneQuarry, BuildingBarIronMine, BuildingBarMarket}},
 		{BuildingBarCategoryDefenses, []BuildingBarAction{BuildingBarBowTower, BuildingBarFlameBoltTower, BuildingBarCatapultTower}},
 	}
 	model := testBuildingBarModel()
@@ -129,11 +129,12 @@ func TestBuildingBarPopulationMetadataUsesStableRoleOrder(t *testing.T) {
 
 // TestBuildingBarCostsUseStableResourceOrder verifies compact metadata values and colors.
 func TestBuildingBarCostsUseStableResourceOrder(t *testing.T) {
-	items := buildingBarCostItems(ResourceAmounts{Wood: 40, Stone: 60, Metal: 25})
-	if len(items) != 3 || items[0].Value != "40" || items[0].Color != ResourceWood ||
+	items := buildingBarCostItems(ResourceAmounts{Wood: 40, Stone: 60, Iron: 25, Gold: 3})
+	if len(items) != 4 || items[0].Value != "40" || items[0].Color != ResourceWood ||
 		items[1].Value != "60" || items[1].Color != ResourceStone ||
-		items[2].Value != "25" || items[2].Color != ResourceMetal {
-		t.Fatalf("cost items = %+v, want Wood, Stone, Metal order", items)
+		items[2].Value != "25" || items[2].Color != ResourceIron ||
+		items[3].Value != "3" || items[3].Color != ResourceGold {
+		t.Fatalf("cost items = %+v, want Wood, Stone, Iron, Gold order", items)
 	}
 }
 
@@ -171,10 +172,11 @@ func testBuildingBarModel() BuildingBarModel {
 		{Action: BuildingBarDorm, Name: "Dorm", Description: "Houses Peasants studying to become Apprentices.", Cost: ResourceAmounts{Wood: 10, Stone: 10}, PopulationCost: PopulationAmounts{Peasants: 1}, PopulationGrant: PopulationAmounts{Apprentices: 1}},
 		{Action: BuildingBarWoodcutter, Name: "Woodcutter", Description: "Assigns a Peasant to bring in Wood during Labour.", Cost: ResourceAmounts{Wood: 10}, Staffing: PopulationAmounts{Peasants: 1}, ResourceYield: ResourceAmounts{Wood: 10}},
 		{Action: BuildingBarStoneQuarry, Name: "Stone Quarry", Description: "Assigns a Peasant to quarry Stone during Labour.", Cost: ResourceAmounts{Wood: 10, Stone: 10}, Staffing: PopulationAmounts{Peasants: 1}, ResourceYield: ResourceAmounts{Stone: 10}},
-		{Action: BuildingBarIronMine, Name: "Iron Mine", Description: "Assigns a Peasant to extract Metal during Labour.", Cost: ResourceAmounts{Wood: 10, Stone: 10, Metal: 10}, Staffing: PopulationAmounts{Peasants: 1}, ResourceYield: ResourceAmounts{Metal: 10}},
+		{Action: BuildingBarIronMine, Name: "Iron Mine", Description: "Assigns a Peasant to extract Iron during Labour.", Cost: ResourceAmounts{Wood: 10, Stone: 10, Iron: 10}, Staffing: PopulationAmounts{Peasants: 1}, ResourceYield: ResourceAmounts{Iron: 10}},
+		{Action: BuildingBarMarket, Name: "Market", Description: "Trades Gold for materials.", Cost: ResourceAmounts{Wood: 30}, Staffing: PopulationAmounts{Soldiers: 1, Peasants: 2}},
 		{Action: BuildingBarBowTower, Name: "Bow Tower", Description: "A staffed archer tower that fires quick arrows.", Cost: ResourceAmounts{Wood: 20, Stone: 10}, Staffing: PopulationAmounts{Soldiers: 1}, RangeTiles: 3, Damage: 10, FireIntervalSeconds: 1, ProjectileSpeedTilesPerSecond: 9},
-		{Action: BuildingBarFlameBoltTower, Name: "Flame Bolt Tower", Description: "An apprentice-staffed tower that hurls focused fire.", Cost: ResourceAmounts{Stone: 30, Metal: 20}, Staffing: PopulationAmounts{Apprentices: 1}, RangeTiles: 2.5, Damage: 20, FireIntervalSeconds: 1.5, ProjectileSpeedTilesPerSecond: 7},
-		{Action: BuildingBarCatapultTower, Name: "Catapult Tower", Description: "A heavy crewed tower that crushes enemies in one Tile.", Cost: ResourceAmounts{Wood: 40, Stone: 60, Metal: 25}, Staffing: PopulationAmounts{Soldiers: 1, Peasants: 1}, RangeTiles: 5, Damage: 30, FireIntervalSeconds: 6, ProjectileSpeedTilesPerSecond: 3, DamageAllEnemiesInTargetTile: true},
+		{Action: BuildingBarFlameBoltTower, Name: "Flame Bolt Tower", Description: "An apprentice-staffed tower that hurls focused fire.", Cost: ResourceAmounts{Stone: 30, Iron: 20}, Staffing: PopulationAmounts{Apprentices: 1}, RangeTiles: 2.5, Damage: 20, FireIntervalSeconds: 1.5, ProjectileSpeedTilesPerSecond: 7},
+		{Action: BuildingBarCatapultTower, Name: "Catapult Tower", Description: "A heavy crewed tower that crushes enemies in one Tile.", Cost: ResourceAmounts{Wood: 40, Stone: 60, Iron: 25}, Staffing: PopulationAmounts{Soldiers: 1, Peasants: 1}, RangeTiles: 5, Damage: 30, FireIntervalSeconds: 6, ProjectileSpeedTilesPerSecond: 3, DamageAllEnemiesInTargetTile: true},
 	}
 	return BuildingBarModel{Items: items, SelectedCategory: BuildingBarCategoryHousing, HoveredItem: -1, HoveredCategory: BuildingBarNoCategory}
 }

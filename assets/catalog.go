@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/armoured-skeleton.png sprites/enemies/ghoul.png sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/dorm.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/iron-mine.png sprites/structures/sanctum.png sprites/structures/stone-quarry.png sprites/structures/woodcutter.png sprites/terrains/boulder-1.png sprites/terrains/boulder-2.png sprites/terrains/boulder-3.png sprites/terrains/boulder-4.png sprites/terrains/iron-deposit-1.png sprites/terrains/iron-deposit-2.png sprites/terrains/iron-deposit-3.png sprites/terrains/iron-deposit-4.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/armoured-skeleton.png sprites/enemies/ghoul.png sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/gold.png sprites/icons/iron.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/dorm.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/iron-mine.png sprites/structures/market.png sprites/structures/sanctum.png sprites/structures/stone-quarry.png sprites/structures/woodcutter.png sprites/terrains/boulder-1.png sprites/terrains/boulder-2.png sprites/terrains/boulder-3.png sprites/terrains/boulder-4.png sprites/terrains/iron-deposit-1.png sprites/terrains/iron-deposit-2.png sprites/terrains/iron-deposit-3.png sprites/terrains/iron-deposit-4.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 //go:embed audio/raider-defeated.wav
@@ -48,7 +48,8 @@ type EnemySprites struct {
 type IconSprites struct {
 	Wood       *ebiten.Image
 	Stone      *ebiten.Image
-	Metal      *ebiten.Image
+	Iron       *ebiten.Image
+	Gold       *ebiten.Image
 	Apprentice *ebiten.Image
 	Soldier    *ebiten.Image
 	Peasant    *ebiten.Image
@@ -70,6 +71,7 @@ type StructureSprites struct {
 	Woodcutter     *ebiten.Image
 	StoneQuarry    *ebiten.Image
 	IronMine       *ebiten.Image
+	Market         *ebiten.Image
 	BowTower       *ebiten.Image
 	FlameBoltTower *ebiten.Image
 	CatapultTower  *ebiten.Image
@@ -112,7 +114,11 @@ func NewCatalog() (Catalog, error) {
 	if err != nil {
 		return Catalog{}, err
 	}
-	metalIcon, err := loadSprite("sprites/icons/metal.png")
+	ironIcon, err := loadSprite("sprites/icons/iron.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	goldIcon, err := loadSprite("sprites/icons/gold.png")
 	if err != nil {
 		return Catalog{}, err
 	}
@@ -153,6 +159,10 @@ func NewCatalog() (Catalog, error) {
 		return Catalog{}, err
 	}
 	ironMine, err := loadSprite("sprites/structures/iron-mine.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	market, err := loadSprite("sprites/structures/market.png")
 	if err != nil {
 		return Catalog{}, err
 	}
@@ -216,7 +226,8 @@ func NewCatalog() (Catalog, error) {
 			Icon: IconSprites{
 				Wood:       woodIcon,
 				Stone:      stoneIcon,
-				Metal:      metalIcon,
+				Iron:       ironIcon,
+				Gold:       goldIcon,
 				Apprentice: apprenticeIcon,
 				Soldier:    soldierIcon,
 				Peasant:    peasantIcon,
@@ -234,6 +245,7 @@ func NewCatalog() (Catalog, error) {
 				Woodcutter:     woodcutter,
 				StoneQuarry:    stoneQuarry,
 				IronMine:       ironMine,
+				Market:         market,
 				BowTower:       bowTower,
 				FlameBoltTower: flameBoltTower,
 				CatapultTower:  catapultTower,

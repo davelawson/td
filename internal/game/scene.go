@@ -85,6 +85,9 @@ func (s *State) drawPlotTile(screen *ebiten.Image, viewport sceneViewport, plot 
 	if tile.Feature == featureIronMine {
 		s.drawStructureSprite(screen, s.structureCatalog.IronMine.Sprite, rect.x, rect.y, rect.w, selected)
 	}
+	if tile.Feature == featureMarket {
+		s.drawStructureSprite(screen, s.structureCatalog.Market.Sprite, rect.x, rect.y, rect.w, selected)
+	}
 	if tile.Feature == featureBowTower {
 		s.drawStructureSprite(screen, s.structureCatalog.BowTower.Sprite, rect.x, rect.y, rect.w, selected)
 	}

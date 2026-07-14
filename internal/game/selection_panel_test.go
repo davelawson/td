@@ -37,6 +37,27 @@ func TestSelectedRaiderPanelData(t *testing.T) {
 	if panel.SanctumDamage != 1 {
 		t.Fatalf("sanctum damage = %d, want 1", panel.SanctumDamage)
 	}
+	if panel.GoldDrop != 1 {
+		t.Fatalf("Gold drop = %d, want 1", panel.GoldDrop)
+	}
+}
+
+// TestSelectedMarketPanelData verifies Market selection exposes staffing and trade rates.
+func TestSelectedMarketPanelData(t *testing.T) {
+	state := selectedMarketTestState(t, 3)
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected Market panel")
+	}
+	if panel.Kind != ui.SelectionPanelMarket || panel.Name != "Market" {
+		t.Fatalf("Market panel identity = %v/%q", panel.Kind, panel.Name)
+	}
+	if panel.Cost != (ui.ResourceAmounts{Wood: 30}) || panel.Staffing != (ui.PopulationAmounts{Soldiers: 1, Peasants: 2}) {
+		t.Fatalf("Market construction facts = cost %+v staffing %+v", panel.Cost, panel.Staffing)
+	}
+	if panel.MarketPrices != (ui.MarketTradePrices{Wood: 1, Stone: 1, Iron: 3}) {
+		t.Fatalf("Market prices = %+v, want 1/1/3", panel.MarketPrices)
+	}
 }
 
 // TestSelectedTerrainPanelData verifies terrain selection exposes its type and Plot biome.

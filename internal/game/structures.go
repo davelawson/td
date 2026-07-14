@@ -61,6 +61,7 @@ type StructureCatalog struct {
 	Woodcutter     StructureTemplate
 	StoneQuarry    StructureTemplate
 	IronMine       StructureTemplate
+	Market         StructureTemplate
 	BowTower       StructureTemplate
 	FlameBoltTower StructureTemplate
 	CatapultTower  StructureTemplate
@@ -114,11 +115,18 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		IronMine: StructureTemplate{
 			Name:          "Iron Mine",
-			Description:   "Consumes the nearest Iron Deposit in the explored Domain to produce Metal during Labour.",
+			Description:   "Consumes the nearest Iron Deposit in the explored Domain to produce Iron during Labour.",
 			Sprite:        assetCatalog.Sprite.Structure.IronMine,
-			Cost:          Resources{Wood: 10, Stone: 10, Metal: 10},
+			Cost:          Resources{Wood: 10, Stone: 10, Iron: 10},
 			Staffing:      StaffingRequirements{Peasants: 1},
-			ResourceYield: Resources{Metal: 10},
+			ResourceYield: Resources{Iron: 10},
+		},
+		Market: StructureTemplate{
+			Name:        "Market",
+			Description: "Trades Gold for Wood, Stone, and Iron during Management.",
+			Sprite:      assetCatalog.Sprite.Structure.Market,
+			Cost:        Resources{Wood: 30},
+			Staffing:    StaffingRequirements{Soldiers: 1, Peasants: 2},
 		},
 		BowTower: StructureTemplate{
 			Name:                          "Bow Tower",
@@ -136,7 +144,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Name:                          "Flame Bolt Tower",
 			Description:                   "An apprentice-staffed tower that hurls focused fire.",
 			Sprite:                        assetCatalog.Sprite.Structure.FlameBoltTower,
-			Cost:                          Resources{Stone: 30, Metal: 20},
+			Cost:                          Resources{Stone: 30, Iron: 20},
 			Staffing:                      StaffingRequirements{Apprentices: 1},
 			RangeTiles:                    2.5,
 			Damage:                        20,
@@ -148,7 +156,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 			Name:                          "Catapult Tower",
 			Description:                   "A heavy crewed tower that crushes enemies in one Tile.",
 			Sprite:                        assetCatalog.Sprite.Structure.CatapultTower,
-			Cost:                          Resources{Wood: 40, Stone: 60, Metal: 25},
+			Cost:                          Resources{Wood: 40, Stone: 60, Iron: 25},
 			Staffing:                      StaffingRequirements{Soldiers: 1, Peasants: 1},
 			RangeTiles:                    5.0,
 			Damage:                        30,

@@ -128,7 +128,7 @@ func buildingBarPopulationItems(icons BuildingBarIcons, amounts PopulationAmount
 	return items
 }
 
-// buildingBarCostItems returns non-zero costs in Wood, Stone, Metal order.
+// buildingBarCostItems returns non-zero costs in Wood, Stone, Iron, Gold order.
 func buildingBarCostItems(cost ResourceAmounts) []buildingBarCostItem {
 	items := []buildingBarCostItem{}
 	if cost.Wood > 0 {
@@ -137,8 +137,11 @@ func buildingBarCostItems(cost ResourceAmounts) []buildingBarCostItem {
 	if cost.Stone > 0 {
 		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Stone), Color: ResourceStone})
 	}
-	if cost.Metal > 0 {
-		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Metal), Color: ResourceMetal})
+	if cost.Iron > 0 {
+		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Iron), Color: ResourceIron})
+	}
+	if cost.Gold > 0 {
+		items = append(items, buildingBarCostItem{Value: fmt.Sprintf("%d", cost.Gold), Color: ResourceGold})
 	}
 	return items
 }

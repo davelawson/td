@@ -27,8 +27,8 @@ func TestNewEnemyCatalogIncludesSkeletonSwordShield(t *testing.T) {
 	if skeleton.SanctumDamage != 1 {
 		t.Fatalf("skeleton Sanctum damage = %d, want 1", skeleton.SanctumDamage)
 	}
-	if skeleton.Resources != (Resources{Wood: 5, Stone: 2}) {
-		t.Fatalf("skeleton resources = %+v, want Wood 5 Stone 2", skeleton.Resources)
+	if skeleton.GoldDrop != 1 {
+		t.Fatalf("skeleton Gold drop = %d, want 1", skeleton.GoldDrop)
 	}
 	if skeleton.SpriteKey != "skeleton-sword-shield" {
 		t.Fatalf("skeleton sprite key = %q, want %q", skeleton.SpriteKey, "skeleton-sword-shield")
@@ -62,8 +62,8 @@ func TestNewEnemyCatalogIncludesZombie(t *testing.T) {
 	if zombie.SanctumDamage != 1 {
 		t.Fatalf("zombie Sanctum damage = %d, want 1", zombie.SanctumDamage)
 	}
-	if zombie.Resources != (Resources{Wood: 4, Stone: 3, Metal: 1}) {
-		t.Fatalf("zombie resources = %+v, want Wood 4 Stone 3 Metal 1", zombie.Resources)
+	if zombie.GoldDrop != 2 {
+		t.Fatalf("zombie Gold drop = %d, want 2", zombie.GoldDrop)
 	}
 	if zombie.SpriteKey != "zombie" {
 		t.Fatalf("zombie sprite key = %q, want %q", zombie.SpriteKey, "zombie")
@@ -97,8 +97,8 @@ func TestNewEnemyCatalogIncludesGhoul(t *testing.T) {
 	if ghoul.SanctumDamage != 1 {
 		t.Fatalf("Ghoul Sanctum damage = %d, want 1", ghoul.SanctumDamage)
 	}
-	if ghoul.Resources != (Resources{Wood: 4, Metal: 1}) {
-		t.Fatalf("Ghoul resources = %+v, want Wood 4 Metal 1", ghoul.Resources)
+	if ghoul.GoldDrop != 3 {
+		t.Fatalf("Ghoul Gold drop = %d, want 3", ghoul.GoldDrop)
 	}
 	if ghoul.SpriteKey != "ghoul" {
 		t.Fatalf("Ghoul sprite key = %q, want %q", ghoul.SpriteKey, "ghoul")
@@ -132,8 +132,8 @@ func TestNewEnemyCatalogIncludesArmouredSkeleton(t *testing.T) {
 	if armouredSkeleton.SanctumDamage != 1 {
 		t.Fatalf("Armoured Skeleton Sanctum damage = %d, want 1", armouredSkeleton.SanctumDamage)
 	}
-	if armouredSkeleton.Resources != (Resources{Stone: 5, Metal: 2}) {
-		t.Fatalf("Armoured Skeleton resources = %+v, want Stone 5 Metal 2", armouredSkeleton.Resources)
+	if armouredSkeleton.GoldDrop != 5 {
+		t.Fatalf("Armoured Skeleton Gold drop = %d, want 5", armouredSkeleton.GoldDrop)
 	}
 	if armouredSkeleton.SpriteKey != "armoured-skeleton" {
 		t.Fatalf("Armoured Skeleton sprite key = %q, want %q", armouredSkeleton.SpriteKey, "armoured-skeleton")

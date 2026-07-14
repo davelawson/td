@@ -89,7 +89,8 @@ func TestNewCatalogLoadsResourceIconSprites(t *testing.T) {
 	}{
 		{name: "wood", icon: catalog.Sprite.Icon.Wood},
 		{name: "stone", icon: catalog.Sprite.Icon.Stone},
-		{name: "metal", icon: catalog.Sprite.Icon.Metal},
+		{name: "iron", icon: catalog.Sprite.Icon.Iron},
+		{name: "gold", icon: catalog.Sprite.Icon.Gold},
 	}
 	for _, test := range tests {
 		if test.icon == nil {
@@ -278,6 +279,7 @@ func TestNewCatalogLoadsEconomicBuildingSprites(t *testing.T) {
 		{name: "Woodcutter", sprite: catalog.Sprite.Structure.Woodcutter},
 		{name: "Stone Quarry", sprite: catalog.Sprite.Structure.StoneQuarry},
 		{name: "Iron Mine", sprite: catalog.Sprite.Structure.IronMine},
+		{name: "Market", sprite: catalog.Sprite.Structure.Market},
 	}
 	for _, test := range tests {
 		if test.sprite == nil {

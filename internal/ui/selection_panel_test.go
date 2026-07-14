@@ -18,6 +18,7 @@ func TestSelectionPanelRows(t *testing.T) {
 				MaxHealth:           50,
 				SpeedTilesPerSecond: 1.0,
 				SanctumDamage:       1,
+				GoldDrop:            1,
 			},
 			rows: map[string]string{
 				"Raider Type":      "Skeleton Sword-and-Shield",
@@ -26,6 +27,26 @@ func TestSelectionPanelRows(t *testing.T) {
 				"Health Remaining": "50%",
 				"Speed":            "1.0 tiles/s",
 				"Sanctum Damage":   "1",
+				"Gold Drop":        "1",
+			},
+		},
+		{
+			name: "market",
+			data: SelectionPanelData{
+				Kind:         SelectionPanelMarket,
+				Name:         "Market",
+				Cost:         ResourceAmounts{Wood: 30},
+				Staffing:     PopulationAmounts{Soldiers: 1, Peasants: 2},
+				MarketPrices: MarketTradePrices{Wood: 1, Stone: 1, Iron: 3},
+			},
+			rows: map[string]string{
+				"Structure":         "Market",
+				"Cost":              "30 Wood",
+				"Required Soldiers": "1",
+				"Required Peasants": "2",
+				"Buys Wood":         "1 for 1 Gold",
+				"Buys Stone":        "1 for 1 Gold",
+				"Buys Iron":         "1 for 3 Gold",
 			},
 		},
 		{
@@ -120,8 +141,9 @@ func TestSelectionPanelFormatting(t *testing.T) {
 		{cost: ResourceAmounts{}, want: "Free"},
 		{cost: ResourceAmounts{Wood: 20}, want: "20 Wood"},
 		{cost: ResourceAmounts{Wood: 10, Stone: 10}, want: "10 Wood, 10 Stone"},
-		{cost: ResourceAmounts{Wood: 10, Stone: 10, Metal: 10}, want: "10 Wood, 10 Stone, 10 Metal"},
-		{cost: ResourceAmounts{Wood: 30, Stone: 10, Metal: 10}, want: "30 Wood, 10 Stone, 10 Metal"},
+		{cost: ResourceAmounts{Wood: 10, Stone: 10, Iron: 10}, want: "10 Wood, 10 Stone, 10 Iron"},
+		{cost: ResourceAmounts{Wood: 30, Stone: 10, Iron: 10}, want: "30 Wood, 10 Stone, 10 Iron"},
+		{cost: ResourceAmounts{Wood: 30, Gold: 5}, want: "30 Wood, 5 Gold"},
 	}
 	for _, test := range resourceTests {
 		if got := formatSelectionResourceCost(test.cost); got != test.want {

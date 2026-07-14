@@ -3,38 +3,40 @@ package game
 type resourceCounts struct {
 	wood  int
 	stone int
-	metal int
+	iron  int
+	gold  int
 }
 
 // Resources describes a set of game resources.
 type Resources struct {
 	Wood  int
 	Stone int
-	Metal int
+	Iron  int
+	Gold  int
 }
 
 // canAffordBuildingCost reports whether current resources cover a structure cost.
 func (s *State) canAffordBuildingCost(cost Resources) bool {
 	return s.status.resources.wood >= cost.Wood &&
 		s.status.resources.stone >= cost.Stone &&
-		s.status.resources.metal >= cost.Metal
+		s.status.resources.iron >= cost.Iron &&
+		s.status.resources.gold >= cost.Gold
 }
 
 // deductBuildingCost spends the resources required to build a structure.
 func (s *State) deductBuildingCost(cost Resources) {
 	s.status.resources.wood -= cost.Wood
 	s.status.resources.stone -= cost.Stone
-	s.status.resources.metal -= cost.Metal
+	s.status.resources.iron -= cost.Iron
+	s.status.resources.gold -= cost.Gold
 }
 
-// grantEnemyResources awards the template resources for a combat-defeated enemy.
-func (s *State) grantEnemyResources(enemy raidEnemy) {
+// grantEnemyGold awards the template Gold drop for a combat-defeated enemy.
+func (s *State) grantEnemyGold(enemy raidEnemy) {
 	if enemy.template == nil {
 		return
 	}
-	s.status.resources.wood += enemy.template.Resources.Wood
-	s.status.resources.stone += enemy.template.Resources.Stone
-	s.status.resources.metal += enemy.template.Resources.Metal
+	s.status.resources.gold += enemy.template.GoldDrop
 }
 
 // grantEconomicBuildingResources resolves placed economic building work during Labour.
@@ -58,7 +60,8 @@ func (s *State) grantEconomicBuildingResources() {
 				s.consumeTerrain(terrainTile)
 				s.status.resources.wood += production.yield.Wood
 				s.status.resources.stone += production.yield.Stone
-				s.status.resources.metal += production.yield.Metal
+				s.status.resources.iron += production.yield.Iron
+				s.status.resources.gold += production.yield.Gold
 			}
 		}
 	}

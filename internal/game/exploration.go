@@ -28,7 +28,8 @@ func (s *State) canExploreNow() bool {
 func (s *State) exploreClickBlockedByUI(x, y int) bool {
 	return s.buildingBarContains(x, y) ||
 		s.nextRaidButtonContains(x, y) ||
-		s.selectionPanelContains(x, y)
+		s.selectionPanelContains(x, y) ||
+		s.marketControlsContains(x, y)
 }
 
 // exploreTargetAtScreenPosition returns the unexplored Plot targeted by an explore button click.

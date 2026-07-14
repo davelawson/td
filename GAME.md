@@ -59,7 +59,7 @@ During Management, the wizard can explore another Plot adjacent to the current D
 
 Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom the scene camera with the mouse wheel, pan with `WASD`, or press and hold the right mouse button over the game view and drag so the visible world follows the cursor. Camera inspection works while paused, but it is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
-The first object-inspection interaction is left-click selection. Active raiders have first priority, structure Tiles have second priority, and natural Tree, Boulder, or Iron Deposit terrain has third priority. Empty grass and Road are not selectable. A selected raider or structure is drawn brighter; selected terrain receives a gold Tile outline. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, population buildings show their cost and population effects, economic buildings show their cost, Peasant requirement, and Labour production, the Sanctum shows only its name, and terrain shows its type plus Plot biome. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
+The first object-inspection interaction is left-click selection. Active raiders have first priority, structure Tiles have second priority, and natural Tree, Boulder, or Iron Deposit terrain has third priority. Empty grass and Road are not selectable. A selected raider or structure is drawn brighter; selected terrain receives a gold Tile outline. Raiders show combat stats and Gold drops; structures and terrain show facts appropriate to their type. Market is the first selected object with commands: during Management, three fixed-size buttons appear beside its projected Tile for one-unit purchases. Other selections remain informational and there are no upgrades.
 
 Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots after the free prototype slice, and how non-north explored Plots are connected to enemy paths and roads.
 
@@ -113,13 +113,14 @@ The initial resources are:
 
 - `Wood`: gathered by cutting down trees.
 - `Stone`: gathered by quarrying rocks.
-- `Metal`: gathered by exploiting mines.
+- `Iron`: gathered by exploiting mines.
+- `Gold`: earned by tower-damage defeats and spent at Markets.
 
-The first implemented resource-production slice uses economic buildings rather than direct gathering. During Labour, a Woodcutter consumes the nearest Tree anywhere in the explored Domain to produce 10 Wood, a Stone Quarry consumes the nearest Boulder to produce 10 Stone, and an Iron Mine consumes the nearest Iron Deposit to produce 10 Metal. Each building consumes at most one Tile per Labour, and a building with no matching terrain produces nothing while remaining staffed for a later Labour. Buildings resolve in deterministic map order; distance uses Tile centers across Plot boundaries, with canonical Plot and Tile order breaking equal-distance ties. Labour begins only after a successfully defeated Raid, so a failed Raid that breaches the Sanctum produces nothing. The Iron Mine uses the existing Metal resource; there is no separate Iron resource, and its construction remains limited to empty grass rather than requiring placement on a deposit.
+The first implemented resource-production slice uses economic buildings rather than direct gathering. During Labour, a Woodcutter consumes the nearest Tree anywhere in the explored Domain to produce 10 Wood, a Stone Quarry consumes the nearest Boulder to produce 10 Stone, and an Iron Mine consumes the nearest Iron Deposit to produce 10 Iron. Each building consumes at most one Tile per Labour, and a building with no matching terrain produces nothing while remaining staffed for a later Labour. Buildings resolve in deterministic map order; distance uses Tile centers across Plot boundaries, with canonical Plot and Tile order breaking equal-distance ties. Labour begins only after a successfully defeated Raid, so a failed Raid that breaches the Sanctum produces nothing. Iron Deposits and Iron Mines feed the same Iron resource rather than a separate ore inventory, and the Mine remains limited to empty grass rather than requiring placement on a deposit.
 
 Open decisions include which additional worker activities resolve during Labour, whether future gathering is represented only by assignments or also by direct actions, whether resources persist across longer campaign structures, whether additional resources are needed, and how resource nodes are discovered or depleted.
 
-The in-game top bar should show the current Wood, Stone, and Metal counts as resource icons plus numbers once the economy exists. Prototype HUD values may be fixed until resource gathering and spending systems are implemented.
+The in-game top bar shows Wood, Stone, Iron, and Gold in that order as resource icons plus numbers. New games start with 100 Wood, 50 Stone, 20 Iron, and 0 Gold.
 
 ### Inhabitants
 
@@ -131,7 +132,7 @@ The wizard's Domain has three inhabitant groups:
 
 Each group has an available count and a total count. Available means inhabitants not currently committed to an assignment; total means every inhabitant of that type in the Domain. Available cannot be negative or exceed total.
 
-The top bar shows the three groups in a separate population grouping after physical resources. Each group uses an icon followed by `available/total`. The first prototype initializes every group to `0/0`. House construction immediately increases Peasants by `2/2`. Barracks construction consumes 2 available and total Peasants and grants 2 available and total Soldiers. Dorm construction consumes 1 available and total Peasant and grants 1 available and total Apprentice. Economic buildings reserve one available Peasant while leaving total Peasants unchanged. Timed recruitment, reassignment, broader population growth, losses, and staff release are not implemented.
+The top bar shows the three groups after resources. Each group uses an icon followed by `available/total`. The first prototype initializes every group to `0/0`. House construction immediately increases Peasants by `2/2`. Barracks construction consumes 2 available and total Peasants and grants 2 available and total Soldiers. Dorm construction consumes 1 available and total Peasant and grants 1 available and total Apprentice. Producers reserve one Peasant; a Market reserves two Peasants and one Soldier. Timed recruitment, reassignment, broader population growth, losses, and staff release are not implemented.
 
 ### Base-Building
 
@@ -139,7 +140,7 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a 260-pixel building bar on the left side of the playable scene during Management. It is hidden during Raids and after breach, where its former region becomes ordinary map input. The bar partitions structures into `Housing`, `Economic`, and `Defenses` tabs, with `Housing` selected by default. Housing shows House, Barracks, and Dorm. Economic shows Woodcutter, Stone Quarry, and Iron Mine. Defenses shows Bow Tower, Flame Bolt Tower, and Catapult Tower. Visible entries use structure sprites with colour-coded prototype construction costs and a compact population row for requirements, costs, or grants displayed to the right of each icon. Hovering a building icon shows an informational tooltip with that structure's description, cost, staffing requirement, and implemented production, population effect, or combat stats. Hovering an eligible icon also brightens that icon and emphasizes its cost row. Buildable icon squares use green outlines. Icons for buildings without sufficient resources, population, or staff use red square outlines and are drawn at 70% opacity. During Management, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads, Tree, Boulder, or Iron Deposit. Occupied Tiles, road Tiles, Tree Tiles, Boulder Tiles, Iron Deposit Tiles, Labour, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused Management still allows building, but the in-game overlay blocks it.
+The first build-facing UI is a 260-pixel building bar on the left side of the playable scene during Management. It is hidden during Raids and after breach, where its former region becomes ordinary map input. The bar partitions structures into `Housing`, `Economic`, and `Defenses` tabs, with `Housing` selected by default. Housing shows House, Barracks, and Dorm. Economic shows Woodcutter, Stone Quarry, Iron Mine, and Market. Defenses shows Bow Tower, Flame Bolt Tower, and Catapult Tower. Visible entries use structure sprites with colour-coded costs and compact population metadata. During Management, left-dragging an eligible icon onto empty grass places the structure and atomically applies resources, population effects, and staffing. SPACE-paused Management still allows building, but the in-game overlay blocks it.
 
 Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus one Peasant. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
 
@@ -149,7 +150,9 @@ The Barracks is the first population-conversion building. It costs 10 Wood and 1
 
 The Dorm is the first Apprentice-conversion building. It costs 10 Wood and 10 Stone, requires no staff, has no combat stats, consumes 1 available and total Peasant, and immediately grants 1 available and total Apprentice. This creates the first normal-play Apprentice source without adding timed recruitment or a general assignment system.
 
-Economic buildings are the first resource-production buildings. The Woodcutter costs 10 Wood, requires one available Peasant, has no combat stats, reserves that Peasant on construction, and consumes one Tree to produce 10 Wood during Labour. The Stone Quarry costs 10 Wood and 10 Stone, requires one available Peasant, reserves that Peasant on construction, and consumes one Boulder to produce 10 Stone. The Iron Mine costs 10 Wood, 10 Stone, and 10 Metal, requires one available Peasant, reserves that Peasant on construction, and consumes one Iron Deposit to produce 10 Metal. Each searches the entire explored Domain for its nearest match and produces nothing when none is available. Because construction occurs during Management, a new economic building first attempts production after the following successful Raid.
+Economic buildings are the first resource-production buildings. The Woodcutter costs 10 Wood, requires one available Peasant, has no combat stats, reserves that Peasant on construction, and consumes one Tree to produce 10 Wood during Labour. The Stone Quarry costs 10 Wood and 10 Stone, requires one available Peasant, reserves that Peasant on construction, and consumes one Boulder to produce 10 Stone. The Iron Mine costs 10 Wood, 10 Stone, and 10 Iron, requires one available Peasant, reserves that Peasant on construction, and consumes one Iron Deposit to produce 10 Iron. Each searches the entire explored Domain for its nearest match and produces nothing when none is available. Because construction occurs during Management, a new economic building first attempts production after the following successful Raid.
+
+The Market is an economic building but not a Labour producer. It costs 30 Wood and permanently reserves two Peasants plus one Soldier under the current assignment model. Selecting it during Management, including paused Management, shows world-anchored buttons to buy one Wood for 1 Gold, one Stone for 1 Gold, or one Iron for 3 Gold. Insufficient-Gold buttons are disabled. Controls hide during Labour, Raids, breach, and the overlay; purchases have no bulk quantity, fees, or capacity limit.
 
 Open decisions include richer build rules for future terrain types, whether structures block paths beyond the current fixed road rejection, how much rebuilding is allowed between attacks, whether later placement needs previews or range indicators, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
@@ -185,11 +188,11 @@ The implemented Raid behavior is deliberately deterministic and scales from curr
 
 A generated Raid begins at 0 percent progress and advances to 100 percent over `5 + 2 * sqrt(challenge)` seconds. The first challenge-4 Raid therefore retains its nine-second release window, while later windows grow more slowly than their enemy rosters so Raid tempo increases with challenge. Its progress-scaled score is `progress * challenge`. Every time that score reaches another whole multiple of 2, a Skeleton enters; multiples of 4 release a Zombie, multiples of 6 release a Ghoul, and multiples of 8 release an Armoured Skeleton. Exact equality counts, and rules always resolve in Skeleton, Zombie, Ghoul, then Armoured Skeleton order when several thresholds cross in one update. Raid 1 still contains only two Skeletons and one Zombie because its challenge is 4. This release schedule changes only enemy quantities and timing: individual health, speed, damage interaction, rewards, and sprites come from enemy templates. The top bar reports pending plus active enemies together with the frozen challenge but does not display progress. Enemies use the current straight north road, entering from the farthest explored north-center road edge and moving south to the centered Sanctum. There are no alternate paths yet.
 
-The first Raid slice stores each active enemy's current world position directly. On the starting road, enemies spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Movement speed comes from `EnemyTemplate.SpeedTilesPerSecond`, is measured in Tiles per second, and is converted through the fixed logical update duration. Maximum health comes from `EnemyTemplate.MaxHealth`, and combat-defeat rewards come from `EnemyTemplate.Resources`. The current Skeleton template has 50 health, moves at 1.0 Tiles per second, and rewards 5 Wood and 2 Stone. The Zombie has 75 health, moves at 0.7 Tiles per second, and rewards 4 Wood, 3 Stone, and 1 Metal. The fast Ghoul has 40 health, moves at 1.5 Tiles per second, and rewards 4 Wood and 1 Metal. The durable Armoured Skeleton has 125 health, moves at 0.9 Tiles per second, and rewards 5 Stone and 2 Metal. Distinct raider types keep at least a three-percent speed difference so simultaneous spawns separate after momentary overlap. Every current enemy deals 1 Sanctum damage.
+The first Raid slice stores each active enemy's current world position directly. On the starting road, enemies spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Movement speed comes from `EnemyTemplate.SpeedTilesPerSecond`; maximum health comes from `EnemyTemplate.MaxHealth`; and deterministic combat rewards come from `EnemyTemplate.GoldDrop`. Skeletons drop 1 Gold, Zombies 2, Ghouls 3, and Armoured Skeletons 5. They no longer grant Wood, Stone, or Iron. Distinct raider types keep at least a three-percent speed difference so simultaneous spawns separate after momentary overlap. Every current enemy deals 1 Sanctum damage.
 
 The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. The Catapult Tower range is 5.0 Tiles, damage is 30 to every active enemy in the target's Tile, fire interval is 6.0 seconds, and projectile speed is 3.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
-If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources. A Raid cannot succeed during an empty interval before progress reaches 100 percent. Once progress is complete, success waits until all scheduled and active enemies are gone; the next Day then begins, Labour lets each economic building consume one nearest matching terrain Tile for its yield, and Management opens immediately. A breached Raid does not advance the Day or perform Labour.
+If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's Gold drop is granted when tower damage defeats a raider; Barricade removal and breach clearing do not grant Gold. A Raid cannot succeed during an empty interval before progress reaches 100 percent. Once progress is complete and no enemies remain, the next Day resolves Labour and opens Management. A breached Raid performs no Labour.
 
 Open decisions include additional enemy archetypes, whether a Raid can include multiple waves or paths, how the challenge formula and thresholds should be balanced from play, and what longer-term recovery or loss flow follows a breached Sanctum.
 
@@ -198,8 +201,8 @@ Open decisions include additional enemy archetypes, whether a Raid can include m
 Tower types define the defensive structures the wizard can build in the Domain.
 
 - `Bow Tower`: costs 20 Wood and 10 Stone; requires one Soldier; has 3.0-Tile range; deals 10 damage; fires every 1.0 second; and launches projectiles at 9.0 Tiles per second.
-- `Flame Bolt Tower`: costs 30 Stone and 20 Metal; requires one Apprentice; has 2.5-Tile range; deals 20 damage; fires every 1.5 seconds; and launches projectiles at 7.0 Tiles per second.
-- `Catapult Tower`: costs 40 Wood, 60 Stone, and 25 Metal; requires one Soldier and one Peasant; has 5.0-Tile range; deals 30 damage to every active enemy in the struck Tile; fires every 6.0 seconds; and launches projectiles at 3.0 Tiles per second.
+- `Flame Bolt Tower`: costs 30 Stone and 20 Iron; requires one Apprentice; has 2.5-Tile range; deals 20 damage; fires every 1.5 seconds; and launches projectiles at 7.0 Tiles per second.
+- `Catapult Tower`: costs 40 Wood, 60 Stone, and 25 Iron; requires one Soldier and one Peasant; has 5.0-Tile range; deals 30 damage to every active enemy in the struck Tile; fires every 6.0 seconds; and launches projectiles at 3.0 Tiles per second.
 
 Open decisions include upgrade paths, specialized targeting modes, what other tower types exist, and whether these first prototype costs remain balanced once resource gathering and spending exist.
 
@@ -233,9 +236,9 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The first exploration slice uses free magnifying-glass border buttons during Management, including paused Management, to reveal orthogonally adjacent Plots. Each frontier Plot independently receives a stable grasslands-or-hills assignment before exploration and displays its name outward beside the button; the label is informational and only the circle reveals. Grasslands uses 6% Tree, 3% Boulder, 1% Iron Deposit, and 90% empty grass; hills uses 3% Tree, 6% Boulder, 3% Iron Deposit, and 88% empty grass. The first implementation collapses scouting and claiming into one action.
 - Northward exploration along Plot `X=0` extends the visible center road and moves deterministic Raid spawning to the farthest explored north road. Non-north explored Plots do not add Raid paths yet.
 - The Raid slice deterministically generates a challenge from Raid number, total settlement population, and explored Plot count, then releases sprite-backed Skeletons, Zombies, Ghouls, and Armoured Skeletons at score thresholds on the current straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
-- A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Dorm, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
+- A new game starts with 100 Wood, 50 Stone, 20 Iron, and 0 Gold. Zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
 - The first staffing slice uses available populations to gate tower and economic building construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, Dorm can convert a Peasant into an Apprentice, economic buildings can produce Labour resources, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
-- Woodcutter, Stone Quarry, and Iron Mine are the first economic buildings. Each reserves one available Peasant and consumes the nearest matching Tree, Boulder, or Iron Deposit in the explored Domain to produce 10 Wood, Stone, or Metal during Labour after a successful Raid. Missing terrain prevents that building's yield, and consumed terrain becomes biome-default grass.
+- Woodcutter, Stone Quarry, and Iron Mine reserve one Peasant and consume matching terrain for Labour production. Market costs 30 Wood, reserves two Peasants and one Soldier, and exchanges Gold for single units of Wood, Stone, or Iron during Management.
 
 ## Open Game Design Questions
 
@@ -250,7 +253,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - When should scouting and claiming become separate actions after the first implementation collapsed them into one reveal-and-claim action?
 - How are Plot dominant characters generated, selected, or presented to the player?
 - How many road exits can a Plot have, and can roads branch inside a Plot after entering through edge-center connector Tiles?
-- Are Wood, Stone, and Metal enough for interesting choices, or are additional resources needed?
+- Are Wood, Stone, Iron, and Gold enough for interesting choices, or are additional resources needed?
 - How are Apprentices, Soldiers, and Peasants recruited, assigned, released from assignments, and affected by Raids?
 - Should later exploration add an on-map wizard character, remain camera-inspection driven, or combine both?
 - How many arcane barrier charges does the Sanctum have, and can those charges be restored or increased?
@@ -295,15 +298,23 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: This gives the central tower a clear defensive rule and creates a concrete failure threshold when enemies reach it after the barrier is exhausted.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Use Wood, Stone, and Metal as the initial resources.
-  Rationale: These resources give base-building a simple physical economy tied to visible world objects: trees, rocks, and mines.
+- Decision: Use Wood, Stone, and Iron as the initial resources. Superseded on 2026-07-14 by adding Gold as a fourth resource.
+  Rationale: The original three physical resources tied base-building to trees, rocks, and mines; combat now needs a separate exchange currency.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Add Gold as a combat-earned currency and make Market the only current Gold sink.
+  Rationale: Raiders now drop deterministic Gold instead of construction materials, separating combat income from Labour production. Skeleton, Zombie, Ghoul, and Armoured Skeleton drops are 1, 2, 3, and 5 Gold. A Market costs 30 Wood, reserves two Peasants and one Soldier, and buys one Wood or Stone for 1 Gold or one Iron for 3 Gold during Management.
+  Date/Author: 2026-07-14 / User and Codex
+
+- Decision: Rename the third physical resource consistently to Iron.
+  Rationale: Iron Deposit and Iron Mine already established the world language; using one name in the HUD, costs, yields, and code avoids presenting one resource under two names.
+  Date/Author: 2026-07-14 / User and Codex
 
 - Decision: Use the Bow Tower as the first defined tower type.
   Rationale: A moderate-damage, moderate-range tower gives the design a simple general-purpose baseline before specialized magical towers are defined.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Metal for the Bow Tower, 30 Stone and 20 Metal for the Flame Bolt Tower, and 40 Wood, 60 Stone, and 25 Metal for the Catapult Tower. Superseded on 2026-07-14 by the revised Bow cost.
+- Decision: Use first prototype construction costs of 30 Wood, 10 Stone, and 10 Iron for the Bow Tower, 30 Stone and 20 Iron for the Flame Bolt Tower, and 40 Wood, 60 Stone, and 25 Iron for the Catapult Tower. Superseded on 2026-07-14 by the revised Bow cost.
   Rationale: These costs made the initial tower options visible in the resource economy, with Catapult positioned as an expensive siege option.
   Date/Author: 2026-05-26 / Codex
 
@@ -323,7 +334,7 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: A short-range, slower-firing magical damage tower makes the starting defense visibly more wizardly while keeping the first targeting and projectile rules shared and testable.
   Date/Author: 2026-05-16 / Codex
 
-- Decision: Supersede the free starting-tower layout so a new Domain contains only the Sanctum, with 100 Wood, 50 Stone, and 20 Metal available for construction.
+- Decision: Supersede the free starting-tower layout so a new Domain contains only the Sanctum, with 100 Wood, 50 Stone, and 20 Iron available for construction.
   Rationale: Requiring the player to construct the first defense makes the building workflow meaningful. Resources cover Bow and Flame Bolt at the start, while staffing now remains an additional requirement.
   Date/Author: 2026-06-26 / User and Codex
 
@@ -346,7 +357,7 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: Apprentice staffing needs a normal-play source after House without adding a broad recruitment or assignment system. Treating the effect as conversion keeps Peasant and Apprentice totals aligned with the visible inhabitant roles.
   Date/Author: 2026-07-13 / User and Codex
 
-- Decision: Add Woodcutter, Stone Quarry, and Iron Mine as the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource during each Labour phase. The Iron Mine produces Metal, not a separate Iron resource. Production was revised on 2026-07-14 to require one matching terrain Tile per payout.
+- Decision: Add Woodcutter, Stone Quarry, and Iron Mine as the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource during each Labour phase. The Iron Mine produces Iron, not a separate Iron resource. Production was revised on 2026-07-14 to require one matching terrain Tile per payout.
   Rationale: This creates the first worker production while keeping assignment and resource taxonomy small enough for the current prototype. Terrain consumption connects production to exploration and prevents repeatable income without finite map inputs.
   Date/Author: 2026-06-27 / User and Codex
 

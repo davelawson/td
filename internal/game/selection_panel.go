@@ -66,6 +66,7 @@ func (s *State) selectedRaiderPanel() (ui.SelectionPanelData, bool) {
 			data.MaxHealth = enemy.template.MaxHealth
 			data.SpeedTilesPerSecond = enemy.template.SpeedTilesPerSecond
 			data.SanctumDamage = enemy.template.SanctumDamage
+			data.GoldDrop = enemy.template.GoldDrop
 		}
 
 		return data, true
@@ -99,6 +100,8 @@ func (s *State) selectedStructurePanel() (ui.SelectionPanelData, bool) {
 		return economicBuildingSelectionPanel(s.structureCatalog.StoneQuarry), true
 	case featureIronMine:
 		return economicBuildingSelectionPanel(s.structureCatalog.IronMine), true
+	case featureMarket:
+		return marketSelectionPanel(s.structureCatalog.Market), true
 	case featureBowTower:
 		return towerSelectionPanel(s.structureCatalog.BowTower), true
 	case featureFlameBoltTower:
@@ -137,6 +140,21 @@ func economicBuildingSelectionPanel(template StructureTemplate) ui.SelectionPane
 		Cost:          resourceAmounts(template.Cost),
 		Staffing:      staffingAmounts(template.Staffing),
 		ResourceYield: resourceAmounts(template.ResourceYield),
+	}
+}
+
+// marketSelectionPanel returns construction, staffing, and trade facts for the Market.
+func marketSelectionPanel(template StructureTemplate) ui.SelectionPanelData {
+	return ui.SelectionPanelData{
+		Kind:     ui.SelectionPanelMarket,
+		Name:     template.Name,
+		Cost:     resourceAmounts(template.Cost),
+		Staffing: staffingAmounts(template.Staffing),
+		MarketPrices: ui.MarketTradePrices{
+			Wood:  marketWoodGoldCost,
+			Stone: marketStoneGoldCost,
+			Iron:  marketIronGoldCost,
+		},
 	}
 }
 
@@ -180,7 +198,8 @@ func resourceAmounts(resources Resources) ui.ResourceAmounts {
 	return ui.ResourceAmounts{
 		Wood:  resources.Wood,
 		Stone: resources.Stone,
-		Metal: resources.Metal,
+		Iron:  resources.Iron,
+		Gold:  resources.Gold,
 	}
 }
 

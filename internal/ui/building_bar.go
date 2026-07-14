@@ -37,6 +37,7 @@ const (
 	BuildingBarWoodcutter
 	BuildingBarStoneQuarry
 	BuildingBarIronMine
+	BuildingBarMarket
 	BuildingBarBowTower
 	BuildingBarFlameBoltTower
 	BuildingBarCatapultTower
@@ -148,6 +149,7 @@ func BuildingBarActions() []BuildingBarAction {
 		BuildingBarWoodcutter,
 		BuildingBarStoneQuarry,
 		BuildingBarIronMine,
+		BuildingBarMarket,
 		BuildingBarBowTower,
 		BuildingBarFlameBoltTower,
 		BuildingBarCatapultTower,
@@ -159,7 +161,7 @@ func BuildingBarCategoryForAction(action BuildingBarAction) BuildingBarCategory 
 	switch action {
 	case BuildingBarHouse, BuildingBarBarracks, BuildingBarDorm:
 		return BuildingBarCategoryHousing
-	case BuildingBarWoodcutter, BuildingBarStoneQuarry, BuildingBarIronMine:
+	case BuildingBarWoodcutter, BuildingBarStoneQuarry, BuildingBarIronMine, BuildingBarMarket:
 		return BuildingBarCategoryEconomic
 	case BuildingBarBowTower, BuildingBarFlameBoltTower, BuildingBarCatapultTower:
 		return BuildingBarCategoryDefenses
@@ -302,7 +304,7 @@ func buildingBarActionsForCategory(category BuildingBarCategory) []BuildingBarAc
 	case BuildingBarCategoryHousing:
 		return []BuildingBarAction{BuildingBarHouse, BuildingBarBarracks, BuildingBarDorm}
 	case BuildingBarCategoryEconomic:
-		return []BuildingBarAction{BuildingBarWoodcutter, BuildingBarStoneQuarry, BuildingBarIronMine}
+		return []BuildingBarAction{BuildingBarWoodcutter, BuildingBarStoneQuarry, BuildingBarIronMine, BuildingBarMarket}
 	case BuildingBarCategoryDefenses:
 		return []BuildingBarAction{BuildingBarBowTower, BuildingBarFlameBoltTower, BuildingBarCatapultTower}
 	default:

@@ -60,8 +60,8 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureBowTower {
 		t.Fatalf("tile feature = %v, want Bow Tower", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 80 || state.status.resources.stone != 40 || state.status.resources.metal != 20 {
-		t.Fatalf("resources = %+v, want wood 80 stone 40 metal 20", state.status.resources)
+	if state.status.resources.wood != 80 || state.status.resources.stone != 40 || state.status.resources.iron != 20 {
+		t.Fatalf("resources = %+v, want wood 80 stone 40 iron 20", state.status.resources)
 	}
 	if state.status.populations.soldiers != (populationCount{available: 0, total: 1}) {
 		t.Fatalf("soldiers = %+v, want 0/1 after staffing Bow Tower", state.status.populations.soldiers)
@@ -83,8 +83,8 @@ func TestBuildDragPlacesHouseAndGrantsPeasants(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureHouse {
 		t.Fatalf("tile feature = %v, want House", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 80 || state.status.resources.stone != 50 || state.status.resources.metal != 20 {
-		t.Fatalf("resources = %+v, want wood 80 stone 50 metal 20", state.status.resources)
+	if state.status.resources.wood != 80 || state.status.resources.stone != 50 || state.status.resources.iron != 20 {
+		t.Fatalf("resources = %+v, want wood 80 stone 50 iron 20", state.status.resources)
 	}
 	if state.status.populations.peasants != (populationCount{available: 2, total: 2}) {
 		t.Fatalf("peasants = %+v, want 2/2 after building House", state.status.populations.peasants)
@@ -107,8 +107,8 @@ func TestBuildDragPlacesEconomicBuildingAndReservesPeasant(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureWoodcutter {
 		t.Fatalf("tile feature = %v, want Woodcutter", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 90 || state.status.resources.stone != 50 || state.status.resources.metal != 20 {
-		t.Fatalf("resources = %+v, want wood 90 stone 50 metal 20", state.status.resources)
+	if state.status.resources.wood != 90 || state.status.resources.stone != 50 || state.status.resources.iron != 20 {
+		t.Fatalf("resources = %+v, want wood 90 stone 50 iron 20", state.status.resources)
 	}
 	if state.status.populations.peasants != (populationCount{available: 0, total: 1}) {
 		t.Fatalf("peasants = %+v, want 0/1 after staffing Woodcutter", state.status.populations.peasants)
@@ -142,8 +142,8 @@ func TestBuildDragPlacesBarracksAndConvertsPeasants(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureBarracks {
 		t.Fatalf("tile feature = %v, want Barracks", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 90 || state.status.resources.stone != 40 || state.status.resources.metal != 20 {
-		t.Fatalf("resources = %+v, want wood 90 stone 40 metal 20", state.status.resources)
+	if state.status.resources.wood != 90 || state.status.resources.stone != 40 || state.status.resources.iron != 20 {
+		t.Fatalf("resources = %+v, want wood 90 stone 40 iron 20", state.status.resources)
 	}
 	if state.status.populations.peasants != (populationCount{available: 0, total: 0}) {
 		t.Fatalf("peasants = %+v, want 0/0 after building Barracks", state.status.populations.peasants)
@@ -180,8 +180,8 @@ func TestBuildDragPlacesDormAndConvertsPeasant(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureDorm {
 		t.Fatalf("tile feature = %v, want Dorm", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 90 || state.status.resources.stone != 40 || state.status.resources.metal != 20 {
-		t.Fatalf("resources = %+v, want wood 90 stone 40 metal 20", state.status.resources)
+	if state.status.resources.wood != 90 || state.status.resources.stone != 40 || state.status.resources.iron != 20 {
+		t.Fatalf("resources = %+v, want wood 90 stone 40 iron 20", state.status.resources)
 	}
 	if state.status.populations.peasants != (populationCount{available: 0, total: 0}) {
 		t.Fatalf("peasants = %+v, want 0/0 after building Dorm", state.status.populations.peasants)
@@ -290,7 +290,7 @@ func TestHouseThenBarracksEnablesBowTower(t *testing.T) {
 // TestBuildDragPlacesCatapultTower verifies Catapult Tower placement maps to its feature and cost.
 func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	state := newRaidTestState(t)
-	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
+	state.status.resources = resourceCounts{wood: 100, stone: 100, iron: 50}
 	setAvailablePopulations(state, 0, 1, 2)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 	setHomeTilesEmpty(state, tile)
@@ -304,8 +304,8 @@ func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureCatapultTower {
 		t.Fatalf("tile feature = %v, want Catapult Tower", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 60 || state.status.resources.stone != 40 || state.status.resources.metal != 25 {
-		t.Fatalf("resources = %+v, want wood 60 stone 40 metal 25", state.status.resources)
+	if state.status.resources.wood != 60 || state.status.resources.stone != 40 || state.status.resources.iron != 25 {
+		t.Fatalf("resources = %+v, want wood 60 stone 40 iron 25", state.status.resources)
 	}
 	if state.status.populations.soldiers != (populationCount{available: 0, total: 1}) {
 		t.Fatalf("soldiers = %+v, want 0/1", state.status.populations.soldiers)
@@ -318,7 +318,7 @@ func TestBuildDragPlacesCatapultTower(t *testing.T) {
 // TestBuildDragRejectsCatapultWhenOneRoleIsShort verifies mixed requirements are atomic.
 func TestBuildDragRejectsCatapultWhenOneRoleIsShort(t *testing.T) {
 	state := newRaidTestState(t)
-	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
+	state.status.resources = resourceCounts{wood: 100, stone: 100, iron: 50}
 	setAvailablePopulations(state, 0, 1, 0)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarCatapultTowerIndex))

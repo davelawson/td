@@ -28,15 +28,24 @@ const (
 	SelectionPanelStructure
 	SelectionPanelPopulationBuilding
 	SelectionPanelEconomicBuilding
+	SelectionPanelMarket
 	SelectionPanelTower
 	SelectionPanelTerrain
 )
 
-// ResourceAmounts describes UI-facing Wood, Stone, and Metal counts.
+// ResourceAmounts describes UI-facing construction and currency resource counts.
 type ResourceAmounts struct {
 	Wood  int
 	Stone int
-	Metal int
+	Iron  int
+	Gold  int
+}
+
+// MarketTradePrices describes Gold paid for one unit of each Market material.
+type MarketTradePrices struct {
+	Wood  int
+	Stone int
+	Iron  int
 }
 
 // PopulationAmounts describes UI-facing inhabitant counts by role.
@@ -55,11 +64,13 @@ type SelectionPanelData struct {
 	MaxHealth           int
 	SpeedTilesPerSecond float64
 	SanctumDamage       int
+	GoldDrop            int
 	Cost                ResourceAmounts
 	Staffing            PopulationAmounts
 	PopulationCost      PopulationAmounts
 	PopulationGrant     PopulationAmounts
 	ResourceYield       ResourceAmounts
+	MarketPrices        MarketTradePrices
 	RangeTiles          float64
 	FireIntervalSeconds float64
 	Damage              int
@@ -138,6 +149,8 @@ func selectionPanelRows(data SelectionPanelData) ([]selectionPanelRow, bool) {
 		return populationBuildingSelectionPanelRows(data), true
 	case SelectionPanelEconomicBuilding:
 		return economicBuildingSelectionPanelRows(data), true
+	case SelectionPanelMarket:
+		return marketSelectionPanelRows(data), true
 	case SelectionPanelTower:
 		return towerSelectionPanelRows(data), true
 	case SelectionPanelTerrain:
@@ -159,6 +172,7 @@ func raiderSelectionPanelRows(data SelectionPanelData) []selectionPanelRow {
 		{Label: "Health Remaining", Value: fmt.Sprintf("%d%%", selectedHealthPercent(data.Health, data.MaxHealth))},
 		{Label: "Speed", Value: fmt.Sprintf("%.1f tiles/s", data.SpeedTilesPerSecond)},
 		{Label: "Sanctum Damage", Value: fmt.Sprintf("%d", data.SanctumDamage)},
+		{Label: "Gold Drop", Value: fmt.Sprintf("%d", data.GoldDrop)},
 	}
 }
 
@@ -180,6 +194,20 @@ func economicBuildingSelectionPanelRows(data SelectionPanelData) []selectionPane
 	rows = appendPopulationRows(rows, "Required", data.Staffing)
 	rows = append(rows, selectionPanelRow{Label: "Produces", Value: formatSelectionResourceYield(data.ResourceYield)})
 	return rows
+}
+
+// marketSelectionPanelRows formats Market cost, staffing, and exchange-rate facts.
+func marketSelectionPanelRows(data SelectionPanelData) []selectionPanelRow {
+	rows := []selectionPanelRow{
+		{Label: "Structure", Value: selectedName(data.Name)},
+		{Label: "Cost", Value: formatSelectionResourceCost(data.Cost)},
+	}
+	rows = appendPopulationRows(rows, "Required", data.Staffing)
+	return append(rows,
+		selectionPanelRow{Label: "Buys Wood", Value: fmt.Sprintf("1 for %d Gold", data.MarketPrices.Wood)},
+		selectionPanelRow{Label: "Buys Stone", Value: fmt.Sprintf("1 for %d Gold", data.MarketPrices.Stone)},
+		selectionPanelRow{Label: "Buys Iron", Value: fmt.Sprintf("1 for %d Gold", data.MarketPrices.Iron)},
+	)
 }
 
 func towerSelectionPanelRows(data SelectionPanelData) []selectionPanelRow {
@@ -235,8 +263,11 @@ func formatSelectionResourceCost(cost ResourceAmounts) string {
 	if cost.Stone > 0 {
 		parts = append(parts, fmt.Sprintf("%d Stone", cost.Stone))
 	}
-	if cost.Metal > 0 {
-		parts = append(parts, fmt.Sprintf("%d Metal", cost.Metal))
+	if cost.Iron > 0 {
+		parts = append(parts, fmt.Sprintf("%d Iron", cost.Iron))
+	}
+	if cost.Gold > 0 {
+		parts = append(parts, fmt.Sprintf("%d Gold", cost.Gold))
 	}
 	if len(parts) == 0 {
 		return "Free"

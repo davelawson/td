@@ -21,6 +21,7 @@ func (s *State) updateSelection(input Input) {
 		s.nextRaidButtonContains(input.CursorX, input.CursorY) ||
 		s.buildingBarContains(input.CursorX, input.CursorY) ||
 		s.selectionPanelContains(input.CursorX, input.CursorY) ||
+		s.marketControlsContains(input.CursorX, input.CursorY) ||
 		s.exploreButtonContains(input.CursorX, input.CursorY) {
 		return
 	}
