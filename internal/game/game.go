@@ -71,8 +71,8 @@ type gameUI struct {
 	menu             ingameMenu
 	nextRaidHover    bool
 	buildBarHover    int
-	buildBarTabHover buildingBarCategory
-	buildBarCategory buildingBarCategory
+	buildBarTabHover ui.BuildingBarCategory
+	buildBarCategory ui.BuildingBarCategory
 	titleFace        *text.GoTextFace
 	bodyFace         *text.GoTextFace
 	hudFace          *text.GoTextFace
@@ -133,8 +133,8 @@ func newGameUI(source, boldSource *text.GoTextFaceSource, width, height int) gam
 		width:            width,
 		height:           height,
 		buildBarHover:    -1,
-		buildBarTabHover: buildingBarNoCategory,
-		buildBarCategory: buildingBarCategoryHousing,
+		buildBarTabHover: ui.BuildingBarNoCategory,
+		buildBarCategory: ui.BuildingBarCategoryHousing,
 		titleFace: &text.GoTextFace{
 			Source: source,
 			Size:   ui.GameTitleFontSize,

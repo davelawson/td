@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"td/internal/ui"
+)
 
 // TestPostRaidDayResolvesLabourBeforeManagement verifies production and the phase transition.
 func TestPostRaidDayResolvesLabourBeforeManagement(t *testing.T) {
@@ -24,7 +28,7 @@ func TestPostRaidDayResolvesLabourBeforeManagement(t *testing.T) {
 // TestManagementProducerWaitsForNextLabour verifies construction does not pay immediately.
 func TestManagementProducerWaitsForNextLabour(t *testing.T) {
 	state := newRaidTestState(t)
-	state.ui.buildBarCategory = buildingBarCategoryEconomic
+	state.ui.buildBarCategory = ui.BuildingBarCategoryEconomic
 	setAvailablePopulations(state, 0, 0, 1)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
 	setHomeTilesEmpty(state, tile)

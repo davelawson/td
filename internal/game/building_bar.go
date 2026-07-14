@@ -1,57 +1,10 @@
 package game
 
 import (
-	"image/color"
-
 	"td/internal/ui"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/text/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
-
-const (
-	buildingBarWidth           = 260
-	buildingBarPadding         = 16
-	buildingBarTabHeight       = 28
-	buildingBarTabGap          = 6
-	buildingBarTabBottomGap    = 14
-	buildingBarItemSize        = 64
-	buildDragIconSize          = buildingBarItemSize / 2
-	buildingBarMetadataGap     = 12
-	buildingBarCostOffsetY     = 11
-	buildingBarStaffingOffsetY = 35
-	buildingBarStaffIconSize   = 14
-	buildingBarStaffIconGap    = 2
-	buildingBarCostItemGap     = 5
-	buildingBarItemGap         = 12
-	buildingBarSpriteInset     = 8
-)
-
-var buildingBarCostShadow = color.RGBA{R: 8, G: 10, B: 8, A: 220}
-
-type buildingBarItem struct {
-	ID              buildingBarItemID
-	Name            string
-	Sprite          *ebiten.Image
-	Cost            Resources
-	Staffing        StaffingRequirements
-	PopulationCost  PopulationCost
-	PopulationGrant PopulationGrant
-	Bounds          ui.Button[int]
-}
-
-type buildingBarCostItem struct {
-	Value string
-	Color color.Color
-}
-
-type buildingBarStaffingItem struct {
-	Count  int
-	Value  string
-	Sprite *ebiten.Image
-	Cost   bool
-}
 
 type buildDragState struct {
 	active  bool
@@ -65,103 +18,87 @@ func (s *State) buildingBarVisible() bool {
 	return s.status.phase == phaseManagement && !s.raid.active && !s.raid.breached
 }
 
-// buildingBarBounds returns the screen-space building bar rectangle.
+// buildingBarBounds returns the screen-space building-bar rectangle.
 func (s *State) buildingBarBounds() ui.Button[int] {
-	return ui.Button[int]{
-		X: 0,
-		Y: topBarHeight,
-		W: buildingBarWidth,
-		H: s.ui.height - topBarHeight,
-	}
+	return ui.BuildingBarBounds(topBarHeight, s.ui.height)
 }
 
-// buildingBarItems returns the structure choices shown in the building bar.
-func (s *State) buildingBarItems() []buildingBarItem {
-	bar := s.buildingBarBounds()
-	x := bar.X + buildingBarPadding
-	startY := bar.Y + buildingBarPadding + buildingBarTabsHeight() + buildingBarTabBottomGap
-	stepY := buildingBarItemSize + buildingBarItemGap
-	ids := buildingBarItemIDsForCategory(s.ui.buildBarCategory)
-	items := make([]buildingBarItem, 0, len(ids))
-	for i, id := range ids {
-		template, ok := s.buildingTemplateForItemID(id)
-		if !ok {
-			continue
-		}
-		y := startY + i*stepY
-		items = append(items, buildingBarItem{
-			ID:              id,
-			Name:            template.Name,
-			Sprite:          template.Sprite,
-			Cost:            template.Cost,
-			Staffing:        template.Staffing,
-			PopulationCost:  template.PopulationCost,
-			PopulationGrant: template.PopulationGrant,
-			Bounds: ui.Button[int]{
-				Label:  template.Name,
-				X:      x,
-				Y:      y,
-				W:      buildingBarItemSize,
-				H:      buildingBarItemSize,
-				Action: i,
-			},
-		})
-	}
-	return items
-}
-
-// buildingBarContains reports whether a point is inside the visual building bar.
+// buildingBarContains reports whether a point is inside the visible building bar.
 func (s *State) buildingBarContains(x, y int) bool {
-	return s.buildingBarVisible() && s.buildingBarBounds().Contains(x, y)
+	return s.buildingBarVisible() && ui.BuildingBarContains(topBarHeight, s.ui.height, x, y)
 }
 
-// buildingBarTabs returns the category tabs shown at the top of the building bar.
-func (s *State) buildingBarTabs() []buildingBarTab {
-	bar := s.buildingBarBounds()
-	tabX := bar.X + buildingBarTabGap
-	tabY := bar.Y + buildingBarPadding
-	tabW := bar.W - buildingBarTabGap*2
-	categories := buildingBarCategories()
-	tabs := make([]buildingBarTab, 0, len(categories))
-	for i, category := range categories {
-		tabs = append(tabs, buildingBarTab{
-			Category: category,
-			Label:    buildingBarCategoryLabel(category),
-			Bounds: ui.Button[int]{
-				Label:  buildingBarCategoryLabel(category),
-				X:      tabX,
-				Y:      tabY + i*(buildingBarTabHeight+buildingBarTabGap),
-				W:      tabW,
-				H:      buildingBarTabHeight,
-				Action: int(category),
-			},
-		})
+// buildingBarModel adapts structure templates and host presentation state for the UI package.
+func (s *State) buildingBarModel() ui.BuildingBarModel {
+	actions := ui.BuildingBarActions()
+	items := make([]ui.BuildingBarItem, 0, len(actions))
+	for _, action := range actions {
+		item, ok := s.buildingBarItem(action)
+		if ok {
+			items = append(items, item)
+		}
 	}
-	return tabs
+	return ui.BuildingBarModel{
+		Items: items,
+		Icons: ui.BuildingBarIcons{
+			Apprentice: s.assetCatalog.Sprite.Icon.Apprentice,
+			Soldier:    s.assetCatalog.Sprite.Icon.Soldier,
+			Peasant:    s.assetCatalog.Sprite.Icon.Peasant,
+		},
+		SelectedCategory: s.ui.buildBarCategory,
+		HoveredItem:      s.ui.buildBarHover,
+		HoveredCategory:  s.ui.buildBarTabHover,
+	}
 }
 
-// buildingBarTabsHeight returns the vertical space reserved for category tabs.
-func buildingBarTabsHeight() int {
-	return len(buildingBarCategories())*buildingBarTabHeight +
-		(len(buildingBarCategories())-1)*buildingBarTabGap
+// buildingBarItem adapts one structure template into UI-facing construction facts.
+func (s *State) buildingBarItem(action buildingBarItemID) (ui.BuildingBarItem, bool) {
+	template, ok := s.buildingTemplateForItemID(action)
+	if !ok {
+		return ui.BuildingBarItem{}, false
+	}
+	return ui.BuildingBarItem{
+		Action:                        action,
+		Name:                          template.Name,
+		Description:                   template.Description,
+		Sprite:                        template.Sprite,
+		Cost:                          resourceAmounts(template.Cost),
+		Staffing:                      staffingAmounts(template.Staffing),
+		PopulationCost:                populationCostAmounts(template.PopulationCost),
+		PopulationGrant:               populationGrantAmounts(template.PopulationGrant),
+		ResourceYield:                 resourceAmounts(template.ResourceYield),
+		RangeTiles:                    template.RangeTiles,
+		Damage:                        template.Damage,
+		FireIntervalSeconds:           template.FireIntervalSeconds,
+		ProjectileSpeedTilesPerSecond: template.ProjectileSpeedTilesPerSecond,
+		DamageAllEnemiesInTargetTile:  template.DamageAllEnemiesInTargetTile,
+		Buildable:                     s.canConstructBuilding(action),
+	}, true
 }
 
-// canConstructBuilding reports whether current resources and staff cover one item.
-func (s *State) canConstructBuilding(item buildingBarItem) bool {
-	return s.canAffordBuildingCost(item.Cost) &&
-		s.canPayPopulationCost(item.PopulationCost) &&
-		s.canStaff(item.Staffing)
+// canConstructBuilding reports whether current resources and staff cover one action.
+func (s *State) canConstructBuilding(action buildingBarItemID) bool {
+	template, ok := s.buildingTemplateForItemID(action)
+	return ok && s.canAffordBuildingCost(template.Cost) &&
+		s.canPayPopulationCost(template.PopulationCost) &&
+		s.canStaff(template.Staffing)
 }
 
-// updateBuildingBarHover records which tower icon, if any, is under the cursor.
+// updateBuildingBarHover records the item and category under the cursor.
 func (s *State) updateBuildingBarHover(input Input) {
 	if !s.buildingBarVisible() {
-		s.ui.buildBarHover = -1
-		s.ui.buildBarTabHover = buildingBarNoCategory
+		s.clearBuildingBarHover()
 		return
 	}
-	s.ui.buildBarHover = s.buildingBarItemIndexAt(input.CursorX, input.CursorY)
-	s.ui.buildBarTabHover = s.buildingBarTabAt(input.CursorX, input.CursorY)
+	model := s.buildingBarModel()
+	s.ui.buildBarHover = ui.BuildingBarItemIndexAt(topBarHeight, model, input.CursorX, input.CursorY)
+	s.ui.buildBarTabHover = ui.BuildingBarCategoryAt(topBarHeight, input.CursorX, input.CursorY)
+}
+
+// clearBuildingBarHover resets transient building-bar hover state.
+func (s *State) clearBuildingBarHover() {
+	s.ui.buildBarHover = -1
+	s.ui.buildBarTabHover = ui.BuildingBarNoCategory
 }
 
 // updateBuildDrag starts, tracks, completes, or cancels building drags.
@@ -187,57 +124,22 @@ func (s *State) updateBuildDrag(input Input) {
 	if !input.Clicked {
 		return
 	}
-
-	if category := s.buildingBarTabAt(input.CursorX, input.CursorY); category != buildingBarNoCategory {
+	if category := ui.BuildingBarCategoryAt(topBarHeight, input.CursorX, input.CursorY); category != ui.BuildingBarNoCategory {
 		s.ui.buildBarCategory = category
 		s.ui.buildBarHover = -1
 		return
 	}
 
-	index := s.buildingBarItemIndexAt(input.CursorX, input.CursorY)
-	if index < 0 {
-		return
-	}
-	item := s.buildingBarItems()[index]
-	if !s.canConstructBuilding(item) || !s.canBuildTowersNow() {
+	item, ok := ui.BuildingBarItemAt(topBarHeight, s.buildingBarModel(), input.CursorX, input.CursorY)
+	if !ok || !s.canConstructBuilding(item.Action) || !s.canBuildTowersNow() {
 		return
 	}
 	s.buildDrag = buildDragState{
 		active:  true,
-		itemID:  item.ID,
+		itemID:  item.Action,
 		cursorX: input.CursorX,
 		cursorY: input.CursorY,
 	}
-}
-
-// buildingBarItemIndexAt returns the tower icon index at a point, or -1.
-func (s *State) buildingBarItemIndexAt(x, y int) int {
-	for i, item := range s.buildingBarItems() {
-		if item.Bounds.Contains(x, y) {
-			return i
-		}
-	}
-	return -1
-}
-
-// buildingBarItemByID returns the visible item with the requested stable ID.
-func (s *State) buildingBarItemByID(id buildingBarItemID) (buildingBarItem, bool) {
-	for _, item := range s.buildingBarItems() {
-		if item.ID == id {
-			return item, true
-		}
-	}
-	return buildingBarItem{}, false
-}
-
-// buildingBarTabAt returns the category tab under a point, or no category.
-func (s *State) buildingBarTabAt(x, y int) buildingBarCategory {
-	for _, tab := range s.buildingBarTabs() {
-		if tab.Bounds.Contains(x, y) {
-			return tab.Category
-		}
-	}
-	return buildingBarNoCategory
 }
 
 // canBuildTowersNow reports whether Management currently allows building placement.
@@ -247,23 +149,23 @@ func (s *State) canBuildTowersNow() bool {
 
 // placeDraggedBuilding attempts to build the active dragged structure at a screen point.
 func (s *State) placeDraggedBuilding(x, y int) {
-	item, ok := s.draggedBuildingItem()
-	if !ok || !s.canConstructBuilding(item) || !s.canBuildTowersNow() || s.buildDropBlockedByUI(x, y) {
+	template, ok := s.draggedBuildingTemplate()
+	if !ok || !s.canConstructBuilding(s.buildDrag.itemID) || !s.canBuildTowersNow() || s.buildDropBlockedByUI(x, y) {
 		return
 	}
 	tile, ok := s.exploredTileAtScreenPosition(x, y)
 	if !ok || !s.canBuildOnTile(tile) {
 		return
 	}
-	feature, ok := buildingFeatureForItemID(item.ID)
+	feature, ok := buildingFeatureForItemID(s.buildDrag.itemID)
 	if !ok {
 		return
 	}
 
-	s.deductBuildingCost(item.Cost)
-	s.deductPopulationCost(item.PopulationCost)
-	s.reserveStaffing(item.Staffing)
-	s.grantPopulation(item.PopulationGrant)
+	s.deductBuildingCost(template.Cost)
+	s.deductPopulationCost(template.PopulationCost)
+	s.reserveStaffing(template.Staffing)
+	s.grantPopulation(template.PopulationGrant)
 	if plot, ok := s.gameMap.plot(tile.Plot); ok {
 		plot.Tiles[tile.Y][tile.X].Feature = feature
 	}
@@ -277,24 +179,12 @@ func (s *State) buildDropBlockedByUI(x, y int) bool {
 		s.exploreButtonContains(x, y)
 }
 
-// draggedBuildingItem returns the building-bar item currently attached to the cursor.
-func (s *State) draggedBuildingItem() (buildingBarItem, bool) {
+// draggedBuildingTemplate returns the structure template attached to the cursor.
+func (s *State) draggedBuildingTemplate() (StructureTemplate, bool) {
 	if !s.buildDrag.active {
-		return buildingBarItem{}, false
+		return StructureTemplate{}, false
 	}
-	template, ok := s.buildingTemplateForItemID(s.buildDrag.itemID)
-	if !ok {
-		return buildingBarItem{}, false
-	}
-	return buildingBarItem{
-		ID:              s.buildDrag.itemID,
-		Name:            template.Name,
-		Sprite:          template.Sprite,
-		Cost:            template.Cost,
-		Staffing:        template.Staffing,
-		PopulationCost:  template.PopulationCost,
-		PopulationGrant: template.PopulationGrant,
-	}, true
+	return s.buildingTemplateForItemID(s.buildDrag.itemID)
 }
 
 // exploredTileAtScreenPosition returns the explored Tile under a screen point.
@@ -314,7 +204,7 @@ func (s *State) exploredTileAtScreenPosition(x, y int) (tileCoordinate, bool) {
 	return tileCoordinate{}, false
 }
 
-// canBuildOnTile reports whether a Tile can receive a new tower.
+// canBuildOnTile reports whether a Tile can receive a new structure.
 func (s *State) canBuildOnTile(tile tileCoordinate) bool {
 	if tile.X < 0 || tile.Y < 0 || tile.X >= plotSize || tile.Y >= plotSize {
 		return false
@@ -327,128 +217,30 @@ func (s *State) canBuildOnTile(tile tileCoordinate) bool {
 	return target.Terrain == terrainEmpty && target.Feature == featureNone
 }
 
-// drawBuildingBar renders the building picker at the left edge of the scene.
+// drawBuildingBar delegates visible construction presentation to the UI package.
 func (s *State) drawBuildingBar(screen *ebiten.Image) {
 	if !s.buildingBarVisible() {
 		return
 	}
-	bar := s.buildingBarBounds()
-	if bar.H <= 0 {
+	ui.DrawBuildingBar(screen, s.ui.costFace, s.ui.costBoldFace, topBarHeight, s.ui.height, s.buildingBarModel())
+}
+
+// drawBuildingTooltip delegates the current hover tooltip to the UI package.
+func (s *State) drawBuildingTooltip(screen *ebiten.Image) {
+	if !s.buildingBarVisible() || s.buildDrag.active {
 		return
 	}
-
-	vector.FillRect(screen, float32(bar.X), float32(bar.Y), float32(bar.W), float32(bar.H), colors.selectionPanel, false)
-	vector.StrokeLine(screen, float32(bar.X+bar.W-2), float32(bar.Y), float32(bar.X+bar.W-2), float32(bar.Y+bar.H), 3, colors.fieldEdge, false)
-
-	for _, tab := range s.buildingBarTabs() {
-		s.drawBuildingBarTab(screen, tab)
-	}
-
-	for i, item := range s.buildingBarItems() {
-		s.drawBuildingBarItem(screen, item, s.buildingBarItemHighlighted(i, item))
-	}
+	ui.DrawBuildingTooltip(screen, s.ui.costFace, s.ui.costBoldFace, s.ui.width, s.ui.height, topBarHeight, s.buildingBarModel())
 }
 
-// drawBuildingBarTab renders one build-category tab.
-func (s *State) drawBuildingBarTab(screen *ebiten.Image, tab buildingBarTab) {
-	bounds := tab.Bounds
-	selected := s.ui.buildBarCategory == tab.Category
-	hovered := s.ui.buildBarTabHover == tab.Category
-	fill := colors.plotBackdrop
-	if selected {
-		fill = colors.fieldEdge
-	}
-	vector.FillRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), fill, false)
-	vector.StrokeRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), 1, colors.fieldEdge, false)
-
-	textColor := colors.text
-	if hovered && !selected {
-		textColor = colors.pause
-	}
-	width, height := text.Measure(tab.Label, s.ui.costFace, s.ui.costFace.Size)
-	x := float64(bounds.X) + (float64(bounds.W)-width)/2
-	y := float64(bounds.Y) + (float64(bounds.H)-height)/2 - 1
-	ui.DrawText(screen, tab.Label, s.ui.costFace, x, y, textColor)
-}
-
-// drawBuildDrag renders the active building icon attached to the cursor.
+// drawBuildDrag delegates the active drag sprite to the UI package.
 func (s *State) drawBuildDrag(screen *ebiten.Image) {
 	if !s.buildingBarVisible() {
 		return
 	}
-	item, ok := s.draggedBuildingItem()
-	if !ok || item.Sprite == nil {
+	template, ok := s.draggedBuildingTemplate()
+	if !ok {
 		return
 	}
-	spriteWidth := float64(item.Sprite.Bounds().Dx())
-	spriteHeight := float64(item.Sprite.Bounds().Dy())
-	if spriteWidth <= 0 || spriteHeight <= 0 {
-		return
-	}
-
-	scale := float64(buildDragIconSize) / spriteWidth
-	options := &ebiten.DrawImageOptions{}
-	options.GeoM.Scale(scale, scale)
-	options.GeoM.Translate(
-		float64(s.buildDrag.cursorX)-spriteWidth*scale/2,
-		float64(s.buildDrag.cursorY)-spriteHeight*scale/2,
-	)
-	screen.DrawImage(item.Sprite, options)
-}
-
-// buildingBarItemHighlighted reports whether an item should receive hover emphasis.
-func (s *State) buildingBarItemHighlighted(index int, item buildingBarItem) bool {
-	return s.ui.buildBarHover == index && s.canConstructBuilding(item)
-}
-
-// drawBuildingBarItem renders one building icon slot and its right-side values.
-func (s *State) drawBuildingBarItem(screen *ebiten.Image, item buildingBarItem, hovered bool) {
-	bounds := item.Bounds
-	vector.FillRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), colors.plotBackdrop, false)
-	vector.StrokeRect(screen, float32(bounds.X), float32(bounds.Y), float32(bounds.W), float32(bounds.H), 2, s.buildingBarItemOutlineColor(item), false)
-
-	if item.Sprite == nil {
-		s.drawBuildingBarCost(screen, item, hovered)
-		s.drawBuildingBarPopulationMetadata(screen, item)
-		return
-	}
-	spriteWidth := float64(item.Sprite.Bounds().Dx())
-	spriteHeight := float64(item.Sprite.Bounds().Dy())
-	if spriteWidth <= 0 || spriteHeight <= 0 {
-		s.drawBuildingBarCost(screen, item, hovered)
-		s.drawBuildingBarPopulationMetadata(screen, item)
-		return
-	}
-
-	targetSize := float64(bounds.W - buildingBarSpriteInset*2)
-	scale := targetSize / spriteWidth
-	options := &ebiten.DrawImageOptions{}
-	options.GeoM.Scale(scale, scale)
-	options.GeoM.Translate(
-		float64(bounds.X)+(float64(bounds.W)-spriteWidth*scale)/2,
-		float64(bounds.Y)+(float64(bounds.H)-spriteHeight*scale)/2,
-	)
-	options.ColorScale.Scale(1, 1, 1, s.buildingBarIconAlpha(item))
-	if hovered {
-		brightenDrawOptions(options)
-	}
-	screen.DrawImage(item.Sprite, options)
-	s.drawBuildingBarCost(screen, item, hovered)
-	s.drawBuildingBarPopulationMetadata(screen, item)
-}
-
-// buildingBarIconAlpha returns the icon opacity for current construction capacity.
-func (s *State) buildingBarIconAlpha(item buildingBarItem) float32 {
-	if s.canConstructBuilding(item) {
-		return 1
-	}
-	return 0.70
-}
-
-// buildingBarItemOutlineColor returns the icon slot outline color for construction capacity.
-func (s *State) buildingBarItemOutlineColor(item buildingBarItem) color.Color {
-	if s.canConstructBuilding(item) {
-		return colors.buildable
-	}
-	return colors.buildBlocked
+	ui.DrawBuildingDrag(screen, template.Sprite, s.buildDrag.cursorX, s.buildDrag.cursorY)
 }

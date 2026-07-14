@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"td/internal/ui"
+)
 
 // TestCameraRightDragStartsOverGameView verifies map-space right presses begin dragging.
 func TestCameraRightDragStartsOverGameView(t *testing.T) {
@@ -61,7 +65,7 @@ func TestCameraRightDragStartBlockedByUI(t *testing.T) {
 		},
 		{
 			name: "building bar",
-			x:    func(*State) int { return buildingBarWidth / 2 },
+			x:    func(*State) int { return ui.BuildingBarWidth / 2 },
 			y:    func(*State) int { return topBarHeight + 40 },
 		},
 		{
@@ -106,7 +110,7 @@ func TestCameraRightDragContinuesOverUI(t *testing.T) {
 	cursorY := stateCenterY(state)
 
 	state.Update(rightDragInput(cursorX, cursorY, true, true, false))
-	state.Update(rightDragInput(buildingBarWidth/2, topBarHeight+40, false, true, false))
+	state.Update(rightDragInput(ui.BuildingBarWidth/2, topBarHeight+40, false, true, false))
 
 	if !state.cameraDrag.active {
 		t.Fatal("expected drag to remain active over UI after a valid start")

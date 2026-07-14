@@ -2,90 +2,22 @@ package game
 
 import "td/internal/ui"
 
-// buildingBarItemID identifies a buildable structure independent of visible tab position.
-type buildingBarItemID = int
+// buildingBarItemID identifies a build action independent of visible tab position.
+type buildingBarItemID = ui.BuildingBarAction
 
 const (
-	buildingBarHouseIndex buildingBarItemID = iota
-	buildingBarBarracksIndex
-	buildingBarDormIndex
-	buildingBarWoodcutterIndex
-	buildingBarStoneQuarryIndex
-	buildingBarIronMineIndex
-	buildingBarBowTowerIndex
-	buildingBarFlameBoltTowerIndex
-	buildingBarCatapultTowerIndex
+	buildingBarHouseIndex          = ui.BuildingBarHouse
+	buildingBarBarracksIndex       = ui.BuildingBarBarracks
+	buildingBarDormIndex           = ui.BuildingBarDorm
+	buildingBarWoodcutterIndex     = ui.BuildingBarWoodcutter
+	buildingBarStoneQuarryIndex    = ui.BuildingBarStoneQuarry
+	buildingBarIronMineIndex       = ui.BuildingBarIronMine
+	buildingBarBowTowerIndex       = ui.BuildingBarBowTower
+	buildingBarFlameBoltTowerIndex = ui.BuildingBarFlameBoltTower
+	buildingBarCatapultTowerIndex  = ui.BuildingBarCatapultTower
 )
 
-// buildingBarCategory identifies one visible group of buildable structures.
-type buildingBarCategory int
-
-const (
-	buildingBarCategoryDefenses buildingBarCategory = iota
-	buildingBarCategoryEconomic
-	buildingBarCategoryHousing
-	buildingBarNoCategory buildingBarCategory = -1
-)
-
-// buildingBarTab describes one screen-space building category tab.
-type buildingBarTab struct {
-	Category buildingBarCategory
-	Label    string
-	Bounds   ui.Button[int]
-}
-
-// buildingBarCategories returns tabs in their rendered order.
-func buildingBarCategories() []buildingBarCategory {
-	return []buildingBarCategory{
-		buildingBarCategoryDefenses,
-		buildingBarCategoryEconomic,
-		buildingBarCategoryHousing,
-	}
-}
-
-// buildingBarCategoryLabel returns the text shown for one category tab.
-func buildingBarCategoryLabel(category buildingBarCategory) string {
-	switch category {
-	case buildingBarCategoryDefenses:
-		return "Defenses"
-	case buildingBarCategoryEconomic:
-		return "Economic"
-	case buildingBarCategoryHousing:
-		return "Housing"
-	default:
-		return ""
-	}
-}
-
-// buildingBarCategoryForItem returns the tab that contains a stable item.
-func buildingBarCategoryForItem(id buildingBarItemID) buildingBarCategory {
-	switch id {
-	case buildingBarHouseIndex, buildingBarBarracksIndex, buildingBarDormIndex:
-		return buildingBarCategoryHousing
-	case buildingBarWoodcutterIndex, buildingBarStoneQuarryIndex, buildingBarIronMineIndex:
-		return buildingBarCategoryEconomic
-	case buildingBarBowTowerIndex, buildingBarFlameBoltTowerIndex, buildingBarCatapultTowerIndex:
-		return buildingBarCategoryDefenses
-	default:
-		return buildingBarNoCategory
-	}
-}
-
-// buildingBarItemIDsForCategory returns stable item IDs in visible category order.
-func buildingBarItemIDsForCategory(category buildingBarCategory) []buildingBarItemID {
-	switch category {
-	case buildingBarCategoryHousing:
-		return []buildingBarItemID{buildingBarHouseIndex, buildingBarBarracksIndex, buildingBarDormIndex}
-	case buildingBarCategoryEconomic:
-		return []buildingBarItemID{buildingBarWoodcutterIndex, buildingBarStoneQuarryIndex, buildingBarIronMineIndex}
-	case buildingBarCategoryDefenses:
-		return []buildingBarItemID{buildingBarBowTowerIndex, buildingBarFlameBoltTowerIndex, buildingBarCatapultTowerIndex}
-	default:
-		return nil
-	}
-}
-
-// buildingFeatureForItemID maps a stable item ID to the Tile feature it places.
+// buildingFeatureForItemID maps a stable building-bar action to the Tile feature it places.
 func buildingFeatureForItemID(id buildingBarItemID) (tileFeature, bool) {
 	switch id {
 	case buildingBarHouseIndex:
@@ -111,7 +43,7 @@ func buildingFeatureForItemID(id buildingBarItemID) (tileFeature, bool) {
 	}
 }
 
-// buildingTemplateForItemID returns the structure template for a stable item ID.
+// buildingTemplateForItemID returns the structure template for a stable building-bar action.
 func (s *State) buildingTemplateForItemID(id buildingBarItemID) (StructureTemplate, bool) {
 	switch id {
 	case buildingBarHouseIndex:

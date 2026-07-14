@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"td/internal/ui"
+)
 
 // TestAffordableBuildingDragStarts verifies affordable building icons can leave the bar.
 func TestAffordableBuildingDragStarts(t *testing.T) {
@@ -498,14 +502,14 @@ func TestBuildDragInvalidReleaseClearsDrag(t *testing.T) {
 
 // pressBuildingBarItemInput returns a left press at the center of a building-bar icon.
 func pressBuildingBarItemInput(state *State, id buildingBarItemID) Input {
-	state.ui.buildBarCategory = buildingBarCategoryForItem(id)
-	item, ok := state.buildingBarItemByID(id)
+	state.ui.buildBarCategory = ui.BuildingBarCategoryForAction(id)
+	bounds, ok := ui.BuildingBarItemBounds(topBarHeight, state.buildingBarModel(), id)
 	if !ok {
 		return Input{}
 	}
 	return Input{
-		CursorX:   item.Bounds.X + item.Bounds.W/2,
-		CursorY:   item.Bounds.Y + item.Bounds.H/2,
+		CursorX:   bounds.X + bounds.W/2,
+		CursorY:   bounds.Y + bounds.H/2,
 		Clicked:   true,
 		MouseDown: true,
 	}

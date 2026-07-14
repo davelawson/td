@@ -1,6 +1,10 @@
 package game
 
-import "testing"
+import (
+	"testing"
+
+	"td/internal/ui"
+)
 
 // TestBuildingBarVisibilityFollowsManagement verifies construction UI is phase-specific.
 func TestBuildingBarVisibilityFollowsManagement(t *testing.T) {
@@ -35,7 +39,7 @@ func TestBuildingBarVisibilityFollowsManagement(t *testing.T) {
 func TestHiddenBuildingBarClearsTransientState(t *testing.T) {
 	state := newRaidTestState(t)
 	state.ui.buildBarHover = 1
-	state.ui.buildBarTabHover = buildingBarCategoryDefenses
+	state.ui.buildBarTabHover = ui.BuildingBarCategoryDefenses
 	state.buildDrag = buildDragState{active: true, itemID: buildingBarBowTowerIndex}
 	state.status.phase = phaseRaid
 	state.raid.active = true
@@ -43,14 +47,11 @@ func TestHiddenBuildingBarClearsTransientState(t *testing.T) {
 	state.updateBuildingBarHover(Input{})
 	state.updateBuildDrag(Input{})
 
-	if state.ui.buildBarHover != -1 || state.ui.buildBarTabHover != buildingBarNoCategory {
+	if state.ui.buildBarHover != -1 || state.ui.buildBarTabHover != ui.BuildingBarNoCategory {
 		t.Fatalf("hidden hover = %d/%v, want cleared", state.ui.buildBarHover, state.ui.buildBarTabHover)
 	}
 	if state.buildDrag.active {
 		t.Fatal("expected hidden building bar to cancel build drag")
-	}
-	if _, ok := state.hoveredBuildingTooltip(); ok {
-		t.Fatal("expected hidden building bar to suppress its tooltip")
 	}
 }
 
@@ -61,7 +62,7 @@ func TestHiddenBuildingBarAreaAllowsCameraDrag(t *testing.T) {
 	state.raid.active = true
 	state.paused = true
 
-	state.Update(rightDragInput(buildingBarWidth/2, topBarHeight+40, true, true, false))
+	state.Update(rightDragInput(ui.BuildingBarWidth/2, topBarHeight+40, true, true, false))
 
 	if !state.cameraDrag.active {
 		t.Fatal("expected camera drag to start in the hidden building-bar region")

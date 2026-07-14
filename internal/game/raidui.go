@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	nextRaidButtonX      = buildingBarWidth + 42
+	nextRaidButtonX      = ui.BuildingBarWidth + 42
 	nextRaidButtonW      = 190
 	nextRaidButtonH      = 52
 	nextRaidMarginY      = 42
