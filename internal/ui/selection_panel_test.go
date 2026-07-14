@@ -84,6 +84,18 @@ func TestSelectionPanelRows(t *testing.T) {
 				"Required Peasants": "2",
 			},
 		},
+		{
+			name: "terrain",
+			data: SelectionPanelData{
+				Kind:        SelectionPanelTerrain,
+				TerrainName: "Boulder",
+				BiomeName:   "Hills",
+			},
+			rows: map[string]string{
+				"Terrain": "Boulder",
+				"Biome":   "Hills",
+			},
+		},
 	}
 
 	for _, test := range tests {

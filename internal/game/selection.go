@@ -6,6 +6,7 @@ const (
 	selectedItemNone selectedItemKind = iota
 	selectedItemStructure
 	selectedItemRaider
+	selectedItemTerrain
 )
 
 type selectedItem struct {
@@ -35,6 +36,14 @@ func (s *State) updateSelection(input Input) {
 	if tile, ok := s.structureAtScreenPosition(input.CursorX, input.CursorY); ok {
 		s.selection = selectedItem{
 			kind: selectedItemStructure,
+			tile: tile,
+		}
+		return
+	}
+
+	if tile, ok := s.terrainAtScreenPosition(input.CursorX, input.CursorY); ok {
+		s.selection = selectedItem{
+			kind: selectedItemTerrain,
 			tile: tile,
 		}
 		return
@@ -79,6 +88,24 @@ func (s *State) structureAtScreenPosition(x, y int) (tileCoordinate, bool) {
 	return tileCoordinate{}, false
 }
 
+// terrainAtScreenPosition returns a selectable Tree or Boulder Tile at a screen point.
+func (s *State) terrainAtScreenPosition(x, y int) (tileCoordinate, bool) {
+	tile, ok := s.exploredTileAtScreenPosition(x, y)
+	if !ok {
+		return tileCoordinate{}, false
+	}
+	plot, ok := s.gameMap.plot(tile.Plot)
+	if !ok || plot.Tiles[tile.Y][tile.X].Feature != featureNone {
+		return tileCoordinate{}, false
+	}
+	switch plot.Tiles[tile.Y][tile.X].Terrain {
+	case terrainTree, terrainBoulder:
+		return tile, true
+	default:
+		return tileCoordinate{}, false
+	}
+}
+
 // selectedStructure reports whether a structure tile is currently selected.
 func (s *State) selectedStructure(tile tileCoordinate) bool {
 	return s.selection.kind == selectedItemStructure && s.selection.tile == tile
@@ -87,6 +114,11 @@ func (s *State) selectedStructure(tile tileCoordinate) bool {
 // selectedRaider reports whether a raider is currently selected.
 func (s *State) selectedRaider(id int) bool {
 	return s.selection.kind == selectedItemRaider && s.selection.raiderID == id
+}
+
+// selectedTerrain reports whether a terrain Tile is currently selected.
+func (s *State) selectedTerrain(tile tileCoordinate) bool {
+	return s.selection.kind == selectedItemTerrain && s.selection.tile == tile
 }
 
 // clearMissingSelectedRaider clears raider selection after the selected raider leaves active state.

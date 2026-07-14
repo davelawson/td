@@ -131,19 +131,39 @@ func (s *State) chapterDayText() string {
 
 // phaseText formats the phase-specific top bar status.
 func (s *State) phaseText() string {
+	var value string
 	if s.raid.breached {
-		return "Sanctum breached"
+		value = "Sanctum breached"
+		return fmt.Sprintf("%s | %s", value, s.challengeText())
 	}
 	switch s.status.phase {
 	case phaseLabour:
-		return "Labour phase"
+		value = "Labour phase"
 	case phaseManagement:
-		return "Management phase"
+		value = "Management phase"
 	case phaseRaid:
-		return fmt.Sprintf("Enemies remaining: %d", s.raidEnemiesRemaining())
+		value = fmt.Sprintf("Enemies remaining: %d", s.raidEnemiesRemaining())
 	default:
-		return "Unknown phase"
+		value = "Unknown phase"
 	}
+	return fmt.Sprintf("%s | %s", value, s.challengeText())
+}
+
+// displayedChallengeRating returns the upcoming or current Raid challenge for the HUD.
+func (s *State) displayedChallengeRating() float64 {
+	if s.status.phase == phaseRaid {
+		return s.raid.template.challengeRating
+	}
+	return generateRaid(
+		s.raid.number+1,
+		s.settlementPopulation(),
+		len(s.gameMap.exploredPlotCoordinates()),
+	).challengeRating
+}
+
+// challengeText formats the challenge rating shown in the top bar.
+func (s *State) challengeText() string {
+	return fmt.Sprintf("Challenge %.1f", s.displayedChallengeRating())
 }
 
 // resourceHUDItems returns the resources shown in the top bar from left to right.

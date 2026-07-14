@@ -75,7 +75,7 @@ func TestLabourPhaseTextExistsForLifecycleDiagnostics(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.phase = phaseLabour
 
-	if got := state.phaseText(); got != "Labour phase" {
-		t.Fatalf("phaseText = %q, want %q", got, "Labour phase")
+	if got := state.phaseText(); got != "Labour phase | Challenge 4.0" {
+		t.Fatalf("phaseText = %q, want %q", got, "Labour phase | Challenge 4.0")
 	}
 }

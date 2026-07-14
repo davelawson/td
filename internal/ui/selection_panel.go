@@ -29,6 +29,7 @@ const (
 	SelectionPanelPopulationBuilding
 	SelectionPanelEconomicBuilding
 	SelectionPanelTower
+	SelectionPanelTerrain
 )
 
 // ResourceAmounts describes UI-facing Wood, Stone, and Metal counts.
@@ -62,6 +63,8 @@ type SelectionPanelData struct {
 	RangeTiles          float64
 	FireIntervalSeconds float64
 	Damage              int
+	TerrainName         string
+	BiomeName           string
 }
 
 type RaiderSelectionPanelData struct {
@@ -137,6 +140,11 @@ func selectionPanelRows(data SelectionPanelData) ([]selectionPanelRow, bool) {
 		return economicBuildingSelectionPanelRows(data), true
 	case SelectionPanelTower:
 		return towerSelectionPanelRows(data), true
+	case SelectionPanelTerrain:
+		return []selectionPanelRow{
+			{Label: "Terrain", Value: selectedName(data.TerrainName)},
+			{Label: "Biome", Value: selectedName(data.BiomeName)},
+		}, true
 	default:
 		return nil, false
 	}

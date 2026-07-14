@@ -39,6 +39,45 @@ func TestSelectedRaiderPanelData(t *testing.T) {
 	}
 }
 
+// TestSelectedTerrainPanelData verifies terrain selection exposes its type and Plot biome.
+func TestSelectedTerrainPanelData(t *testing.T) {
+	state := newRaidTestState(t)
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainTree}
+	state.selection = selectedItem{kind: selectedItemTerrain, tile: tile}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected terrain panel")
+	}
+	if panel.Kind != ui.SelectionPanelTerrain {
+		t.Fatalf("kind = %v, want terrain", panel.Kind)
+	}
+	if panel.TerrainName != "Tree" || panel.BiomeName != "Grasslands" {
+		t.Fatalf("terrain panel = %q/%q, want Tree/Grasslands", panel.TerrainName, panel.BiomeName)
+	}
+}
+
+// TestSelectedTerrainPanelUsesExploredPlotBiome verifies non-home biome context is retained.
+func TestSelectedTerrainPanelUsesExploredPlotBiome(t *testing.T) {
+	state := newRaidTestState(t)
+	plotCoord := plotCoordinate{X: 1}
+	plot := Plot{Biome: biomeHills}
+	tile := tileCoordinate{Plot: plotCoord, X: 2, Y: 3}
+	plot.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainBoulder}
+	state.gameMap.ensurePlots()
+	state.gameMap.Plots[plotCoord] = &plot
+	state.selection = selectedItem{kind: selectedItemTerrain, tile: tile}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected explored-Plot terrain panel")
+	}
+	if panel.TerrainName != "Boulder" || panel.BiomeName != "Hills" {
+		t.Fatalf("terrain panel = %q/%q, want Boulder/Hills", panel.TerrainName, panel.BiomeName)
+	}
+}
+
 // TestSelectedHousePanelData verifies House selection exposes its population effect.
 func TestSelectedHousePanelData(t *testing.T) {
 	state := newRaidTestState(t)

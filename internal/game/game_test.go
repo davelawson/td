@@ -286,7 +286,7 @@ func TestStateFormatsManagementTopBar(t *testing.T) {
 	if value := state.chapterDayText(); value != "Chapter I: The Ashen Copse | Day 1" {
 		t.Fatalf("chapterDayText = %q", value)
 	}
-	if value := state.phaseText(); value != "Management phase" {
+	if value := state.phaseText(); value != "Management phase | Challenge 4.0" {
 		t.Fatalf("phaseText = %q", value)
 	}
 }
@@ -299,10 +299,11 @@ func TestStateFormatsRaidTopBar(t *testing.T) {
 	}
 	state.status.phase = phaseRaid
 	state.raid.active = true
+	state.raid.template = generateRaid(1, 0, 1)
 	state.raid.pendingEnemies = 5
 	state.raid.enemies = []raidEnemy{{}, {}}
 
-	if value := state.phaseText(); value != "Enemies remaining: 7" {
+	if value := state.phaseText(); value != "Enemies remaining: 7 | Challenge 4.0" {
 		t.Fatalf("phaseText = %q", value)
 	}
 }

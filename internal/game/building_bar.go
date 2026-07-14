@@ -60,6 +60,11 @@ type buildDragState struct {
 	cursorY int
 }
 
+// buildingBarVisible reports whether the current phase exposes construction controls.
+func (s *State) buildingBarVisible() bool {
+	return s.status.phase == phaseManagement && !s.raid.active && !s.raid.breached
+}
+
 // buildingBarBounds returns the screen-space building bar rectangle.
 func (s *State) buildingBarBounds() ui.Button[int] {
 	return ui.Button[int]{
@@ -107,7 +112,7 @@ func (s *State) buildingBarItems() []buildingBarItem {
 
 // buildingBarContains reports whether a point is inside the visual building bar.
 func (s *State) buildingBarContains(x, y int) bool {
-	return s.buildingBarBounds().Contains(x, y)
+	return s.buildingBarVisible() && s.buildingBarBounds().Contains(x, y)
 }
 
 // buildingBarTabs returns the category tabs shown at the top of the building bar.
@@ -150,12 +155,21 @@ func (s *State) canConstructBuilding(item buildingBarItem) bool {
 
 // updateBuildingBarHover records which tower icon, if any, is under the cursor.
 func (s *State) updateBuildingBarHover(input Input) {
+	if !s.buildingBarVisible() {
+		s.ui.buildBarHover = -1
+		s.ui.buildBarTabHover = buildingBarNoCategory
+		return
+	}
 	s.ui.buildBarHover = s.buildingBarItemIndexAt(input.CursorX, input.CursorY)
 	s.ui.buildBarTabHover = s.buildingBarTabAt(input.CursorX, input.CursorY)
 }
 
 // updateBuildDrag starts, tracks, completes, or cancels building drags.
 func (s *State) updateBuildDrag(input Input) {
+	if !s.buildingBarVisible() {
+		s.buildDrag = buildDragState{}
+		return
+	}
 	if s.buildDrag.active {
 		s.buildDrag.cursorX = input.CursorX
 		s.buildDrag.cursorY = input.CursorY
@@ -228,7 +242,7 @@ func (s *State) buildingBarTabAt(x, y int) buildingBarCategory {
 
 // canBuildTowersNow reports whether Management currently allows building placement.
 func (s *State) canBuildTowersNow() bool {
-	return s.status.phase == phaseManagement && !s.raid.active && !s.raid.breached
+	return s.buildingBarVisible()
 }
 
 // placeDraggedBuilding attempts to build the active dragged structure at a screen point.
@@ -315,6 +329,9 @@ func (s *State) canBuildOnTile(tile tileCoordinate) bool {
 
 // drawBuildingBar renders the building picker at the left edge of the scene.
 func (s *State) drawBuildingBar(screen *ebiten.Image) {
+	if !s.buildingBarVisible() {
+		return
+	}
 	bar := s.buildingBarBounds()
 	if bar.H <= 0 {
 		return
@@ -356,6 +373,9 @@ func (s *State) drawBuildingBarTab(screen *ebiten.Image, tab buildingBarTab) {
 
 // drawBuildDrag renders the active building icon attached to the cursor.
 func (s *State) drawBuildDrag(screen *ebiten.Image) {
+	if !s.buildingBarVisible() {
+		return
+	}
 	item, ok := s.draggedBuildingItem()
 	if !ok || item.Sprite == nil {
 		return

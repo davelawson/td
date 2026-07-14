@@ -250,8 +250,9 @@ func TestRaidBreachDoesNotResolveLabour(t *testing.T) {
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
 	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	state.raid = raidState{
-		active:  true,
-		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: step}}},
+		active:   true,
+		template: generateRaid(1, 0, 1),
+		enemies:  []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: step}}},
 	}
 	state.status.phase = phaseRaid
 	startingResources := state.status.resources
@@ -297,8 +298,9 @@ func TestRaidBreachClearsRaidAndDisablesStarts(t *testing.T) {
 	state.status.barricade = 0
 	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	state.raid = raidState{
-		active:  true,
-		enemies: []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: step}}},
+		active:   true,
+		template: generateRaid(1, 0, 1),
+		enemies:  []raidEnemy{{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: step}}},
 	}
 	state.status.phase = phaseRaid
 
@@ -316,7 +318,7 @@ func TestRaidBreachClearsRaidAndDisablesStarts(t *testing.T) {
 	if state.canStartRaid() {
 		t.Fatal("expected breach to disable future Raid starts")
 	}
-	if value := state.phaseText(); value != "Sanctum breached" {
+	if value := state.phaseText(); value != "Sanctum breached | Challenge 4.0" {
 		t.Fatalf("phaseText = %q", value)
 	}
 }

@@ -34,7 +34,7 @@ type buildingTooltipLine struct {
 
 // hoveredBuildingTooltip returns the tooltip for the currently hovered building icon.
 func (s *State) hoveredBuildingTooltip() (buildingTooltip, bool) {
-	if s.buildDrag.active || s.ui.buildBarHover < 0 {
+	if !s.buildingBarVisible() || s.buildDrag.active || s.ui.buildBarHover < 0 {
 		return buildingTooltip{}, false
 	}
 	items := s.buildingBarItems()

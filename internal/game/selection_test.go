@@ -48,6 +48,86 @@ func TestClickingStructureTilesSelectsStructures(t *testing.T) {
 	}
 }
 
+// TestClickingNaturalTerrainSelectsTreeAndBoulder verifies selectable terrain scope.
+func TestClickingNaturalTerrainSelectsTreeAndBoulder(t *testing.T) {
+	tests := []struct {
+		name    string
+		terrain tileTerrain
+	}{
+		{name: "tree", terrain: terrainTree},
+		{name: "boulder", terrain: terrainBoulder},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			state := newRaidTestState(t)
+			tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+			state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: test.terrain}
+
+			state.Update(clickTileInput(state, tile.X, tile.Y))
+
+			if state.selection.kind != selectedItemTerrain || state.selection.tile != tile {
+				t.Fatalf("selection = %+v, want terrain at %+v", state.selection, tile)
+			}
+		})
+	}
+}
+
+// TestTerrainSelectionWorksDuringPausedRaid verifies inspection remains phase-independent.
+func TestTerrainSelectionWorksDuringPausedRaid(t *testing.T) {
+	state := newRaidTestState(t)
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainTree}
+	state.status.phase = phaseRaid
+	state.raid.active = true
+	state.paused = true
+
+	state.Update(clickTileInput(state, tile.X, tile.Y))
+
+	if state.selection.kind != selectedItemTerrain || state.selection.tile != tile {
+		t.Fatalf("selection = %+v, want paused-Raid terrain at %+v", state.selection, tile)
+	}
+}
+
+// TestClickingGrassOrRoadDoesNotSelectTerrain verifies unoccupied Tiles remain unselectable.
+func TestClickingGrassOrRoadDoesNotSelectTerrain(t *testing.T) {
+	tests := []struct {
+		name    string
+		terrain tileTerrain
+	}{
+		{name: "grass", terrain: terrainEmpty},
+		{name: "road", terrain: terrainRoad},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			state := newRaidTestState(t)
+			tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+			state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: test.terrain}
+			state.selection = selectedItem{kind: selectedItemTerrain, tile: tileCoordinate{X: 1, Y: 1}}
+
+			state.Update(clickTileInput(state, tile.X, tile.Y))
+
+			if state.selection.kind != selectedItemNone {
+				t.Fatalf("selection kind = %v, want none", state.selection.kind)
+			}
+		})
+	}
+}
+
+// TestStructureSelectionHasPriorityOverTerrain verifies features win Tile overlap.
+func TestStructureSelectionHasPriorityOverTerrain(t *testing.T) {
+	state := newRaidTestState(t)
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainTree, Feature: featureHouse}
+
+	state.Update(clickTileInput(state, tile.X, tile.Y))
+
+	if state.selection.kind != selectedItemStructure || state.selection.tile != tile {
+		t.Fatalf("selection = %+v, want structure at %+v", state.selection, tile)
+	}
+}
+
 // TestClickingRaiderSelectsRaider verifies active raiders can be selected by sprite bounds.
 func TestClickingRaiderSelectsRaider(t *testing.T) {
 	state := newRaidTestState(t)

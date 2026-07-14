@@ -40,6 +40,10 @@ The Iron Mine structure sprite lives at `assets/sprites/structures/iron-mine.png
 
 Future structure prompts should continue to ask for a single isolated readable subject, no scenery, no text, no watermark, no cast shadow, and no background after processing.
 
+The population portraits live at `assets/sprites/icons/apprentice.png`, `assets/sprites/icons/soldier.png`, and `assets/sprites/icons/peasant.png`. They are front-facing head-and-shoulders pixel-art portraits inside a shared thin bronze circular rim with a dark charcoal badge interior and transparent exterior. The Apprentice has a surprised face and purple pointed wizard hat, the Soldier has a grimacing face and steel cap, and the Peasant has a smiling face and straw hat. These portraits replace full-body figures everywhere the population icons appear.
+
+Future population portrait prompts should preserve that shared round-badge composition, keep the face dominant, and use the role's hat shape, palette, and expression as the primary identifiers. Ask for a perfectly flat solid `#00ff00` background outside the badge, no green in the subject, no full body, props, scenery, text, shadow, reflection, or watermark. Remove the chroma key with automatic border sampling, a soft matte, and despill; crop to the nontransparent bounds; resize with nearest-neighbor sampling to fit about 60x60; and center the result on an exact 64x64 transparent PNG canvas. Review the expression at the 28-pixel top-HUD size and the hat, palette, and silhouette at the 14-pixel building-metadata size before accepting a portrait.
+
 The Boulder terrain sprites live at `assets/sprites/terrains/boulder-1.png` through `assets/sprites/terrains/boulder-4.png`. They were generated as isolated low-detail gray pixel-art boulders on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized onto 64x64 transparent PNG canvases. Future terrain obstacle sprites should match the existing pine-tree and Boulder terrain style: isolated subject, transparent background, clear silhouette, no ground patch, no cast shadow, and readable at 50% scale.
 
 ## Open Questions

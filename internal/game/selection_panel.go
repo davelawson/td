@@ -13,9 +13,39 @@ func (s *State) currentSelectionPanel() (ui.SelectionPanelData, bool) {
 		return s.selectedRaiderPanel()
 	case selectedItemStructure:
 		return s.selectedStructurePanel()
+	case selectedItemTerrain:
+		return s.selectedTerrainPanel()
 	default:
 		return ui.SelectionPanelData{}, false
 	}
+}
+
+// selectedTerrainPanel returns terrain and biome facts for a selected natural obstacle.
+func (s *State) selectedTerrainPanel() (ui.SelectionPanelData, bool) {
+	tile := s.selection.tile
+	if tile.X < 0 || tile.X >= plotSize || tile.Y < 0 || tile.Y >= plotSize {
+		return ui.SelectionPanelData{}, false
+	}
+	plot, ok := s.gameMap.plot(tile.Plot)
+	if !ok || plot.Tiles[tile.Y][tile.X].Feature != featureNone {
+		return ui.SelectionPanelData{}, false
+	}
+
+	var terrainName string
+	switch plot.Tiles[tile.Y][tile.X].Terrain {
+	case terrainTree:
+		terrainName = "Tree"
+	case terrainBoulder:
+		terrainName = "Boulder"
+	default:
+		return ui.SelectionPanelData{}, false
+	}
+
+	return ui.SelectionPanelData{
+		Kind:        ui.SelectionPanelTerrain,
+		TerrainName: terrainName,
+		BiomeName:   biomeLabel(plot.Biome),
+	}, true
 }
 
 // selectedRaiderPanel returns panel data for the selected active raider.

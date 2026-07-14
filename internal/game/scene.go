@@ -11,6 +11,7 @@ import (
 const (
 	treeHorizontalFlipMask   uint16 = 0x8000
 	selectedSpriteBrightness        = 1.65
+	selectedTerrainStroke           = 3
 	exploreButtonSize               = 0.78
 	exploreButtonStroke             = 0.08
 	exploreLabelGap                 = 8
@@ -87,6 +88,9 @@ func (s *State) drawPlotTile(screen *ebiten.Image, viewport sceneViewport, plot 
 	}
 	if tile.Feature == featureCatapultTower {
 		s.drawStructureSprite(screen, s.structureCatalog.CatapultTower.Sprite, rect.x, rect.y, rect.w, selected)
+	}
+	if s.selectedTerrain(tileCoordinate{Plot: plot, X: x, Y: y}) {
+		vector.StrokeRect(screen, rect.x, rect.y, rect.w, rect.h, selectedTerrainStroke, colors.pause, false)
 	}
 }
 
