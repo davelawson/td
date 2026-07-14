@@ -186,7 +186,7 @@ A generated Raid begins at 0 percent progress and advances to 100 percent over `
 
 The first Raid slice stores each active enemy's current world position directly. On the starting road, enemies spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Movement speed comes from `EnemyTemplate.SpeedTilesPerSecond`, is measured in Tiles per second, and is converted through the fixed logical update duration. Maximum health comes from `EnemyTemplate.MaxHealth`, and combat-defeat rewards come from `EnemyTemplate.Resources`. The current skeleton template has 50 health, moves at 1.0 Tiles per second, and rewards 5 Wood and 2 Stone. The current zombie template has 75 health, moves at 0.7 Tiles per second, and rewards 4 Wood, 3 Stone, and 1 Metal.
 
-The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. The Catapult Tower range is 5.0 Tiles, damage is 75 to every active enemy in the target's Tile, fire interval is 3.0 seconds, and projectile speed is 3.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
+The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. The Catapult Tower range is 5.0 Tiles, damage is 30 to every active enemy in the target's Tile, fire interval is 6.0 seconds, and projectile speed is 3.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
 If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources. A Raid cannot succeed during an empty interval before progress reaches 100 percent. Once progress is complete, success waits until all scheduled and active enemies are gone; the next Day then begins, Labour pays each placed economic building once, and Management opens immediately. A breached Raid does not advance the Day or perform Labour.
 
@@ -198,7 +198,7 @@ Tower types define the defensive structures the wizard can build in the Domain.
 
 - `Bow Tower`: costs 20 Wood and 10 Stone; requires one Soldier; has 3.0-Tile range; deals 10 damage; fires every 1.0 second; and launches projectiles at 9.0 Tiles per second.
 - `Flame Bolt Tower`: costs 30 Stone and 20 Metal; requires one Apprentice; has 2.5-Tile range; deals 20 damage; fires every 1.5 seconds; and launches projectiles at 7.0 Tiles per second.
-- `Catapult Tower`: costs 40 Wood, 60 Stone, and 25 Metal; requires one Soldier and one Peasant; has 5.0-Tile range; deals 75 damage to every active enemy in the struck Tile; fires every 3.0 seconds; and launches projectiles at 3.0 Tiles per second.
+- `Catapult Tower`: costs 40 Wood, 60 Stone, and 25 Metal; requires one Soldier and one Peasant; has 5.0-Tile range; deals 30 damage to every active enemy in the struck Tile; fires every 6.0 seconds; and launches projectiles at 3.0 Tiles per second.
 
 Open decisions include upgrade paths, specialized targeting modes, what other tower types exist, and whether these first prototype costs remain balanced once resource gathering and spending exist.
 
@@ -364,6 +364,10 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Catapult projectiles damage every active enemy in the Tile occupied by the original target when the projectile lands.
   Rationale: Tile-area impact matches the grid-based map model and keeps the existing deterministic target selection rule instead of adding a new targeting mode.
   Date/Author: 2026-05-26 / Codex
+
+- Decision: Rebalance the Catapult Tower to deal 30 Tile-area damage every 6.0 seconds while preserving its 3.0-Tiles-per-second projectile speed.
+  Rationale: Lower damage and half the firing frequency reduce the Catapult Tower's combat output without changing its long-range area-damage role, construction requirements, or projectile travel behavior.
+  Date/Author: 2026-07-14 / User and Codex
 
 - Decision: Use deterministic placeholder Raids as the first enemy-wave slice. Superseded on 2026-07-14 by settlement-scaled Raid templates.
   Rationale: A fixed enemy count, fixed stagger, and fixed north-road path made initial Raid behavior visible and testable before dynamic generation existed.

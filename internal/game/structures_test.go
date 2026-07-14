@@ -303,11 +303,11 @@ func TestNewStructureCatalogIncludesCatapultTower(t *testing.T) {
 	if catapultTower.RangeTiles != 5.0 {
 		t.Fatalf("Catapult Tower range = %f, want 5.0", catapultTower.RangeTiles)
 	}
-	if catapultTower.Damage != 75 {
-		t.Fatalf("Catapult Tower damage = %d, want 75", catapultTower.Damage)
+	if catapultTower.Damage != 30 {
+		t.Fatalf("Catapult Tower damage = %d, want 30", catapultTower.Damage)
 	}
-	if catapultTower.FireIntervalSeconds != 3.0 {
-		t.Fatalf("Catapult Tower fire interval = %f, want 3.0", catapultTower.FireIntervalSeconds)
+	if catapultTower.FireIntervalSeconds != 6.0 {
+		t.Fatalf("Catapult Tower fire interval = %f, want 6.0", catapultTower.FireIntervalSeconds)
 	}
 	if catapultTower.ProjectileSpeedTilesPerSecond != 3.0 {
 		t.Fatalf("Catapult Tower projectile speed = %f, want 3.0", catapultTower.ProjectileSpeedTilesPerSecond)
