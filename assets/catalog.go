@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/dorm.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/iron-mine.png sprites/structures/sanctum.png sprites/structures/stone-quarry.png sprites/structures/woodcutter.png sprites/terrains/boulder-1.png sprites/terrains/boulder-2.png sprites/terrains/boulder-3.png sprites/terrains/boulder-4.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/dorm.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/iron-mine.png sprites/structures/sanctum.png sprites/structures/stone-quarry.png sprites/structures/woodcutter.png sprites/terrains/boulder-1.png sprites/terrains/boulder-2.png sprites/terrains/boulder-3.png sprites/terrains/boulder-4.png sprites/terrains/iron-deposit-1.png sprites/terrains/iron-deposit-2.png sprites/terrains/iron-deposit-3.png sprites/terrains/iron-deposit-4.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 //go:embed audio/raider-defeated.wav
@@ -75,8 +75,9 @@ type StructureSprites struct {
 
 // TerrainSprites groups loaded sprites for map terrain.
 type TerrainSprites struct {
-	PineTrees [4]*ebiten.Image
-	Boulders  [4]*ebiten.Image
+	PineTrees    [4]*ebiten.Image
+	Boulders     [4]*ebiten.Image
+	IronDeposits [4]*ebiten.Image
 }
 
 // NewCatalog loads the runtime assets required by a new game.
@@ -185,6 +186,14 @@ func NewCatalog() (Catalog, error) {
 			return Catalog{}, err
 		}
 	}
+	var ironDeposits [4]*ebiten.Image
+	for i := range ironDeposits {
+		path := fmt.Sprintf("sprites/terrains/iron-deposit-%d.png", i+1)
+		ironDeposits[i], err = loadSprite(path)
+		if err != nil {
+			return Catalog{}, err
+		}
+	}
 	return Catalog{
 		Audio: audioCatalog,
 		Sprite: SpriteCatalog{
@@ -218,8 +227,9 @@ func NewCatalog() (Catalog, error) {
 				CatapultTower:  catapultTower,
 			},
 			Terrain: TerrainSprites{
-				PineTrees: pineTrees,
-				Boulders:  boulders,
+				PineTrees:    pineTrees,
+				Boulders:     boulders,
+				IronDeposits: ironDeposits,
 			},
 		},
 	}, nil

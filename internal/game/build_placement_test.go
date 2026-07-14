@@ -442,6 +442,29 @@ func TestBuildDragRejectsBoulderTile(t *testing.T) {
 	}
 }
 
+// TestBuildDragRejectsIronDepositTile verifies deposits are non-buildable terrain.
+func TestBuildDragRejectsIronDepositTile(t *testing.T) {
+	state := newRaidTestState(t)
+	setAvailablePopulations(state, 0, 1, 0)
+	initialResources := state.status.resources
+	initialPopulations := state.status.populations
+	tile := tileCoordinate{X: 1, Y: 0}
+	state.gameMap.Home.Tiles[tile.Y][tile.X].Terrain = terrainIronDeposit
+
+	state.Update(pressBuildingBarItemInput(state, buildingBarBowTowerIndex))
+	state.Update(releaseTileInput(state, tile.X, tile.Y))
+
+	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureNone {
+		t.Fatalf("Iron Deposit tile feature = %v, want none", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
+	}
+	if state.status.resources != initialResources {
+		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, initialResources)
+	}
+	if state.status.populations != initialPopulations {
+		t.Fatalf("populations = %+v, want unchanged %+v", state.status.populations, initialPopulations)
+	}
+}
+
 // TestBuildDragRejectsActiveRaid verifies tower placement is Management-only.
 func TestBuildDragRejectsActiveRaid(t *testing.T) {
 	state := newRaidTestState(t)

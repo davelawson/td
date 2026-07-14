@@ -20,6 +20,7 @@ var colors = struct {
 	roadTile       color.Color
 	treeTile       color.Color
 	boulderTile    color.Color
+	depositTile    color.Color
 	tileGrid       color.Color
 	raidEnemy      color.Color
 	topBar         color.Color
@@ -44,6 +45,7 @@ var colors = struct {
 	roadTile:       ui.OliveBrown,
 	treeTile:       ui.DarkMossGreen,
 	boulderTile:    color.RGBA{R: 94, G: 97, B: 91, A: 255},
+	depositTile:    color.RGBA{R: 104, G: 76, B: 61, A: 255},
 	tileGrid:       ui.DarkMossGreen,
 	raidEnemy:      ui.Purple,
 	topBar:         ui.DarkCharcoalGreen,

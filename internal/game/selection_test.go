@@ -48,14 +48,15 @@ func TestClickingStructureTilesSelectsStructures(t *testing.T) {
 	}
 }
 
-// TestClickingNaturalTerrainSelectsTreeAndBoulder verifies selectable terrain scope.
-func TestClickingNaturalTerrainSelectsTreeAndBoulder(t *testing.T) {
+// TestClickingNaturalTerrainSelectsObstacles verifies selectable terrain scope.
+func TestClickingNaturalTerrainSelectsObstacles(t *testing.T) {
 	tests := []struct {
 		name    string
 		terrain tileTerrain
 	}{
 		{name: "tree", terrain: terrainTree},
 		{name: "boulder", terrain: terrainBoulder},
+		{name: "iron deposit", terrain: terrainIronDeposit},
 	}
 
 	for _, test := range tests {

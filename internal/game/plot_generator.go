@@ -3,19 +3,22 @@ package game
 import "math/rand"
 
 var grasslandsTerrainWeights = terrainWeights{
-	Tree:    6,
-	Boulder: 3,
+	Tree:        6,
+	Boulder:     3,
+	IronDeposit: 1,
 }
 
 var hillsTerrainWeights = terrainWeights{
-	Tree:    3,
-	Boulder: 6,
+	Tree:        3,
+	Boulder:     6,
+	IronDeposit: 3,
 }
 
 // terrainWeights describes percentage chances for generated terrain in a Tile.
 type terrainWeights struct {
-	Tree    int
-	Boulder int
+	Tree        int
+	Boulder     int
+	IronDeposit int
 }
 
 // NewDefaultHomePlot creates the grassland starting Plot with a Sanctum and north road.
@@ -97,6 +100,10 @@ func weightedTerrain(weights terrainWeights, roll int) tileTerrain {
 	roll -= weights.Tree
 	if roll < weights.Boulder {
 		return terrainBoulder
+	}
+	roll -= weights.Boulder
+	if roll < weights.IronDeposit {
+		return terrainIronDeposit
 	}
 	return terrainEmpty
 }

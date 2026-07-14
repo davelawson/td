@@ -74,7 +74,8 @@ func TestDefaultHomePlotUsesGrasslandsTerrainWeights(t *testing.T) {
 		{roll: 5, want: terrainTree},
 		{roll: 6, want: terrainBoulder},
 		{roll: 8, want: terrainBoulder},
-		{roll: 9, want: terrainEmpty},
+		{roll: 9, want: terrainIronDeposit},
+		{roll: 10, want: terrainEmpty},
 		{roll: 99, want: terrainEmpty},
 	}
 
@@ -92,7 +93,7 @@ func TestDefaultHomePlotUsesGrasslandsTerrainWeights(t *testing.T) {
 func TestDefaultHomePlotRoadOverridesGrasslandsTerrain(t *testing.T) {
 	plot := newDefaultHomePlotWithSources(func() uint16 {
 		return 0
-	}, constantTerrainRoll(6))
+	}, constantTerrainRoll(9))
 
 	for y := 0; y <= homePlotCenter; y++ {
 		if plot.Tiles[y][homePlotCenter].Terrain != terrainRoad {
@@ -100,8 +101,8 @@ func TestDefaultHomePlotRoadOverridesGrasslandsTerrain(t *testing.T) {
 		}
 	}
 	for y := homePlotCenter + 1; y < plotSize; y++ {
-		if plot.Tiles[y][homePlotCenter].Terrain != terrainBoulder {
-			t.Fatalf("tile (%d,%d) terrain = %v, want generated Boulder", homePlotCenter, y, plot.Tiles[y][homePlotCenter].Terrain)
+		if plot.Tiles[y][homePlotCenter].Terrain != terrainIronDeposit {
+			t.Fatalf("tile (%d,%d) terrain = %v, want generated Iron Deposit", homePlotCenter, y, plot.Tiles[y][homePlotCenter].Terrain)
 		}
 	}
 }
@@ -160,7 +161,7 @@ func TestGeneratedPlotUsesAssignedBiome(t *testing.T) {
 // TestGeneratedGrasslandsPlotCanContainObstacles verifies sparse terrain generation.
 func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 	var next uint16
-	terrainRolls := repeatingTerrainRolls(0, 6, 9)
+	terrainRolls := repeatingTerrainRolls(0, 6, 9, 10)
 	plot := newGrasslandsPlotWithSources(func() uint16 {
 		value := next
 		next++
@@ -169,6 +170,7 @@ func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 
 	trees := 0
 	boulders := 0
+	deposits := 0
 	empty := 0
 	for y := range plot.Tiles {
 		for x := range plot.Tiles[y] {
@@ -177,6 +179,8 @@ func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 				trees++
 			case terrainBoulder:
 				boulders++
+			case terrainIronDeposit:
+				deposits++
 			case terrainEmpty:
 				empty++
 			default:
@@ -190,6 +194,9 @@ func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 	if boulders == 0 {
 		t.Fatal("expected deterministic grasslands generation to include Boulder")
 	}
+	if deposits == 0 {
+		t.Fatal("expected deterministic grasslands generation to include Iron Deposit")
+	}
 	if empty == 0 {
 		t.Fatal("expected deterministic grasslands generation to keep buildable grass")
 	}
@@ -197,13 +204,14 @@ func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 
 // TestGeneratedHillsPlotCanContainObstacles verifies stone-biased hills terrain generation.
 func TestGeneratedHillsPlotCanContainObstacles(t *testing.T) {
-	terrainRolls := repeatingTerrainRolls(0, 3, 9)
+	terrainRolls := repeatingTerrainRolls(0, 3, 9, 12)
 	plot := newHillsPlotWithSources(func() uint16 {
 		return 0
 	}, terrainRolls)
 
 	trees := 0
 	boulders := 0
+	deposits := 0
 	empty := 0
 	for y := range plot.Tiles {
 		for x := range plot.Tiles[y] {
@@ -212,6 +220,8 @@ func TestGeneratedHillsPlotCanContainObstacles(t *testing.T) {
 				trees++
 			case terrainBoulder:
 				boulders++
+			case terrainIronDeposit:
+				deposits++
 			case terrainEmpty:
 				empty++
 			default:
@@ -219,14 +229,14 @@ func TestGeneratedHillsPlotCanContainObstacles(t *testing.T) {
 			}
 		}
 	}
-	if trees == 0 || boulders == 0 || empty == 0 {
-		t.Fatalf("hills terrain counts = Tree %d, Boulder %d, empty %d; want every terrain", trees, boulders, empty)
+	if trees == 0 || boulders == 0 || deposits == 0 || empty == 0 {
+		t.Fatalf("hills terrain counts = Tree %d, Boulder %d, Iron Deposit %d, empty %d; want every terrain", trees, boulders, deposits, empty)
 	}
 }
 
 // TestWeightedTerrainSelectsTree verifies Tree uses the first weight range.
 func TestWeightedTerrainSelectsTree(t *testing.T) {
-	weights := terrainWeights{Tree: 6, Boulder: 3}
+	weights := terrainWeights{Tree: 6, Boulder: 3, IronDeposit: 1}
 
 	for _, roll := range []int{0, 5} {
 		if got := weightedTerrain(weights, roll); got != terrainTree {
@@ -237,7 +247,7 @@ func TestWeightedTerrainSelectsTree(t *testing.T) {
 
 // TestWeightedTerrainSelectsBoulder verifies Boulder follows Tree in the weight range.
 func TestWeightedTerrainSelectsBoulder(t *testing.T) {
-	weights := terrainWeights{Tree: 6, Boulder: 3}
+	weights := terrainWeights{Tree: 6, Boulder: 3, IronDeposit: 1}
 
 	for _, roll := range []int{6, 8} {
 		if got := weightedTerrain(weights, roll); got != terrainBoulder {
@@ -246,11 +256,20 @@ func TestWeightedTerrainSelectsBoulder(t *testing.T) {
 	}
 }
 
+// TestWeightedTerrainSelectsIronDeposit verifies Iron Deposit follows Boulder.
+func TestWeightedTerrainSelectsIronDeposit(t *testing.T) {
+	weights := terrainWeights{Tree: 6, Boulder: 3, IronDeposit: 1}
+
+	if got := weightedTerrain(weights, 9); got != terrainIronDeposit {
+		t.Fatalf("roll 9 terrain = %v, want Iron Deposit", got)
+	}
+}
+
 // TestWeightedTerrainSelectsEmpty verifies unweighted percentages stay empty.
 func TestWeightedTerrainSelectsEmpty(t *testing.T) {
-	weights := terrainWeights{Tree: 6, Boulder: 3}
+	weights := terrainWeights{Tree: 6, Boulder: 3, IronDeposit: 1}
 
-	for _, roll := range []int{9, 99} {
+	for _, roll := range []int{10, 99} {
 		if got := weightedTerrain(weights, roll); got != terrainEmpty {
 			t.Fatalf("roll %d terrain = %v, want empty", roll, got)
 		}
@@ -267,7 +286,9 @@ func TestHillsTerrainWeightsBiasBoulders(t *testing.T) {
 		{roll: 2, want: terrainTree},
 		{roll: 3, want: terrainBoulder},
 		{roll: 8, want: terrainBoulder},
-		{roll: 9, want: terrainEmpty},
+		{roll: 9, want: terrainIronDeposit},
+		{roll: 11, want: terrainIronDeposit},
+		{roll: 12, want: terrainEmpty},
 		{roll: 99, want: terrainEmpty},
 	}
 
@@ -278,11 +299,11 @@ func TestHillsTerrainWeightsBiasBoulders(t *testing.T) {
 	}
 }
 
-// TestNorthRoadOverridesGeneratedBoulder verifies road generation protects Raid paths.
-func TestNorthRoadOverridesGeneratedBoulder(t *testing.T) {
+// TestNorthRoadOverridesGeneratedIronDeposit verifies road generation protects Raid paths.
+func TestNorthRoadOverridesGeneratedIronDeposit(t *testing.T) {
 	plot := newGrasslandsPlotWithSources(func() uint16 {
 		return 0
-	}, constantTerrainRoll(6))
+	}, constantTerrainRoll(9))
 
 	applyNorthRoadIfNeeded(plotCoordinate{X: 0, Y: 1}, &plot)
 
@@ -293,13 +314,13 @@ func TestNorthRoadOverridesGeneratedBoulder(t *testing.T) {
 	}
 }
 
-// TestSharedEdgeClearingOverridesGeneratedBoulder verifies joined Plots stay open.
-func TestSharedEdgeClearingOverridesGeneratedBoulder(t *testing.T) {
+// TestSharedEdgeClearingOverridesGeneratedIronDeposit verifies joined Plots stay open.
+func TestSharedEdgeClearingOverridesGeneratedIronDeposit(t *testing.T) {
 	gameMap := NewDefaultMap()
 	coord := plotCoordinate{X: 1, Y: 0}
 	plot := newGrasslandsPlotWithSources(func() uint16 {
 		return 0
-	}, constantTerrainRoll(6))
+	}, constantTerrainRoll(9))
 	gameMap.Plots[coord] = &plot
 
 	gameMap.clearSharedEdges(coord)

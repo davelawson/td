@@ -88,7 +88,7 @@ func (s *State) structureAtScreenPosition(x, y int) (tileCoordinate, bool) {
 	return tileCoordinate{}, false
 }
 
-// terrainAtScreenPosition returns a selectable Tree or Boulder Tile at a screen point.
+// terrainAtScreenPosition returns a selectable natural-obstacle Tile at a screen point.
 func (s *State) terrainAtScreenPosition(x, y int) (tileCoordinate, bool) {
 	tile, ok := s.exploredTileAtScreenPosition(x, y)
 	if !ok {
@@ -99,7 +99,7 @@ func (s *State) terrainAtScreenPosition(x, y int) (tileCoordinate, bool) {
 		return tileCoordinate{}, false
 	}
 	switch plot.Tiles[tile.Y][tile.X].Terrain {
-	case terrainTree, terrainBoulder:
+	case terrainTree, terrainBoulder, terrainIronDeposit:
 		return tile, true
 	default:
 		return tileCoordinate{}, false

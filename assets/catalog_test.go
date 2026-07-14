@@ -326,6 +326,24 @@ func TestNewCatalogLoadsBoulderSprites(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsIronDepositSprites verifies the required Iron Deposit terrain sprites are embedded.
+func TestNewCatalogLoadsIronDepositSprites(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for i, deposit := range catalog.Sprite.Terrain.IronDeposits {
+		if deposit == nil {
+			t.Fatalf("expected Iron Deposit sprite %d to load", i+1)
+		}
+		width, height := deposit.Bounds().Dx(), deposit.Bounds().Dy()
+		if width != 64 || height != 64 {
+			t.Fatalf("Iron Deposit sprite %d size = %dx%d, want 64x64", i+1, width, height)
+		}
+	}
+}
+
 // TestNewCatalogLoadsRaiderDefeatedAudio verifies the required defeat sound is embedded.
 func TestNewCatalogLoadsRaiderDefeatedAudio(t *testing.T) {
 	catalog, err := NewCatalog()

@@ -36,6 +36,24 @@ func TestCaptureSelectedTerrainScreenshot(t *testing.T) {
 	captureStateScreenshot(t, state, path)
 }
 
+// TestCaptureSelectedIronDepositScreenshot writes focused Iron Deposit evidence when enabled.
+func TestCaptureSelectedIronDepositScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainIronDeposit, Tweak: 1}
+	state.selection = selectedItem{kind: selectedItemTerrain, tile: tile}
+
+	path := filepath.Join("..", "..", "plans", "56-iron-deposit-terrain", "screenshots", "selected-iron-deposit.png")
+	captureStateScreenshot(t, state, path)
+}
+
 // TestCaptureActiveRaidScreenshot writes focused phase-aware Raid UI evidence when enabled.
 func TestCaptureActiveRaidScreenshot(t *testing.T) {
 	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {

@@ -37,6 +37,8 @@ func (s *State) selectedTerrainPanel() (ui.SelectionPanelData, bool) {
 		terrainName = "Tree"
 	case terrainBoulder:
 		terrainName = "Boulder"
+	case terrainIronDeposit:
+		terrainName = "Iron Deposit"
 	default:
 		return ui.SelectionPanelData{}, false
 	}

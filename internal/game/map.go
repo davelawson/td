@@ -49,6 +49,7 @@ const (
 	terrainRoad
 	terrainTree
 	terrainBoulder
+	terrainIronDeposit
 )
 
 type tileFeature int

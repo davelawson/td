@@ -46,6 +46,8 @@ Future population portrait prompts should preserve that shared round-badge compo
 
 The Boulder terrain sprites live at `assets/sprites/terrains/boulder-1.png` through `assets/sprites/terrains/boulder-4.png`. They were generated as isolated low-detail gray pixel-art boulders on a flat chroma-key background, converted to alpha, cropped to subject bounds, and resized onto 64x64 transparent PNG canvases. Future terrain obstacle sprites should match the existing pine-tree and Boulder terrain style: isolated subject, transparent background, clear silhouette, no ground patch, no cast shadow, and readable at 50% scale.
 
+The Iron Deposit terrain sprites live at `assets/sprites/terrains/iron-deposit-1.png` through `assets/sprites/terrains/iron-deposit-4.png`. They were generated from the four Boulder silhouettes as isolated low-detail gray pixel-art rocks with sparse, high-contrast cobalt-blue and cyan-blue ore veins on flat chroma-key backgrounds. The backgrounds were removed locally, and each subject was cropped, resized with nearest-neighbor sampling to the same 54-pixel-wide footprint as the Boulder family, and centered on an exact 64x64 transparent PNG canvas. Future mineral terrain should stay visibly related to ordinary Boulder terrain while using readable blue mineral seams as its distinguishing feature at 50% scale. Preserve the isolated natural-rock treatment and avoid mine structures, gathering props, protruding crystals, shadows, ground patches, or magical glow.
+
 ## Open Questions
 
 - When should the project introduce an asset pipeline, sprite atlas, animation workflow, or custom font?

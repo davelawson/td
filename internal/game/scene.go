@@ -48,6 +48,8 @@ func (s *State) drawPlotTile(screen *ebiten.Image, viewport sceneViewport, plot 
 		tileColor = colors.treeTile
 	case terrainBoulder:
 		tileColor = colors.boulderTile
+	case terrainIronDeposit:
+		tileColor = colors.depositTile
 	}
 	vector.FillRect(screen, rect.x, rect.y, rect.w, rect.h, tileColor, false)
 	vector.StrokeRect(screen, rect.x, rect.y, rect.w, rect.h, 1, colors.tileGrid, false)
@@ -57,6 +59,9 @@ func (s *State) drawPlotTile(screen *ebiten.Image, viewport sceneViewport, plot 
 	}
 	if tile.Terrain == terrainBoulder {
 		s.drawBoulder(screen, rect.x, rect.y, rect.w, tile)
+	}
+	if tile.Terrain == terrainIronDeposit {
+		s.drawIronDeposit(screen, rect.x, rect.y, rect.w, tile)
 	}
 	selected := s.selectedStructure(tileCoordinate{Plot: plot, X: x, Y: y})
 	if tile.Feature == featureSanctum {
@@ -188,6 +193,18 @@ func (s *State) drawBoulder(screen *ebiten.Image, tileX, tileY, tileSize float32
 
 	targetSize := float64(tileSize) * 0.78
 	drawTerrainSprite(screen, boulder, tileX, tileY, tileSize, targetSize, tile.Tweak)
+}
+
+// drawIronDeposit renders an Iron Deposit sprite variant chosen from the Tile tweak.
+func (s *State) drawIronDeposit(screen *ebiten.Image, tileX, tileY, tileSize float32, tile Tile) {
+	deposits := s.assetCatalog.Sprite.Terrain.IronDeposits
+	deposit := deposits[terrainSpriteIndex(tile.Tweak, len(deposits))]
+	if deposit == nil || tileSize <= 0 {
+		return
+	}
+
+	targetSize := float64(tileSize) * 0.78
+	drawTerrainSprite(screen, deposit, tileX, tileY, tileSize, targetSize, tile.Tweak)
 }
 
 // drawTerrainSprite renders one terrain sprite with optional tweak-driven mirroring.

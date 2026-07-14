@@ -78,6 +78,22 @@ func TestSelectedTerrainPanelUsesExploredPlotBiome(t *testing.T) {
 	}
 }
 
+// TestSelectedIronDepositPanelData verifies deposit selection uses the player-facing name.
+func TestSelectedIronDepositPanelData(t *testing.T) {
+	state := newRaidTestState(t)
+	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	state.gameMap.Home.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainIronDeposit}
+	state.selection = selectedItem{kind: selectedItemTerrain, tile: tile}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected Iron Deposit panel")
+	}
+	if panel.TerrainName != "Iron Deposit" || panel.BiomeName != "Grasslands" {
+		t.Fatalf("terrain panel = %q/%q, want Iron Deposit/Grasslands", panel.TerrainName, panel.BiomeName)
+	}
+}
+
 // TestSelectedHousePanelData verifies House selection exposes its population effect.
 func TestSelectedHousePanelData(t *testing.T) {
 	state := newRaidTestState(t)
