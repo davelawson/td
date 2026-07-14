@@ -21,6 +21,8 @@ type EnemyTemplate struct {
 type EnemyCatalog struct {
 	SkeletonSwordShield EnemyTemplate
 	Zombie              EnemyTemplate
+	Ghoul               EnemyTemplate
+	ArmouredSkeleton    EnemyTemplate
 }
 
 // NewEnemyCatalog creates the default enemy template catalog.
@@ -43,6 +45,24 @@ func NewEnemyCatalog(assetCatalog assets.Catalog) EnemyCatalog {
 			Resources:           Resources{Wood: 4, Stone: 3, Metal: 1},
 			SpriteKey:           "zombie",
 			Sprite:              assetCatalog.Sprite.Enemy.Zombie,
+		},
+		Ghoul: EnemyTemplate{
+			Name:                "Ghoul",
+			MaxHealth:           40,
+			SpeedTilesPerSecond: 1.5,
+			SanctumDamage:       1,
+			Resources:           Resources{Wood: 4, Metal: 1},
+			SpriteKey:           "ghoul",
+			Sprite:              assetCatalog.Sprite.Enemy.Ghoul,
+		},
+		ArmouredSkeleton: EnemyTemplate{
+			Name:                "Armoured Skeleton",
+			MaxHealth:           125,
+			SpeedTilesPerSecond: 0.9,
+			SanctumDamage:       1,
+			Resources:           Resources{Stone: 5, Metal: 2},
+			SpriteKey:           "armoured-skeleton",
+			Sprite:              assetCatalog.Sprite.Enemy.ArmouredSkeleton,
 		},
 	}
 }

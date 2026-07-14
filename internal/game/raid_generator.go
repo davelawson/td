@@ -13,6 +13,8 @@ type raidEnemyKind int
 const (
 	raidEnemySkeletonSwordShield raidEnemyKind = iota
 	raidEnemyZombie
+	raidEnemyGhoul
+	raidEnemyArmouredSkeleton
 )
 
 type raidEnemyRule struct {
@@ -47,6 +49,8 @@ func generateRaid(raidNumber, settlementPopulation, plotsExplored int) raidTempl
 		enemyRules: []raidEnemyRule{
 			{kind: raidEnemySkeletonSwordShield, threshold: 2},
 			{kind: raidEnemyZombie, threshold: 4},
+			{kind: raidEnemyGhoul, threshold: 6},
+			{kind: raidEnemyArmouredSkeleton, threshold: 8},
 		},
 	}
 }

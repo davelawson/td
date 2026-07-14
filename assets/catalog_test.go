@@ -42,6 +42,40 @@ func TestNewCatalogLoadsZombieSprite(t *testing.T) {
 	}
 }
 
+// TestNewCatalogLoadsGhoulSprite verifies the required Ghoul sprite is embedded.
+func TestNewCatalogLoadsGhoulSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ghoul := catalog.Sprite.Enemy.Ghoul
+	if ghoul == nil {
+		t.Fatal("expected Ghoul sprite to load")
+	}
+	width, height := ghoul.Bounds().Dx(), ghoul.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("Ghoul sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
+// TestNewCatalogLoadsArmouredSkeletonSprite verifies the required Armoured Skeleton sprite is embedded.
+func TestNewCatalogLoadsArmouredSkeletonSprite(t *testing.T) {
+	catalog, err := NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	armouredSkeleton := catalog.Sprite.Enemy.ArmouredSkeleton
+	if armouredSkeleton == nil {
+		t.Fatal("expected Armoured Skeleton sprite to load")
+	}
+	width, height := armouredSkeleton.Bounds().Dx(), armouredSkeleton.Bounds().Dy()
+	if width != 64 || height != 64 {
+		t.Fatalf("Armoured Skeleton sprite size = %dx%d, want 64x64", width, height)
+	}
+}
+
 // TestNewCatalogLoadsResourceIconSprites verifies the required HUD icon sprites are embedded.
 func TestNewCatalogLoadsResourceIconSprites(t *testing.T) {
 	catalog, err := NewCatalog()

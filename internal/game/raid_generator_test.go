@@ -19,6 +19,8 @@ func TestGenerateRaidBaseline(t *testing.T) {
 	wantRules := []raidEnemyRule{
 		{kind: raidEnemySkeletonSwordShield, threshold: 2},
 		{kind: raidEnemyZombie, threshold: 4},
+		{kind: raidEnemyGhoul, threshold: 6},
+		{kind: raidEnemyArmouredSkeleton, threshold: 8},
 	}
 	if !reflect.DeepEqual(template.enemyRules, wantRules) {
 		t.Fatalf("enemy rules = %+v, want %+v", template.enemyRules, wantRules)
@@ -64,6 +66,8 @@ func TestRaidProgressDurationIncreasesTempo(t *testing.T) {
 	rules := []raidEnemyRule{
 		{kind: raidEnemySkeletonSwordShield, threshold: 2},
 		{kind: raidEnemyZombie, threshold: 4},
+		{kind: raidEnemyGhoul, threshold: 6},
+		{kind: raidEnemyArmouredSkeleton, threshold: 8},
 	}
 	challenges := []float64{4, 16, 36}
 	previousDuration := 0.0
@@ -83,6 +87,31 @@ func TestRaidProgressDurationIncreasesTempo(t *testing.T) {
 		}
 		previousDuration = template.progressDurationSeconds
 		previousSecondsPerEnemy = secondsPerEnemy
+	}
+}
+
+// TestRaidRosterCountsAtChallenges verifies the accepted four-rule totals.
+func TestRaidRosterCountsAtChallenges(t *testing.T) {
+	template := generateRaid(1, 0, 1)
+	tests := []struct {
+		challenge  float64
+		wantCounts []int
+		wantTotal  int
+	}{
+		{challenge: 8, wantCounts: []int{4, 2, 1, 1}, wantTotal: 8},
+		{challenge: 16, wantCounts: []int{8, 4, 2, 2}, wantTotal: 16},
+	}
+
+	for _, test := range tests {
+		template.challengeRating = test.challenge
+		for i, rule := range template.enemyRules {
+			if got := scheduledEnemyCount(test.challenge, rule); got != test.wantCounts[i] {
+				t.Fatalf("challenge %.0f rule %d count = %d, want %d", test.challenge, i, got, test.wantCounts[i])
+			}
+		}
+		if got := template.totalEnemies(); got != test.wantTotal {
+			t.Fatalf("challenge %.0f total = %d, want %d", test.challenge, got, test.wantTotal)
+		}
 	}
 }
 

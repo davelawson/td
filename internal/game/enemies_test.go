@@ -75,3 +75,106 @@ func TestNewEnemyCatalogIncludesZombie(t *testing.T) {
 		t.Fatal("expected zombie sprite to reference the loaded asset catalog sprite")
 	}
 }
+
+// TestNewEnemyCatalogIncludesGhoul verifies the Ghoul enemy template values.
+func TestNewEnemyCatalogIncludesGhoul(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog := NewEnemyCatalog(assetCatalog)
+	ghoul := catalog.Ghoul
+
+	if ghoul.Name != "Ghoul" {
+		t.Fatalf("Ghoul name = %q, want %q", ghoul.Name, "Ghoul")
+	}
+	if ghoul.MaxHealth != 40 {
+		t.Fatalf("Ghoul max health = %d, want 40", ghoul.MaxHealth)
+	}
+	if ghoul.SpeedTilesPerSecond != 1.5 {
+		t.Fatalf("Ghoul speed = %f, want 1.5", ghoul.SpeedTilesPerSecond)
+	}
+	if ghoul.SanctumDamage != 1 {
+		t.Fatalf("Ghoul Sanctum damage = %d, want 1", ghoul.SanctumDamage)
+	}
+	if ghoul.Resources != (Resources{Wood: 4, Metal: 1}) {
+		t.Fatalf("Ghoul resources = %+v, want Wood 4 Metal 1", ghoul.Resources)
+	}
+	if ghoul.SpriteKey != "ghoul" {
+		t.Fatalf("Ghoul sprite key = %q, want %q", ghoul.SpriteKey, "ghoul")
+	}
+	if ghoul.Sprite == nil {
+		t.Fatal("expected Ghoul sprite to be assigned")
+	}
+	if ghoul.Sprite != assetCatalog.Sprite.Enemy.Ghoul {
+		t.Fatal("expected Ghoul sprite to reference the loaded asset catalog sprite")
+	}
+}
+
+// TestNewEnemyCatalogIncludesArmouredSkeleton verifies the Armoured Skeleton template values.
+func TestNewEnemyCatalogIncludesArmouredSkeleton(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog := NewEnemyCatalog(assetCatalog)
+	armouredSkeleton := catalog.ArmouredSkeleton
+
+	if armouredSkeleton.Name != "Armoured Skeleton" {
+		t.Fatalf("Armoured Skeleton name = %q, want %q", armouredSkeleton.Name, "Armoured Skeleton")
+	}
+	if armouredSkeleton.MaxHealth != 125 {
+		t.Fatalf("Armoured Skeleton max health = %d, want 125", armouredSkeleton.MaxHealth)
+	}
+	if armouredSkeleton.SpeedTilesPerSecond != 0.9 {
+		t.Fatalf("Armoured Skeleton speed = %f, want 0.9", armouredSkeleton.SpeedTilesPerSecond)
+	}
+	if armouredSkeleton.SanctumDamage != 1 {
+		t.Fatalf("Armoured Skeleton Sanctum damage = %d, want 1", armouredSkeleton.SanctumDamage)
+	}
+	if armouredSkeleton.Resources != (Resources{Stone: 5, Metal: 2}) {
+		t.Fatalf("Armoured Skeleton resources = %+v, want Stone 5 Metal 2", armouredSkeleton.Resources)
+	}
+	if armouredSkeleton.SpriteKey != "armoured-skeleton" {
+		t.Fatalf("Armoured Skeleton sprite key = %q, want %q", armouredSkeleton.SpriteKey, "armoured-skeleton")
+	}
+	if armouredSkeleton.Sprite == nil {
+		t.Fatal("expected Armoured Skeleton sprite to be assigned")
+	}
+	if armouredSkeleton.Sprite != assetCatalog.Sprite.Enemy.ArmouredSkeleton {
+		t.Fatal("expected Armoured Skeleton sprite to reference the loaded asset catalog sprite")
+	}
+}
+
+// TestEnemyTemplateSpeedsRemainDistinct verifies every raider type differs in speed by at least three percent.
+func TestEnemyTemplateSpeedsRemainDistinct(t *testing.T) {
+	assetCatalog, err := assets.NewCatalog()
+	if err != nil {
+		t.Fatal(err)
+	}
+	catalog := NewEnemyCatalog(assetCatalog)
+	templates := []*EnemyTemplate{
+		&catalog.SkeletonSwordShield,
+		&catalog.Zombie,
+		&catalog.Ghoul,
+		&catalog.ArmouredSkeleton,
+	}
+
+	for i, first := range templates {
+		for _, second := range templates[i+1:] {
+			slower, faster := first, second
+			if slower.SpeedTilesPerSecond > faster.SpeedTilesPerSecond {
+				slower, faster = faster, slower
+			}
+			separation := (faster.SpeedTilesPerSecond - slower.SpeedTilesPerSecond) / slower.SpeedTilesPerSecond
+			if separation < 0.03 {
+				t.Fatalf(
+					"%s and %s speed separation = %.2f%%, want at least 3%%",
+					first.Name,
+					second.Name,
+					separation*100,
+				)
+			}
+		}
+	}
+}

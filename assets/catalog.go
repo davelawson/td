@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-//go:embed sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/dorm.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/iron-mine.png sprites/structures/sanctum.png sprites/structures/stone-quarry.png sprites/structures/woodcutter.png sprites/terrains/boulder-1.png sprites/terrains/boulder-2.png sprites/terrains/boulder-3.png sprites/terrains/boulder-4.png sprites/terrains/iron-deposit-1.png sprites/terrains/iron-deposit-2.png sprites/terrains/iron-deposit-3.png sprites/terrains/iron-deposit-4.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
+//go:embed sprites/enemies/armoured-skeleton.png sprites/enemies/ghoul.png sprites/enemies/skeleton-sword-shield.png sprites/enemies/zombie.png sprites/icons/apprentice.png sprites/icons/metal.png sprites/icons/peasant.png sprites/icons/soldier.png sprites/icons/stone.png sprites/icons/wood.png sprites/structures/barracks.png sprites/structures/bow-tower-projectile.png sprites/structures/bow-tower.png sprites/structures/catapult-tower-projectile.png sprites/structures/catapult-tower.png sprites/structures/dorm.png sprites/structures/flame-bolt-tower-projectile.png sprites/structures/flame-bolt-tower.png sprites/structures/house.png sprites/structures/iron-mine.png sprites/structures/sanctum.png sprites/structures/stone-quarry.png sprites/structures/woodcutter.png sprites/terrains/boulder-1.png sprites/terrains/boulder-2.png sprites/terrains/boulder-3.png sprites/terrains/boulder-4.png sprites/terrains/iron-deposit-1.png sprites/terrains/iron-deposit-2.png sprites/terrains/iron-deposit-3.png sprites/terrains/iron-deposit-4.png sprites/terrains/pine-tree-1.png sprites/terrains/pine-tree-2.png sprites/terrains/pine-tree-3.png sprites/terrains/pine-tree-4.png
 var spriteFiles embed.FS
 
 //go:embed audio/raider-defeated.wav
@@ -40,6 +40,8 @@ type SpriteCatalog struct {
 type EnemySprites struct {
 	SkeletonSwordShield *ebiten.Image
 	Zombie              *ebiten.Image
+	Ghoul               *ebiten.Image
+	ArmouredSkeleton    *ebiten.Image
 }
 
 // IconSprites groups loaded sprites for HUD icons.
@@ -91,6 +93,14 @@ func NewCatalog() (Catalog, error) {
 		return Catalog{}, err
 	}
 	zombie, err := loadSprite("sprites/enemies/zombie.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	ghoul, err := loadSprite("sprites/enemies/ghoul.png")
+	if err != nil {
+		return Catalog{}, err
+	}
+	armouredSkeleton, err := loadSprite("sprites/enemies/armoured-skeleton.png")
 	if err != nil {
 		return Catalog{}, err
 	}
@@ -200,6 +210,8 @@ func NewCatalog() (Catalog, error) {
 			Enemy: EnemySprites{
 				SkeletonSwordShield: skeletonSwordShield,
 				Zombie:              zombie,
+				Ghoul:               ghoul,
+				ArmouredSkeleton:    armouredSkeleton,
 			},
 			Icon: IconSprites{
 				Wood:       woodIcon,

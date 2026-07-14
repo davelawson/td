@@ -102,6 +102,8 @@ func TestLaterRaidReleasesMoreEnemiesAfterSameElapsedTime(t *testing.T) {
 	state.status.populations.peasants = populationCount{available: 120, total: 120}
 	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
 	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
+	state.enemyCatalog.Ghoul.SpeedTilesPerSecond = 0
+	state.enemyCatalog.ArmouredSkeleton.SpeedTilesPerSecond = 0
 	state.startNextRaid()
 
 	if state.raid.template.challengeRating != 16 || state.raid.template.progressDurationSeconds != 13 {
@@ -111,7 +113,7 @@ func TestLaterRaidReleasesMoreEnemiesAfterSameElapsedTime(t *testing.T) {
 	if got, want := len(state.raid.enemies), 3; got != want {
 		t.Fatalf("active enemies after four seconds = %d, want %d", got, want)
 	}
-	if got, want := state.raid.pendingEnemies, 9; got != want {
+	if got, want := state.raid.pendingEnemies, 13; got != want {
 		t.Fatalf("pending enemies after four seconds = %d, want %d", got, want)
 	}
 	wantTemplates := []*EnemyTemplate{
@@ -131,6 +133,8 @@ func TestRaidProgressSpawnsSimultaneousRulesInTemplateOrder(t *testing.T) {
 	state := newRaidTestState(t)
 	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
 	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
+	state.enemyCatalog.Ghoul.SpeedTilesPerSecond = 0
+	state.enemyCatalog.ArmouredSkeleton.SpeedTilesPerSecond = 0
 
 	state.startNextRaid()
 	state.updateRaidProgress(state.raid.template.progressDurationSeconds)
@@ -154,6 +158,114 @@ func TestRaidProgressSpawnsSimultaneousRulesInTemplateOrder(t *testing.T) {
 	if state.raid.progress != 1 || state.raid.pendingEnemies != 0 || !state.raid.active {
 		t.Fatalf("completed schedule state = %+v, want active cleanup at 100%%", state.raid)
 	}
+}
+
+// TestRaidProgressSpawnsGhoulAtExactScoreSix verifies the Ghoul threshold is inclusive.
+func TestRaidProgressSpawnsGhoulAtExactScoreSix(t *testing.T) {
+	state := newRaidBoundaryTestState(t)
+
+	state.updateRaidProgress(5.999)
+	if got, want := len(state.raid.enemies), 3; got != want {
+		t.Fatalf("active enemies before score 6 = %d, want %d", got, want)
+	}
+	state.updateRaidProgress(0.001)
+	if got, want := len(state.raid.enemies), 5; got != want {
+		t.Fatalf("active enemies at score 6 = %d, want %d", got, want)
+	}
+	if got := state.raid.enemies[4].template; got != &state.enemyCatalog.Ghoul {
+		t.Fatalf("score-6 final template = %q, want Ghoul", got.Name)
+	}
+}
+
+// TestRaidProgressSpawnsArmouredSkeletonAtExactScoreEight verifies stable boundary order.
+func TestRaidProgressSpawnsArmouredSkeletonAtExactScoreEight(t *testing.T) {
+	state := newRaidBoundaryTestState(t)
+	state.updateRaidProgress(6)
+
+	state.updateRaidProgress(2)
+	want := []*EnemyTemplate{
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.Zombie,
+		&state.enemyCatalog.ArmouredSkeleton,
+	}
+	got := state.raid.enemies[len(state.raid.enemies)-len(want):]
+	for i, template := range want {
+		if got[i].template != template {
+			t.Fatalf("score-8 enemy %d = %q, want %q", i, got[i].template.Name, template.Name)
+		}
+	}
+}
+
+// TestRaidProgressSkippedThresholdsPreserveRuleOrder verifies one update can release the full challenge-8 roster.
+func TestRaidProgressSkippedThresholdsPreserveRuleOrder(t *testing.T) {
+	state := newRaidBoundaryTestState(t)
+
+	state.updateRaidProgress(8)
+	want := []*EnemyTemplate{
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.Zombie,
+		&state.enemyCatalog.Zombie,
+		&state.enemyCatalog.Ghoul,
+		&state.enemyCatalog.ArmouredSkeleton,
+	}
+	if len(state.raid.enemies) != len(want) {
+		t.Fatalf("active enemies after skipped thresholds = %d, want %d", len(state.raid.enemies), len(want))
+	}
+	for i, template := range want {
+		if state.raid.enemies[i].template != template {
+			t.Fatalf("enemy %d = %q, want %q", i, state.raid.enemies[i].template.Name, template.Name)
+		}
+	}
+}
+
+// TestNewEnemyMovementUsesAcceptedSpeeds verifies Ghoul and Armoured Skeleton movement speeds.
+func TestNewEnemyMovementUsesAcceptedSpeeds(t *testing.T) {
+	state := newRaidTestState(t)
+	deltaSeconds := 2.0
+	ghoulStep := raidEnemyMovementStep(raidEnemy{template: &state.enemyCatalog.Ghoul}, deltaSeconds)
+	if got, want := ghoulStep, 3.0; got != want {
+		t.Fatalf("Ghoul movement over %.0f seconds = %f, want %f", deltaSeconds, got, want)
+	}
+	armouredStep := raidEnemyMovementStep(raidEnemy{template: &state.enemyCatalog.ArmouredSkeleton}, deltaSeconds)
+	if got, want := armouredStep, 1.8; got != want {
+		t.Fatalf("Armoured Skeleton movement over %.0f seconds = %f, want %f", deltaSeconds, got, want)
+	}
+}
+
+// TestDistinctRaiderSpeedsSeparateMomentaryOverlap verifies unlike raiders diverge after sharing a position.
+func TestDistinctRaiderSpeedsSeparateMomentaryOverlap(t *testing.T) {
+	state := newRaidTestState(t)
+	state.raid = raidState{
+		active: true,
+		enemies: []raidEnemy{
+			{template: &state.enemyCatalog.SkeletonSwordShield, position: coord{X: 0, Y: 5}},
+			{template: &state.enemyCatalog.ArmouredSkeleton, position: coord{X: 0, Y: 5}},
+		},
+	}
+
+	state.updateRaidEnemies()
+
+	if state.raid.enemies[0].position == state.raid.enemies[1].position {
+		t.Fatalf("raiders still overlap after movement at %+v", state.raid.enemies[0].position)
+	}
+}
+
+// newRaidBoundaryTestState returns a challenge-8 Raid whose score equals elapsed seconds.
+func newRaidBoundaryTestState(t *testing.T) *State {
+	t.Helper()
+	state := newRaidTestState(t)
+	state.startNextRaid()
+	state.raid.template.challengeRating = 8
+	state.raid.template.progressDurationSeconds = 8
+	state.raid.pendingEnemies = state.raid.template.totalEnemies()
+	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
+	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
+	state.enemyCatalog.Ghoul.SpeedTilesPerSecond = 0
+	state.enemyCatalog.ArmouredSkeleton.SpeedTilesPerSecond = 0
+	return state
 }
 
 // TestRaidGenerationUsesLiveSettlementInputs verifies State passes total population and all Plots.

@@ -174,6 +174,43 @@ func newRaidTempoScreenshotState(t *testing.T) *State {
 	return state
 }
 
+// TestCaptureGhoulAndArmouredSkeletonScreenshot writes focused new-enemy evidence when enabled.
+func TestCaptureGhoulAndArmouredSkeletonScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clearNaturalTerrain(&state.gameMap.Home)
+	for y := 0; y < plotSize; y++ {
+		state.gameMap.Home.Tiles[y][homePlotCenter].Terrain = terrainRoad
+	}
+	state.status.phase = phaseRaid
+	state.camera.centerY = 2.5
+	state.raid = raidState{
+		active:   true,
+		number:   1,
+		template: raidTemplate{challengeRating: 8, progressDurationSeconds: raidProgressDuration(8)},
+		enemies: []raidEnemy{
+			{id: 41, template: &state.enemyCatalog.Ghoul, position: coord{X: 0, Y: 5.5}, health: 20},
+			{id: 42, template: &state.enemyCatalog.ArmouredSkeleton, position: coord{X: 0, Y: 1.5}, health: 80},
+		},
+	}
+	state.selection = selectedItem{kind: selectedItemRaider, raiderID: 42}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok || panel.Name != "Armoured Skeleton" || panel.Health != 80 || panel.MaxHealth != 125 || panel.SpeedTilesPerSecond != 0.9 {
+		t.Fatalf("selected Armoured Skeleton panel = %+v, available %v", panel, ok)
+	}
+	path := filepath.Join(
+		"..", "..", "plans", "59-ghouls-and-armoured-skeletons", "screenshots", "ghoul-and-armoured-skeleton.png",
+	)
+	captureStateScreenshot(t, state, path)
+}
+
 // captureStateScreenshot runs one state inside Ebitengine and verifies its frame was saved.
 func captureStateScreenshot(t *testing.T, state *State, path string) {
 	t.Helper()

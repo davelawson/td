@@ -104,6 +104,10 @@ func (s *State) enemyTemplateForRaidKind(kind raidEnemyKind) (*EnemyTemplate, bo
 		return &s.enemyCatalog.SkeletonSwordShield, true
 	case raidEnemyZombie:
 		return &s.enemyCatalog.Zombie, true
+	case raidEnemyGhoul:
+		return &s.enemyCatalog.Ghoul, true
+	case raidEnemyArmouredSkeleton:
+		return &s.enemyCatalog.ArmouredSkeleton, true
 	default:
 		return nil, false
 	}
