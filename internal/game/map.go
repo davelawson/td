@@ -25,6 +25,7 @@ type plotBiome int
 const (
 	biomeGrasslands plotBiome = iota
 	biomeHills
+	biomeForest
 )
 
 // plotCoordinate identifies one Plot, with the home Plot at (0,0).

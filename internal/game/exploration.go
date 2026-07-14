@@ -85,6 +85,8 @@ func biomeLabel(biome plotBiome) string {
 	switch biome {
 	case biomeHills:
 		return "Hills"
+	case biomeForest:
+		return "Forest"
 	default:
 		return "Grasslands"
 	}

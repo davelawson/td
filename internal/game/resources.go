@@ -143,7 +143,7 @@ func (s *State) consumeTerrain(tile tileCoordinate) {
 // defaultTerrainForBiome returns the terrain left after a natural Tile is consumed.
 func defaultTerrainForBiome(biome plotBiome) tileTerrain {
 	switch biome {
-	case biomeGrasslands, biomeHills:
+	case biomeGrasslands, biomeHills, biomeForest:
 		return terrainEmpty
 	default:
 		return terrainEmpty

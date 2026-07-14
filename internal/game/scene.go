@@ -12,6 +12,7 @@ const (
 	treeHorizontalFlipMask   uint16 = 0x8000
 	selectedSpriteBrightness        = 1.65
 	selectedTerrainStroke           = 3
+	selectedTowerRangeStroke        = 3
 	exploreButtonSize               = 0.78
 	exploreButtonStroke             = 0.08
 	exploreLabelGap                 = 8
@@ -32,7 +33,59 @@ func (s *State) drawExploredPlots(screen *ebiten.Image) {
 			}
 		}
 	}
+	s.drawSelectedTowerRange(screen, viewport)
 	s.drawExploreButtons(screen, viewport)
+}
+
+type towerRangeIndicator struct {
+	centerX float32
+	centerY float32
+	radius  float32
+}
+
+// drawSelectedTowerRange renders the selected combat tower's maximum attack coverage.
+func (s *State) drawSelectedTowerRange(screen *ebiten.Image, viewport sceneViewport) {
+	indicator, ok := s.selectedTowerRangeIndicator(viewport)
+	if !ok {
+		return
+	}
+	vector.FillCircle(screen, indicator.centerX, indicator.centerY, indicator.radius, colors.towerRangeFill, false)
+	vector.StrokeCircle(
+		screen,
+		indicator.centerX,
+		indicator.centerY,
+		indicator.radius,
+		selectedTowerRangeStroke,
+		colors.towerRangeEdge,
+		false,
+	)
+}
+
+// selectedTowerRangeIndicator returns camera-projected range geometry for the selected combat tower.
+func (s *State) selectedTowerRangeIndicator(viewport sceneViewport) (towerRangeIndicator, bool) {
+	if s.selection.kind != selectedItemStructure {
+		return towerRangeIndicator{}, false
+	}
+	tile := s.selection.tile
+	if tile.X < 0 || tile.X >= plotSize || tile.Y < 0 || tile.Y >= plotSize {
+		return towerRangeIndicator{}, false
+	}
+	plot, ok := s.gameMap.plot(tile.Plot)
+	if !ok {
+		return towerRangeIndicator{}, false
+	}
+	template, ok := s.combatTowerTemplate(plot.Tiles[tile.Y][tile.X].Feature)
+	if !ok || template.RangeTiles <= 0 {
+		return towerRangeIndicator{}, false
+	}
+
+	worldWest, worldNorth, worldW, worldH := plotTileWorldRect(tile.Plot, tile.X, tile.Y)
+	rect := s.projectRect(viewport, worldWest, worldNorth, worldW, worldH)
+	return towerRangeIndicator{
+		centerX: rect.x + rect.w/2,
+		centerY: rect.y + rect.h/2,
+		radius:  float32(template.RangeTiles) * rect.w,
+	}, true
 }
 
 // drawPlotTile renders one Tile in an explored Plot.

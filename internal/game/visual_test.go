@@ -240,6 +240,96 @@ func TestCaptureSelectedMarketScreenshot(t *testing.T) {
 	captureStateScreenshot(t, state, path)
 }
 
+// TestCaptureForestBiomeScreenshot writes focused Forest terrain and label evidence when enabled.
+func TestCaptureForestBiomeScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clearNaturalTerrain(&state.gameMap.Home)
+	for y := 0; y <= homePlotCenter; y++ {
+		state.gameMap.Home.Tiles[y][homePlotCenter].Terrain = terrainRoad
+	}
+
+	var tweak uint16
+	roll := 0
+	forest := newForestPlotWithSources(func() uint16 {
+		value := tweak
+		tweak++
+		return value
+	}, func() int {
+		value := (roll * 37) % 100
+		roll++
+		return value
+	})
+	forestCoord := plotCoordinate{X: 1}
+	state.gameMap.ensurePlots()
+	state.gameMap.Plots[forestCoord] = &forest
+	state.gameMap.clearSharedEdges(forestCoord)
+	state.gameMap.frontierBiomes = map[plotCoordinate]plotBiome{
+		{X: 1, Y: 1}: biomeForest,
+	}
+	state.camera.zoom = 0.75
+	state.camera.centerX = float64(plotSize) / 2
+
+	selected := tileCoordinate{}
+	selectedTree := false
+	for y := 0; y < plotSize && !selectedTree; y++ {
+		for x := 1; x < plotSize; x++ {
+			if forest.Tiles[y][x].Terrain == terrainTree {
+				selected = tileCoordinate{Plot: forestCoord, X: x, Y: y}
+				selectedTree = true
+				break
+			}
+		}
+	}
+	if !selectedTree {
+		t.Fatal("expected deterministic Forest evidence to include a Tree")
+	}
+	state.selection = selectedItem{kind: selectedItemTerrain, tile: selected}
+
+	path := filepath.Join("..", "..", "plans", "61-forest-biome", "screenshots", "forest-biome.png")
+	captureStateScreenshot(t, state, path)
+}
+
+// TestCaptureSelectedTowerRangeScreenshot writes focused selected-tower coverage evidence when enabled.
+func TestCaptureSelectedTowerRangeScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clearNaturalTerrain(&state.gameMap.Home)
+	tile := homeTileCoordinate(homePlotCenter+2, homePlotCenter)
+	state.gameMap.Home.Tiles[tile.Y][tile.X].Feature = featureCatapultTower
+	state.selection = selectedItem{kind: selectedItemStructure, tile: tile}
+	state.status.phase = phaseRaid
+	state.raid = raidState{
+		active:   true,
+		number:   1,
+		progress: 0.55,
+		template: raidTemplate{challengeRating: 8, progressDurationSeconds: raidProgressDuration(8)},
+		enemies: []raidEnemy{
+			{id: 71, template: &state.enemyCatalog.Ghoul, position: coord{X: 0, Y: 3.5}, health: 20},
+			{id: 72, template: &state.enemyCatalog.ArmouredSkeleton, position: coord{X: 0, Y: 6}, health: 125},
+		},
+	}
+
+	indicator, ok := state.selectedTowerRangeIndicator(state.sceneViewport())
+	if !ok || indicator.radius != float32(state.structureCatalog.CatapultTower.RangeTiles*plotBaseTileSize) {
+		t.Fatalf("selected Catapult range evidence unavailable: indicator %+v available %v", indicator, ok)
+	}
+	path := filepath.Join("..", "..", "plans", "62-selected-tower-range", "screenshots", "selected-tower-range.png")
+	captureStateScreenshot(t, state, path)
+}
+
 // captureStateScreenshot runs one state inside Ebitengine and verifies its frame was saved.
 func captureStateScreenshot(t *testing.T, state *State, path string) {
 	t.Helper()

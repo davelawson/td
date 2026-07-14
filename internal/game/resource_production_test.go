@@ -125,6 +125,7 @@ func TestConsumedTerrainUsesBiomeDefaultAndPreservesOtherTileData(t *testing.T) 
 	}{
 		{name: "grasslands", biome: biomeGrasslands},
 		{name: "hills", biome: biomeHills},
+		{name: "Forest", biome: biomeForest},
 	}
 
 	for _, test := range tests {

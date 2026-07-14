@@ -125,16 +125,27 @@ func TestGeneratedHillsPlotUsesHillsBiome(t *testing.T) {
 	}
 }
 
-// TestBiomeForRollSplitsExploredPlotsEvenly verifies biome selection boundaries.
-func TestBiomeForRollSplitsExploredPlotsEvenly(t *testing.T) {
+// TestGeneratedForestPlotUsesForestBiome verifies Forest Plot metadata.
+func TestGeneratedForestPlotUsesForestBiome(t *testing.T) {
+	plot := NewForestPlot()
+
+	if plot.Biome != biomeForest {
+		t.Fatalf("generated biome = %v, want Forest", plot.Biome)
+	}
+}
+
+// TestBiomeForRollSplitsExploredPlotsNearEvenly verifies biome selection boundaries.
+func TestBiomeForRollSplitsExploredPlotsNearEvenly(t *testing.T) {
 	tests := []struct {
 		roll int
 		want plotBiome
 	}{
 		{roll: 0, want: biomeGrasslands},
-		{roll: 49, want: biomeGrasslands},
-		{roll: 50, want: biomeHills},
-		{roll: 99, want: biomeHills},
+		{roll: 32, want: biomeGrasslands},
+		{roll: 33, want: biomeHills},
+		{roll: 65, want: biomeHills},
+		{roll: 66, want: biomeForest},
+		{roll: 99, want: biomeForest},
 	}
 
 	for _, test := range tests {
@@ -234,6 +245,37 @@ func TestGeneratedHillsPlotCanContainObstacles(t *testing.T) {
 	}
 }
 
+// TestGeneratedForestPlotContainsTreesBouldersAndGrassButNoOre verifies Forest terrain composition.
+func TestGeneratedForestPlotContainsTreesBouldersAndGrassButNoOre(t *testing.T) {
+	terrainRolls := repeatingTerrainRolls(0, 18, 21, 99)
+	plot := newForestPlotWithSources(func() uint16 {
+		return 0
+	}, terrainRolls)
+
+	trees := 0
+	boulders := 0
+	empty := 0
+	for y := range plot.Tiles {
+		for x := range plot.Tiles[y] {
+			switch plot.Tiles[y][x].Terrain {
+			case terrainTree:
+				trees++
+			case terrainBoulder:
+				boulders++
+			case terrainEmpty:
+				empty++
+			case terrainIronDeposit:
+				t.Fatalf("Forest tile (%d,%d) generated an Iron Deposit", x, y)
+			default:
+				t.Fatalf("Forest tile (%d,%d) terrain = %v", x, y, plot.Tiles[y][x].Terrain)
+			}
+		}
+	}
+	if trees == 0 || boulders == 0 || empty == 0 {
+		t.Fatalf("Forest terrain counts = Tree %d, Boulder %d, empty %d; want every allowed terrain", trees, boulders, empty)
+	}
+}
+
 // TestWeightedTerrainSelectsTree verifies Tree uses the first weight range.
 func TestWeightedTerrainSelectsTree(t *testing.T) {
 	weights := terrainWeights{Tree: 6, Boulder: 3, IronDeposit: 1}
@@ -295,6 +337,27 @@ func TestHillsTerrainWeightsBiasBoulders(t *testing.T) {
 	for _, test := range tests {
 		if got := weightedTerrain(hillsTerrainWeights, test.roll); got != test.want {
 			t.Errorf("roll %d terrain = %v, want %v", test.roll, got, test.want)
+		}
+	}
+}
+
+// TestForestTerrainWeightsHeavilyBiasTreesWithoutOre verifies Forest percentage boundaries.
+func TestForestTerrainWeightsHeavilyBiasTreesWithoutOre(t *testing.T) {
+	tests := []struct {
+		roll int
+		want tileTerrain
+	}{
+		{roll: 0, want: terrainTree},
+		{roll: 17, want: terrainTree},
+		{roll: 18, want: terrainBoulder},
+		{roll: 20, want: terrainBoulder},
+		{roll: 21, want: terrainEmpty},
+		{roll: 99, want: terrainEmpty},
+	}
+
+	for _, test := range tests {
+		if got := weightedTerrain(forestTerrainWeights, test.roll); got != test.want {
+			t.Errorf("roll %d Forest terrain = %v, want %v", test.roll, got, test.want)
 		}
 	}
 }

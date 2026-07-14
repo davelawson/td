@@ -99,6 +99,26 @@ func TestSelectedTerrainPanelUsesExploredPlotBiome(t *testing.T) {
 	}
 }
 
+// TestSelectedTerrainPanelUsesForestBiome verifies Forest is player-facing selection context.
+func TestSelectedTerrainPanelUsesForestBiome(t *testing.T) {
+	state := newRaidTestState(t)
+	plotCoord := plotCoordinate{X: 1}
+	plot := Plot{Biome: biomeForest}
+	tile := tileCoordinate{Plot: plotCoord, X: 2, Y: 3}
+	plot.Tiles[tile.Y][tile.X] = Tile{Terrain: terrainTree}
+	state.gameMap.ensurePlots()
+	state.gameMap.Plots[plotCoord] = &plot
+	state.selection = selectedItem{kind: selectedItemTerrain, tile: tile}
+
+	panel, ok := state.currentSelectionPanel()
+	if !ok {
+		t.Fatal("expected selected Forest terrain panel")
+	}
+	if panel.TerrainName != "Tree" || panel.BiomeName != "Forest" {
+		t.Fatalf("terrain panel = %q/%q, want Tree/Forest", panel.TerrainName, panel.BiomeName)
+	}
+}
+
 // TestSelectedIronDepositPanelData verifies deposit selection uses the player-facing name.
 func TestSelectedIronDepositPanelData(t *testing.T) {
 	state := newRaidTestState(t)

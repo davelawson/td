@@ -4,12 +4,12 @@ import "testing"
 
 // TestDefaultMapAssignsInitialFrontierBiomes verifies pre-exploration biome assignment order.
 func TestDefaultMapAssignsInitialFrontierBiomes(t *testing.T) {
-	gameMap := newDefaultMapWithBiomeSource(repeatingTerrainRolls(0, 50, 49, 99))
+	gameMap := newDefaultMapWithBiomeSource(repeatingTerrainRolls(0, 33, 66, 99))
 	want := map[plotCoordinate]plotBiome{
 		{X: 0, Y: 1}:  biomeGrasslands,
 		{X: 1, Y: 0}:  biomeHills,
-		{X: 0, Y: -1}: biomeGrasslands,
-		{X: -1, Y: 0}: biomeHills,
+		{X: 0, Y: -1}: biomeForest,
+		{X: -1, Y: 0}: biomeForest,
 	}
 
 	if len(gameMap.frontierBiomes) != len(want) {
@@ -24,7 +24,7 @@ func TestDefaultMapAssignsInitialFrontierBiomes(t *testing.T) {
 
 // TestRevealUsesAssignedFrontierBiome verifies preview and generated Plot stay consistent.
 func TestRevealUsesAssignedFrontierBiome(t *testing.T) {
-	gameMap := newDefaultMapWithBiomeSource(constantTerrainRoll(50))
+	gameMap := newDefaultMapWithBiomeSource(constantTerrainRoll(66))
 	target := plotCoordinate{X: 1, Y: 0}
 
 	gameMap.revealPlot(target)
@@ -33,8 +33,8 @@ func TestRevealUsesAssignedFrontierBiome(t *testing.T) {
 	if !ok {
 		t.Fatal("expected assigned frontier Plot to be revealed")
 	}
-	if plot.Biome != biomeHills {
-		t.Fatalf("revealed biome = %v, want assigned hills", plot.Biome)
+	if plot.Biome != biomeForest {
+		t.Fatalf("revealed biome = %v, want assigned Forest", plot.Biome)
 	}
 	if _, assigned := gameMap.frontierBiome(target); assigned {
 		t.Fatal("expected explored Plot to leave frontier biome storage")
@@ -43,13 +43,13 @@ func TestRevealUsesAssignedFrontierBiome(t *testing.T) {
 
 // TestRevealAssignsNewFrontierBiomes verifies expansion previews are created once.
 func TestRevealAssignsNewFrontierBiomes(t *testing.T) {
-	rolls := repeatingTerrainRolls(0, 0, 0, 0, 50, 0, 50, 0, 0)
+	rolls := repeatingTerrainRolls(0, 0, 0, 0, 66, 0, 33, 0, 0)
 	gameMap := newDefaultMapWithBiomeSource(rolls)
 	north := plotCoordinate{X: 0, Y: 1}
 	gameMap.revealPlotWithBiomeSource(north, rolls)
 
 	want := map[plotCoordinate]plotBiome{
-		{X: 0, Y: 2}:  biomeHills,
+		{X: 0, Y: 2}:  biomeForest,
 		{X: 1, Y: 1}:  biomeGrasslands,
 		{X: -1, Y: 1}: biomeHills,
 	}

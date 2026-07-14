@@ -14,6 +14,11 @@ var hillsTerrainWeights = terrainWeights{
 	IronDeposit: 3,
 }
 
+var forestTerrainWeights = terrainWeights{
+	Tree:    18,
+	Boulder: 3,
+}
+
 // terrainWeights describes percentage chances for generated terrain in a Tile.
 type terrainWeights struct {
 	Tree        int
@@ -56,6 +61,16 @@ func newHillsPlotWithSources(nextTweak func() uint16, nextTerrainRoll func() int
 	return newGeneratedPlotWithSources(biomeHills, hillsTerrainWeights, nextTweak, nextTerrainRoll)
 }
 
+// NewForestPlot creates a generated Forest Plot for exploration.
+func NewForestPlot() Plot {
+	return newForestPlotWithSources(randomTileTweak, randomPercentageRoll)
+}
+
+// newForestPlotWithSources creates a Forest Plot with caller-provided random sources.
+func newForestPlotWithSources(nextTweak func() uint16, nextTerrainRoll func() int) Plot {
+	return newGeneratedPlotWithSources(biomeForest, forestTerrainWeights, nextTweak, nextTerrainRoll)
+}
+
 // newPlotForBiome creates a generated Plot for a previously assigned biome.
 func newPlotForBiome(biome plotBiome) Plot {
 	return newPlotForBiomeWithSources(biome, randomTileTweak, randomPercentageRoll)
@@ -66,6 +81,8 @@ func newPlotForBiomeWithSources(biome plotBiome, nextTweak func() uint16, nextTe
 	switch biome {
 	case biomeHills:
 		return newHillsPlotWithSources(nextTweak, nextTerrainRoll)
+	case biomeForest:
+		return newForestPlotWithSources(nextTweak, nextTerrainRoll)
 	default:
 		return newGrasslandsPlotWithSources(nextTweak, nextTerrainRoll)
 	}
@@ -73,10 +90,13 @@ func newPlotForBiomeWithSources(biome plotBiome, nextTweak func() uint16, nextTe
 
 // biomeForRoll selects an explored Plot biome from a percentage roll.
 func biomeForRoll(roll int) plotBiome {
-	if roll < 50 {
+	if roll < 33 {
 		return biomeGrasslands
 	}
-	return biomeHills
+	if roll < 66 {
+		return biomeHills
+	}
+	return biomeForest
 }
 
 // newGeneratedPlotWithSources creates a biome Plot using explicit terrain weights.
