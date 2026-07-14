@@ -20,12 +20,12 @@ type terrainWeights struct {
 
 // NewDefaultHomePlot creates the grassland starting Plot with a Sanctum and north road.
 func NewDefaultHomePlot() Plot {
-	return newDefaultHomePlotWithTweakSource(randomTileTweak)
+	return newDefaultHomePlotWithSources(randomTileTweak, randomPercentageRoll)
 }
 
-// newDefaultHomePlotWithTweakSource creates a home Plot with caller-provided Tile tweaks.
-func newDefaultHomePlotWithTweakSource(nextTweak func() uint16) Plot {
-	plot := newOpenGrasslandsPlotWithTweakSource(nextTweak)
+// newDefaultHomePlotWithSources creates a grasslands home Plot with caller-provided random sources.
+func newDefaultHomePlotWithSources(nextTweak func() uint16, nextTerrainRoll func() int) Plot {
+	plot := newGeneratedPlotWithSources(biomeGrasslands, grasslandsTerrainWeights, nextTweak, nextTerrainRoll)
 	for y := 0; y <= homePlotCenter; y++ {
 		plot.Tiles[y][homePlotCenter].Terrain = terrainRoad
 	}
@@ -84,18 +84,6 @@ func newGeneratedPlotWithSources(biome plotBiome, weights terrainWeights, nextTw
 		for x := 0; x < plotSize; x++ {
 			plot.Tiles[y][x] = newTile(nextTweak)
 			plot.Tiles[y][x].Terrain = weightedTerrain(weights, nextTerrainRoll())
-		}
-	}
-	return plot
-}
-
-// newOpenGrasslandsPlotWithTweakSource creates a grasslands Plot with only empty grass Tiles.
-func newOpenGrasslandsPlotWithTweakSource(nextTweak func() uint16) Plot {
-	var plot Plot
-	plot.Biome = biomeGrasslands
-	for y := 0; y < plotSize; y++ {
-		for x := 0; x < plotSize; x++ {
-			plot.Tiles[y][x] = newTile(nextTweak)
 		}
 	}
 	return plot

@@ -45,6 +45,7 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 1, 0)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarBowTowerIndex))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
@@ -67,6 +68,7 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 func TestBuildDragPlacesHouseAndGrantsPeasants(t *testing.T) {
 	state := newRaidTestState(t)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarHouseIndex))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
@@ -90,6 +92,7 @@ func TestBuildDragPlacesEconomicBuildingAndReservesPeasant(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 0, 1)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarWoodcutterIndex))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
@@ -124,6 +127,7 @@ func TestBuildDragPlacesBarracksAndConvertsPeasants(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 0, 2)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarBarracksIndex))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
@@ -161,6 +165,7 @@ func TestBuildDragPlacesDormAndConvertsPeasant(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 0, 1)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarDormIndex))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
@@ -206,6 +211,11 @@ func TestDormInvalidReleasePreservesPopulations(t *testing.T) {
 // TestHouseThenDormEnablesFlameBoltTower verifies the first Apprentice-producing workflow.
 func TestHouseThenDormEnablesFlameBoltTower(t *testing.T) {
 	state := newRaidTestState(t)
+	setHomeTilesEmpty(state,
+		tileCoordinate{X: homePlotCenter + 2, Y: 5},
+		tileCoordinate{X: homePlotCenter + 3, Y: 5},
+		tileCoordinate{X: homePlotCenter + 4, Y: 5},
+	)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarHouseIndex))
 	state.Update(releaseTileInput(state, homePlotCenter+2, 5))
@@ -249,6 +259,11 @@ func TestBarracksInvalidReleasePreservesPopulations(t *testing.T) {
 // TestHouseThenBarracksEnablesBowTower verifies the first Soldier-producing workflow.
 func TestHouseThenBarracksEnablesBowTower(t *testing.T) {
 	state := newRaidTestState(t)
+	setHomeTilesEmpty(state,
+		tileCoordinate{X: homePlotCenter + 2, Y: 5},
+		tileCoordinate{X: homePlotCenter + 3, Y: 5},
+		tileCoordinate{X: homePlotCenter + 4, Y: 5},
+	)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarHouseIndex))
 	state.Update(releaseTileInput(state, homePlotCenter+2, 5))
@@ -274,6 +289,7 @@ func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
 	setAvailablePopulations(state, 0, 1, 2)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarCatapultTowerIndex))
 	state.Update(releaseTileInput(state, tile.X, tile.Y))
@@ -312,6 +328,7 @@ func TestBuildDragRejectsCatapultWhenOneRoleIsShort(t *testing.T) {
 func TestSecondTowerBuildIsBlockedAfterStaffReservation(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 1, 0)
+	setHomeTilesEmpty(state, tileCoordinate{X: homePlotCenter + 2, Y: 5})
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarBowTowerIndex))
 	state.Update(releaseTileInput(state, homePlotCenter+2, 5))
@@ -328,6 +345,7 @@ func TestBuildReleaseRechecksStaffing(t *testing.T) {
 	setAvailablePopulations(state, 0, 1, 0)
 	initialResources := state.status.resources
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarBowTowerIndex))
 	state.status.populations.soldiers.available = 0
@@ -446,6 +464,7 @@ func TestBuildDragAllowsPausedCalmPlacement(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 1, 0)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}
+	setHomeTilesEmpty(state, tile)
 	state.Update(Input{TogglePause: true})
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarBowTowerIndex))
@@ -507,5 +526,12 @@ func setAvailablePopulations(state *State, apprentices, soldiers, peasants int) 
 		apprentices: populationCount{available: apprentices, total: apprentices},
 		soldiers:    populationCount{available: soldiers, total: soldiers},
 		peasants:    populationCount{available: peasants, total: peasants},
+	}
+}
+
+// setHomeTilesEmpty makes fixed placement destinations independent from generated home terrain.
+func setHomeTilesEmpty(state *State, tiles ...tileCoordinate) {
+	for _, tile := range tiles {
+		state.gameMap.Home.Tiles[tile.Y][tile.X].Terrain = terrainEmpty
 	}
 }

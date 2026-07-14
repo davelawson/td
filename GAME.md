@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. The home Plot uses grasslands; each unexplored frontier Plot independently receives grasslands or hills with equal probability before exploration and displays that assignment beside its explore button. Revealed Plots are immediately usable and mostly empty grass, with grasslands biased toward Tree and hills biased toward Boulder. Exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
+The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. The home Plot uses the same sparse grasslands terrain generation as explored grasslands; each unexplored frontier Plot independently receives grasslands or hills with equal probability before exploration and displays that assignment beside its explore button. Every generated Plot is immediately usable and mostly empty grass, with grasslands biased toward Tree and hills biased toward Boulder. Exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -69,7 +69,7 @@ The map is built on a grid. Each grid square is called a Tile. Tiles are grouped
 
 Each Tile has a terrain type, a height, and sometimes a feature. A feature can be a structure, such as a tower, a resource node, or a road.
 
-At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot is open grassland containing the centered Sanctum as its only initial structure and a straight road north to the Plot edge. The player must build every combat tower.
+At the beginning of a new Fable, the wizard's Domain is a single Plot. The Sanctum is at the center of that starting Plot, and a road leaves the Sanctum. The first rendered prototype home Plot generates sparse grasslands terrain, contains the centered Sanctum as its only initial structure, and keeps a straight road clear from the Sanctum north to the Plot edge. The player must build every combat tower.
 
 In the intended full design, Plots exist in one of these high-level states:
 
@@ -90,9 +90,9 @@ World positions use Tile units. The center of the Sanctum Tile is the origin `(0
 
 Plot contents should be readable at a glance. A Plot can mix terrain types, but each Plot should have a dominant character that helps the player reason about it before inspecting every Tile, such as wooded, rocky, wetland, open meadow, hill, ruin, or lair. This dominant character is a design label, not necessarily a separate data type.
 
-The first implemented dominant character is a biome. A biome is a stored Plot label that controls how terrain is generated when the Plot is explored. The current biomes are `grasslands` and `hills`. The starting home Plot stores the grasslands biome but remains authored as open grassland with its Sanctum and north road. When an unexplored Plot first becomes orthogonally adjacent to explored land, it independently has an equal chance to be assigned grasslands or hills. The stable assignment is displayed beside its explore button before terrain is revealed; only the circular button explores. Grasslands generates 6% Tree, 3% Boulder, and 91% empty Grass; hills generates 3% Tree, 6% Boulder, and 91% empty Grass. Road and shared-edge rules can overwrite generated terrain so roads stay readable and adjacent explored Plots join cleanly. Boulder is currently terrain only: it blocks construction but is not a Stone resource node.
+The first implemented dominant character is a biome. A biome is a stored Plot label that controls how terrain is generated when the Plot is explored. The current biomes are `grasslands` and `hills`. The starting home Plot and explored grasslands both generate 6% Tree, 3% Boulder, and 91% empty Grass; the home Plot then overwrites generated terrain with its Sanctum road. When an unexplored Plot first becomes orthogonally adjacent to explored land, it independently has an equal chance to be assigned grasslands or hills. The stable assignment is displayed beside its explore button before terrain is revealed; only the circular button explores. Hills generates 3% Tree, 6% Boulder, and 91% empty Grass. Road and shared-edge rules can overwrite generated terrain so roads stay readable and adjacent explored Plots join cleanly. Boulder is currently terrain only: it blocks construction but is not a Stone resource node.
 
-The starting Plot should be mostly buildable and forgiving. It should contain the Sanctum, at least one outgoing road, some nearby buildable Grass, and enough visible resource access to support the first build decisions. It should not start with Water or Mountain terrain blocking all useful placement around the Sanctum.
+The starting Plot should be mostly buildable by terrain weight and forgiving, but it does not reserve a special obstacle-free clearing around the Sanctum. It should contain the Sanctum and at least one outgoing protected road. It should not start with Water or Mountain terrain blocking all useful placement around the Sanctum.
 
 The terrain types are:
 
@@ -225,9 +225,9 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice starts with an open-grassland home Plot containing only the centered Sanctum as an initial structure, a straight road north, free calm-phase exploration buttons on unexplored adjacent Plot borders, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
+- The first gameplay-facing rendered slice starts with a sparse generated-grasslands home Plot containing only the centered Sanctum as an initial structure, a protected straight road north, free calm-phase exploration buttons on unexplored adjacent Plot borders, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom, `WASD` panning, and right-drag panning are inspection controls only and do not change map data.
-- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Each frontier Plot independently receives a stable grasslands-or-hills assignment before exploration and displays its name outward beside the button; the label is informational and only the circle reveals. Revealed Plots are immediately usable and generate 91% empty grass. Grasslands uses 6% Tree and 3% Boulder; hills uses 3% Tree and 6% Boulder. The first implementation collapses scouting and claiming into one action.
+- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Each frontier Plot independently receives a stable grasslands-or-hills assignment before exploration and displays its name outward beside the button; the label is informational and only the circle reveals. Home and revealed Plots generate 91% empty grass by weight. Grasslands uses 6% Tree and 3% Boulder; hills uses 3% Tree and 6% Boulder. The first implementation collapses scouting and claiming into one action.
 - Northward exploration along Plot `X=0` extends the visible center road and moves deterministic Raid spawning to the farthest explored north road. Non-north explored Plots do not add Raid paths yet.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
 - A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Dorm, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
@@ -403,8 +403,8 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: This gives every playthrough a clear initial defended space and a road hook for future exploration, enemy routing, and Domain expansion.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Render the first home Plot as open grassland without a tree perimeter.
-  Rationale: A grass perimeter keeps the starting Plot fully usable and lets it join explored neighboring grassland without an artificial terrain boundary.
+- Decision: Render the first home Plot as open grassland without a tree perimeter. Superseded on 2026-07-14 by ordinary grasslands generation on the home Plot.
+  Rationale: A grass perimeter originally kept the starting Plot fully usable; shared-edge cleanup now removes generated terrain only where explored Plots join, without requiring the entire home Plot to remain open.
   Date/Author: 2026-07-13 / Codex
 - Decision: Store a biome on each Plot and use grasslands as the first generated biome.
   Rationale: Biomes give Plot generation a durable design hook while keeping the current slice small; grasslands preserves mostly buildable early expansion with a little terrain variation.
@@ -416,6 +416,10 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Generate grasslands terrain from explicit percentage weights.
   Rationale: A small weight table is easier to read and tune than hidden modulo rules on visual tweak values, while still guaranteeing only one generated terrain type per Tile.
   Date/Author: 2026-07-14 / Codex
+
+- Decision: Generate the home Plot with the same 6% Tree, 3% Boulder, and 91% empty Grass weights as explored grasslands, without a guaranteed Sanctum clearing.
+  Rationale: A consistent biome generator makes the starting Plot visibly read as grasslands. Applying the existing north road after generation preserves the required Raid route while leaving all other Tiles subject to the chosen grasslands weights.
+  Date/Author: 2026-07-14 / User and Codex
 
 - Decision: Choose grasslands or hills independently with equal probability when a non-home Plot first joins the exploration frontier.
   Rationale: Frontier-time assignment fixes the biome before exploration and supports an informed destination choice without generating hidden terrain or introducing a whole-map seed.
@@ -437,8 +441,8 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: A single straight north road gives the first scene a clear route without implying branching, pathfinding, exploration, or combat rules.
   Date/Author: 2026-05-13 / Codex
 
-- Decision: Keep the first rendered home Plot empty except for the Sanctum and north road.
-  Rationale: The milestone is meant to prove map state and static scene rendering before terrain, resource, building, or combat rules exist.
+- Decision: Keep the first rendered home Plot empty except for the Sanctum and north road. Superseded on 2026-07-14 by ordinary grasslands generation on the home Plot.
+  Rationale: The original milestone proved map state and static scene rendering before terrain rules existed; generated Tree and Boulder terrain is now implemented and belongs on the home Plot too.
   Date/Author: 2026-05-13 / Codex
 
 - Decision: Let the wizard spend resources during calm phases to explore new Plots and unlock building there.

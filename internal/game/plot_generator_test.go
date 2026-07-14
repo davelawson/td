@@ -2,12 +2,107 @@ package game
 
 import "testing"
 
+// TestDefaultHomePlotShape verifies the prototype Plot dimensions and center.
+func TestDefaultHomePlotShape(t *testing.T) {
+	plot := NewDefaultHomePlot()
+
+	if len(plot.Tiles) != plotSize {
+		t.Fatalf("plot rows = %d, want %d", len(plot.Tiles), plotSize)
+	}
+	if len(plot.Tiles[0]) != plotSize {
+		t.Fatalf("plot columns = %d, want %d", len(plot.Tiles[0]), plotSize)
+	}
+	if plot.Tiles[homePlotCenter][homePlotCenter].Feature != featureSanctum {
+		t.Fatal("expected Sanctum at the center Tile")
+	}
+}
+
 // TestDefaultHomePlotUsesGrasslandsBiome verifies the starting Plot records its biome.
 func TestDefaultHomePlotUsesGrasslandsBiome(t *testing.T) {
 	plot := NewDefaultHomePlot()
 
 	if plot.Biome != biomeGrasslands {
 		t.Fatalf("home biome = %v, want grasslands", plot.Biome)
+	}
+}
+
+// TestDefaultHomePlotStartsWithOnlyTheSanctum verifies the player receives no free structures.
+func TestDefaultHomePlotStartsWithOnlyTheSanctum(t *testing.T) {
+	plot := NewDefaultHomePlot()
+	for y := range plot.Tiles {
+		for x := range plot.Tiles[y] {
+			feature := plot.Tiles[y][x].Feature
+			if x == homePlotCenter && y == homePlotCenter {
+				if feature != featureSanctum {
+					t.Fatalf("center feature = %v, want Sanctum", feature)
+				}
+				continue
+			}
+			if feature != featureNone {
+				t.Fatalf("tile (%d,%d) feature = %v, want none", x, y, feature)
+			}
+		}
+	}
+}
+
+// TestDefaultHomePlotAssignsTileTweaks verifies Tile creation stores independent tweak values.
+func TestDefaultHomePlotAssignsTileTweaks(t *testing.T) {
+	var next uint16
+	plot := newDefaultHomePlotWithSources(func() uint16 {
+		value := next
+		next++
+		return value
+	}, constantTerrainRoll(99))
+
+	for y := 0; y < plotSize; y++ {
+		for x := 0; x < plotSize; x++ {
+			want := uint16(y*plotSize + x)
+			if plot.Tiles[y][x].Tweak != want {
+				t.Fatalf("tile (%d,%d) tweak = %d, want %d", x, y, plot.Tiles[y][x].Tweak, want)
+			}
+		}
+	}
+}
+
+// TestDefaultHomePlotUsesGrasslandsTerrainWeights verifies exact starting-Plot terrain boundaries.
+func TestDefaultHomePlotUsesGrasslandsTerrainWeights(t *testing.T) {
+	tests := []struct {
+		roll int
+		want tileTerrain
+	}{
+		{roll: 0, want: terrainTree},
+		{roll: 5, want: terrainTree},
+		{roll: 6, want: terrainBoulder},
+		{roll: 8, want: terrainBoulder},
+		{roll: 9, want: terrainEmpty},
+		{roll: 99, want: terrainEmpty},
+	}
+
+	for _, test := range tests {
+		plot := newDefaultHomePlotWithSources(func() uint16 {
+			return 0
+		}, constantTerrainRoll(test.roll))
+		if got := plot.Tiles[0][0].Terrain; got != test.want {
+			t.Errorf("roll %d home terrain = %v, want %v", test.roll, got, test.want)
+		}
+	}
+}
+
+// TestDefaultHomePlotRoadOverridesGrasslandsTerrain verifies generated obstacles cannot block the road.
+func TestDefaultHomePlotRoadOverridesGrasslandsTerrain(t *testing.T) {
+	plot := newDefaultHomePlotWithSources(func() uint16 {
+		return 0
+	}, constantTerrainRoll(6))
+
+	for y := 0; y <= homePlotCenter; y++ {
+		if plot.Tiles[y][homePlotCenter].Terrain != terrainRoad {
+			t.Fatalf("tile (%d,%d) terrain = %v, want road", homePlotCenter, y, plot.Tiles[y][homePlotCenter].Terrain)
+		}
+	}
+	for y := homePlotCenter + 1; y < plotSize; y++ {
+		if plot.Tiles[y][homePlotCenter].Terrain != terrainBoulder {
+			t.Fatalf("tile (%d,%d) terrain = %v, want generated Boulder", homePlotCenter, y, plot.Tiles[y][homePlotCenter].Terrain)
+		}
 	}
 }
 
@@ -126,21 +221,6 @@ func TestGeneratedHillsPlotCanContainObstacles(t *testing.T) {
 	}
 	if trees == 0 || boulders == 0 || empty == 0 {
 		t.Fatalf("hills terrain counts = Tree %d, Boulder %d, empty %d; want every terrain", trees, boulders, empty)
-	}
-}
-
-// TestDefaultHomePlotDoesNotGenerateObstacles verifies the starting Plot stays forgiving.
-func TestDefaultHomePlotDoesNotGenerateObstacles(t *testing.T) {
-	plot := newDefaultHomePlotWithTweakSource(func() uint16 {
-		return 0
-	})
-
-	for y := range plot.Tiles {
-		for x := range plot.Tiles[y] {
-			if plot.Tiles[y][x].Terrain == terrainTree || plot.Tiles[y][x].Terrain == terrainBoulder {
-				t.Fatalf("home tile (%d,%d) terrain = %v, want no generated obstacle", x, y, plot.Tiles[y][x].Terrain)
-			}
-		}
 	}
 }
 
