@@ -1,7 +1,10 @@
 package game
 
 import (
+	"td/internal/ui"
+
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
@@ -10,6 +13,7 @@ const (
 	selectedSpriteBrightness        = 1.65
 	exploreButtonSize               = 0.78
 	exploreButtonStroke             = 0.08
+	exploreLabelGap                 = 8
 )
 
 // drawExploredPlots renders every explored Plot from map state.
@@ -117,7 +121,45 @@ func (s *State) drawExploreButtons(screen *ebiten.Image, viewport sceneViewport)
 			colors.exploreButton,
 			false,
 		)
+		s.drawExploreBiomeLabel(screen, button, rect)
 	}
+}
+
+// drawExploreBiomeLabel renders the assigned biome outside an explore button.
+func (s *State) drawExploreBiomeLabel(screen *ebiten.Image, button exploreButton, buttonRect projectedRect) {
+	label := biomeLabel(button.Biome)
+	rect := s.projectedExploreBiomeLabelRect(button, buttonRect)
+	ui.DrawText(screen, label, s.ui.costBoldFace, float64(rect.x), float64(rect.y), colors.exploreButton)
+}
+
+// projectedExploreBiomeLabelRect measures and positions one biome label.
+func (s *State) projectedExploreBiomeLabelRect(button exploreButton, buttonRect projectedRect) projectedRect {
+	label := biomeLabel(button.Biome)
+	width, height := text.Measure(label, s.ui.costBoldFace, s.ui.costBoldFace.Size)
+	return exploreBiomeLabelRect(button, buttonRect, float32(width), float32(height))
+}
+
+// exploreBiomeLabelRect positions a biome label outward from its explore button.
+func exploreBiomeLabelRect(button exploreButton, buttonRect projectedRect, labelWidth, labelHeight float32) projectedRect {
+	rect := projectedRect{
+		x: buttonRect.x + (buttonRect.w-labelWidth)/2,
+		y: buttonRect.y + (buttonRect.h-labelHeight)/2,
+		w: labelWidth,
+		h: labelHeight,
+	}
+	dx := button.Target.X - button.From.X
+	dy := button.Target.Y - button.From.Y
+	switch {
+	case dy == 1:
+		rect.y = buttonRect.y - exploreLabelGap - labelHeight
+	case dx == 1:
+		rect.x = buttonRect.x + buttonRect.w + exploreLabelGap
+	case dy == -1:
+		rect.y = buttonRect.y + buttonRect.h + exploreLabelGap
+	case dx == -1:
+		rect.x = buttonRect.x - exploreLabelGap - labelWidth
+	}
+	return rect
 }
 
 // drawPineTree renders a tree sprite variant chosen from the Tile tweak.

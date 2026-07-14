@@ -20,6 +20,48 @@ func TestGeneratedGrasslandsPlotUsesGrasslandsBiome(t *testing.T) {
 	}
 }
 
+// TestGeneratedHillsPlotUsesHillsBiome verifies hills Plot biome metadata.
+func TestGeneratedHillsPlotUsesHillsBiome(t *testing.T) {
+	plot := NewHillsPlot()
+
+	if plot.Biome != biomeHills {
+		t.Fatalf("generated biome = %v, want hills", plot.Biome)
+	}
+}
+
+// TestBiomeForRollSplitsExploredPlotsEvenly verifies biome selection boundaries.
+func TestBiomeForRollSplitsExploredPlotsEvenly(t *testing.T) {
+	tests := []struct {
+		roll int
+		want plotBiome
+	}{
+		{roll: 0, want: biomeGrasslands},
+		{roll: 49, want: biomeGrasslands},
+		{roll: 50, want: biomeHills},
+		{roll: 99, want: biomeHills},
+	}
+
+	for _, test := range tests {
+		if got := biomeForRoll(test.roll); got != test.want {
+			t.Errorf("roll %d biome = %v, want %v", test.roll, got, test.want)
+		}
+	}
+}
+
+// TestGeneratedPlotUsesAssignedBiome verifies random sources stay independently testable.
+func TestGeneratedPlotUsesAssignedBiome(t *testing.T) {
+	plot := newPlotForBiomeWithSources(biomeHills, func() uint16 {
+		return 0
+	}, constantTerrainRoll(3))
+
+	if plot.Biome != biomeHills {
+		t.Fatalf("generated biome = %v, want hills", plot.Biome)
+	}
+	if plot.Tiles[0][0].Terrain != terrainBoulder {
+		t.Fatalf("first terrain = %v, want hills Boulder", plot.Tiles[0][0].Terrain)
+	}
+}
+
 // TestGeneratedGrasslandsPlotCanContainObstacles verifies sparse terrain generation.
 func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 	var next uint16
@@ -55,6 +97,35 @@ func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 	}
 	if empty == 0 {
 		t.Fatal("expected deterministic grasslands generation to keep buildable grass")
+	}
+}
+
+// TestGeneratedHillsPlotCanContainObstacles verifies stone-biased hills terrain generation.
+func TestGeneratedHillsPlotCanContainObstacles(t *testing.T) {
+	terrainRolls := repeatingTerrainRolls(0, 3, 9)
+	plot := newHillsPlotWithSources(func() uint16 {
+		return 0
+	}, terrainRolls)
+
+	trees := 0
+	boulders := 0
+	empty := 0
+	for y := range plot.Tiles {
+		for x := range plot.Tiles[y] {
+			switch plot.Tiles[y][x].Terrain {
+			case terrainTree:
+				trees++
+			case terrainBoulder:
+				boulders++
+			case terrainEmpty:
+				empty++
+			default:
+				t.Fatalf("tile (%d,%d) terrain = %v, want hills terrain", x, y, plot.Tiles[y][x].Terrain)
+			}
+		}
+	}
+	if trees == 0 || boulders == 0 || empty == 0 {
+		t.Fatalf("hills terrain counts = Tree %d, Boulder %d, empty %d; want every terrain", trees, boulders, empty)
 	}
 }
 
@@ -102,6 +173,27 @@ func TestWeightedTerrainSelectsEmpty(t *testing.T) {
 	for _, roll := range []int{9, 99} {
 		if got := weightedTerrain(weights, roll); got != terrainEmpty {
 			t.Fatalf("roll %d terrain = %v, want empty", roll, got)
+		}
+	}
+}
+
+// TestHillsTerrainWeightsBiasBoulders verifies the hills percentage boundaries.
+func TestHillsTerrainWeightsBiasBoulders(t *testing.T) {
+	tests := []struct {
+		roll int
+		want tileTerrain
+	}{
+		{roll: 0, want: terrainTree},
+		{roll: 2, want: terrainTree},
+		{roll: 3, want: terrainBoulder},
+		{roll: 8, want: terrainBoulder},
+		{roll: 9, want: terrainEmpty},
+		{roll: 99, want: terrainEmpty},
+	}
+
+	for _, test := range tests {
+		if got := weightedTerrain(hillsTerrainWeights, test.roll); got != test.want {
+			t.Errorf("roll %d terrain = %v, want %v", test.roll, got, test.want)
 		}
 	}
 }

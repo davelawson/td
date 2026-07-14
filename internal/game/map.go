@@ -9,8 +9,9 @@ const (
 
 // Map owns the prototype game map.
 type Map struct {
-	Home  Plot
-	Plots map[plotCoordinate]*Plot
+	Home           Plot
+	Plots          map[plotCoordinate]*Plot
+	frontierBiomes map[plotCoordinate]plotBiome
 }
 
 // Plot owns a fixed 15x15 group of Tiles.
@@ -23,6 +24,7 @@ type plotBiome int
 
 const (
 	biomeGrasslands plotBiome = iota
+	biomeHills
 )
 
 // plotCoordinate identifies one Plot, with the home Plot at (0,0).
@@ -67,17 +69,26 @@ const (
 
 // NewDefaultMap creates the prototype map used by a new game.
 func NewDefaultMap() Map {
+	return newDefaultMapWithBiomeSource(randomPercentageRoll)
+}
+
+// newDefaultMapWithBiomeSource creates the prototype map with caller-provided frontier biome rolls.
+func newDefaultMapWithBiomeSource(nextBiomeRoll func() int) Map {
 	gameMap := Map{
 		Home: NewDefaultHomePlot(),
 	}
 	gameMap.ensurePlots()
+	gameMap.assignFrontierBiomesAround(homePlotCoordinate, nextBiomeRoll)
 	return gameMap
 }
 
-// ensurePlots initializes the explored Plot map for tests that construct Map values directly.
+// ensurePlots initializes map storage for tests that construct Map values directly.
 func (m *Map) ensurePlots() {
 	if m.Plots == nil {
 		m.Plots = map[plotCoordinate]*Plot{}
+	}
+	if m.frontierBiomes == nil {
+		m.frontierBiomes = map[plotCoordinate]plotBiome{}
 	}
 	m.Plots[homePlotCoordinate] = &m.Home
 }
@@ -95,16 +106,48 @@ func (m *Map) explored(coord plotCoordinate) bool {
 	return ok
 }
 
+// frontierBiome returns the stored biome for an unexplored frontier Plot.
+func (m *Map) frontierBiome(coord plotCoordinate) (plotBiome, bool) {
+	m.ensurePlots()
+	biome, ok := m.frontierBiomes[coord]
+	return biome, ok
+}
+
+// assignFrontierBiomesAround fixes biomes for newly adjacent unexplored Plots.
+func (m *Map) assignFrontierBiomesAround(coord plotCoordinate, nextBiomeRoll func() int) {
+	m.ensurePlots()
+	for _, neighbor := range orthogonalPlotNeighbors(coord) {
+		if _, explored := m.Plots[neighbor]; explored {
+			continue
+		}
+		if _, assigned := m.frontierBiomes[neighbor]; assigned {
+			continue
+		}
+		m.frontierBiomes[neighbor] = biomeForRoll(nextBiomeRoll())
+	}
+}
+
 // revealPlot marks an adjacent Plot explored without replacing existing content.
 func (m *Map) revealPlot(coord plotCoordinate) {
+	m.revealPlotWithBiomeSource(coord, randomPercentageRoll)
+}
+
+// revealPlotWithBiomeSource reveals a Plot and assigns its new frontier with caller-provided rolls.
+func (m *Map) revealPlotWithBiomeSource(coord plotCoordinate, nextBiomeRoll func() int) {
 	m.ensurePlots()
 	if _, ok := m.Plots[coord]; ok {
 		return
 	}
-	plot := NewGrasslandsPlot()
+	biome, ok := m.frontierBiomes[coord]
+	if !ok {
+		return
+	}
+	plot := newPlotForBiome(biome)
 	applyNorthRoadIfNeeded(coord, &plot)
 	m.Plots[coord] = &plot
+	delete(m.frontierBiomes, coord)
 	m.clearSharedEdges(coord)
+	m.assignFrontierBiomesAround(coord, nextBiomeRoll)
 }
 
 // applyNorthRoadIfNeeded adds the visible straight Raid road to central north-chain Plots.

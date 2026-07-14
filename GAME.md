@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. Every current Plot uses the grasslands biome; newly explored grasslands Plots are immediately usable and generate mostly empty grass with sparse Tree and Boulder Tiles. Exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
+The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. The home Plot uses grasslands; each unexplored frontier Plot independently receives grasslands or hills with equal probability before exploration and displays that assignment beside its explore button. Revealed Plots are immediately usable and mostly empty grass, with grasslands biased toward Tree and hills biased toward Boulder. Exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -90,7 +90,7 @@ World positions use Tile units. The center of the Sanctum Tile is the origin `(0
 
 Plot contents should be readable at a glance. A Plot can mix terrain types, but each Plot should have a dominant character that helps the player reason about it before inspecting every Tile, such as wooded, rocky, wetland, open meadow, hill, ruin, or lair. This dominant character is a design label, not necessarily a separate data type.
 
-The first implemented dominant character is a biome. A biome is a stored Plot label that controls how terrain is generated when the Plot is explored. The only current biome is `grasslands`. The starting home Plot stores the grasslands biome but remains authored as open grassland with its Sanctum and north road. Newly explored grasslands Plots generate mostly empty Grass with sparse Tree and Boulder Tiles from explicit percentage weights; road and shared-edge rules can overwrite generated terrain so roads stay readable and adjacent explored Plots join cleanly. Boulder is currently terrain only: it blocks construction but is not a Stone resource node.
+The first implemented dominant character is a biome. A biome is a stored Plot label that controls how terrain is generated when the Plot is explored. The current biomes are `grasslands` and `hills`. The starting home Plot stores the grasslands biome but remains authored as open grassland with its Sanctum and north road. When an unexplored Plot first becomes orthogonally adjacent to explored land, it independently has an equal chance to be assigned grasslands or hills. The stable assignment is displayed beside its explore button before terrain is revealed; only the circular button explores. Grasslands generates 6% Tree, 3% Boulder, and 91% empty Grass; hills generates 3% Tree, 6% Boulder, and 91% empty Grass. Road and shared-edge rules can overwrite generated terrain so roads stay readable and adjacent explored Plots join cleanly. Boulder is currently terrain only: it blocks construction but is not a Stone resource node.
 
 The starting Plot should be mostly buildable and forgiving. It should contain the Sanctum, at least one outgoing road, some nearby buildable Grass, and enough visible resource access to support the first build decisions. It should not start with Water or Mountain terrain blocking all useful placement around the Sanctum.
 
@@ -227,7 +227,7 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
 - The first gameplay-facing rendered slice starts with an open-grassland home Plot containing only the centered Sanctum as an initial structure, a straight road north, free calm-phase exploration buttons on unexplored adjacent Plot borders, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom, `WASD` panning, and right-drag panning are inspection controls only and do not change map data.
-- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Revealed Plots use the grasslands biome, are immediately usable, and generate mostly empty grass with sparse Tree and Boulder Tiles. The first implementation collapses scouting and claiming into one action.
+- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Each frontier Plot independently receives a stable grasslands-or-hills assignment before exploration and displays its name outward beside the button; the label is informational and only the circle reveals. Revealed Plots are immediately usable and generate 91% empty grass. Grasslands uses 6% Tree and 3% Boulder; hills uses 3% Tree and 6% Boulder. The first implementation collapses scouting and claiming into one action.
 - Northward exploration along Plot `X=0` extends the visible center road and moves deterministic Raid spawning to the farthest explored north road. Non-north explored Plots do not add Raid paths yet.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
 - A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Dorm, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
@@ -416,6 +416,18 @@ Record game design decisions here when they become durable enough to guide imple
 - Decision: Generate grasslands terrain from explicit percentage weights.
   Rationale: A small weight table is easier to read and tune than hidden modulo rules on visual tweak values, while still guaranteeing only one generated terrain type per Tile.
   Date/Author: 2026-07-14 / Codex
+
+- Decision: Choose grasslands or hills independently with equal probability when a non-home Plot first joins the exploration frontier.
+  Rationale: Frontier-time assignment fixes the biome before exploration and supports an informed destination choice without generating hidden terrain or introducing a whole-map seed.
+  Date/Author: 2026-07-14 / User and Codex
+
+- Decision: Display each frontier biome outward beside its explore button while keeping only the circular icon clickable.
+  Rationale: The label exposes the useful biome choice without covering explored terrain or changing the existing stable reveal hit target.
+  Date/Author: 2026-07-14 / User and Codex
+
+- Decision: Bias hills toward Boulder with 3% Tree, 6% Boulder, and 91% empty Grass.
+  Rationale: Reversing the grasslands Tree and Boulder weights gives hills a stone-heavy character while preserving sparse obstacles and general buildability.
+  Date/Author: 2026-07-14 / User and Codex
 
 - Decision: Store prototype Tile sprite variation as a `Tweak` value on each Tile.
   Rationale: Keeping visual variation in map data lets rendering choose stable per-Tile sprite variants without turning the tweak into a gameplay or terrain-generation mechanic.

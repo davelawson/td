@@ -4,6 +4,7 @@ type exploreButton struct {
 	From   plotCoordinate
 	Target plotCoordinate
 	Center coord
+	Biome  plotBiome
 }
 
 // updateExploration applies calm-phase Plot reveal clicks.
@@ -63,16 +64,32 @@ func (s *State) exploreButtons() []exploreButton {
 			if s.gameMap.explored(target) {
 				continue
 			}
+			biome, ok := s.gameMap.frontierBiome(target)
+			if !ok {
+				continue
+			}
 			buttons = append(buttons, exploreButton{
 				From:   from,
 				Target: target,
 				Center: exploreButtonCenter(from, target),
+				Biome:  biome,
 			})
 		}
 	}
 	return buttons
 }
 
+// biomeLabel returns the player-facing name for a Plot biome.
+func biomeLabel(biome plotBiome) string {
+	switch biome {
+	case biomeHills:
+		return "Hills"
+	default:
+		return "Grasslands"
+	}
+}
+
+// exploreButtonCenter returns the shared border center for an exploration control.
 func exploreButtonCenter(from, target plotCoordinate) coord {
 	west, north, width, height := plotWorldRect(from)
 	dx := target.X - from.X

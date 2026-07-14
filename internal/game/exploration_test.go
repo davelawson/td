@@ -33,6 +33,10 @@ func TestInitialExploreButtonsTargetOrthogonalNeighbors(t *testing.T) {
 		if !want[button.Target] {
 			t.Fatalf("unexpected explore target %+v", button.Target)
 		}
+		biome, ok := state.gameMap.frontierBiome(button.Target)
+		if !ok || button.Biome != biome {
+			t.Fatalf("button biome = %v, stored biome = %v, assigned = %v", button.Biome, biome, ok)
+		}
 		delete(want, button.Target)
 	}
 	if len(want) != 0 {
@@ -40,10 +44,14 @@ func TestInitialExploreButtonsTargetOrthogonalNeighbors(t *testing.T) {
 	}
 }
 
-// TestExploreClickRevealsAdjacentGrasslandsAndClearsSharedEdge verifies the reveal action.
-func TestExploreClickRevealsAdjacentGrasslandsAndClearsSharedEdge(t *testing.T) {
+// TestExploreClickRevealsAdjacentBiomeAndClearsSharedEdge verifies the reveal action.
+func TestExploreClickRevealsAdjacentBiomeAndClearsSharedEdge(t *testing.T) {
 	state := newRaidTestState(t)
 	target := plotCoordinate{X: 1, Y: 0}
+	preview, ok := state.gameMap.frontierBiome(target)
+	if !ok {
+		t.Fatal("expected east Plot biome to be assigned before exploration")
+	}
 
 	state.Update(clickExploreButtonInput(t, state, target))
 
@@ -51,8 +59,8 @@ func TestExploreClickRevealsAdjacentGrasslandsAndClearsSharedEdge(t *testing.T) 
 	if !ok {
 		t.Fatal("expected east plot to be explored")
 	}
-	if plot.Biome != biomeGrasslands {
-		t.Fatalf("east plot biome = %v, want grasslands", plot.Biome)
+	if plot.Biome != preview {
+		t.Fatalf("east plot biome = %v, want previewed biome %v", plot.Biome, preview)
 	}
 	if plot.Tiles[homePlotCenter][homePlotCenter].Feature != featureNone {
 		t.Fatalf("east plot center feature = %v, want none", plot.Tiles[homePlotCenter][homePlotCenter].Feature)
@@ -62,6 +70,25 @@ func TestExploreClickRevealsAdjacentGrasslandsAndClearsSharedEdge(t *testing.T) 
 	}
 	if plot.Tiles[homePlotCenter][0].Terrain != terrainEmpty {
 		t.Fatal("expected new plot west shared edge to become grass")
+	}
+}
+
+// TestRevealExistingPlotPreservesGeneratedBiomeAndTerrain verifies reveal idempotence.
+func TestRevealExistingPlotPreservesGeneratedBiomeAndTerrain(t *testing.T) {
+	gameMap := NewDefaultMap()
+	target := plotCoordinate{X: 1, Y: 0}
+	gameMap.revealPlot(target)
+	plot, _ := gameMap.plot(target)
+	plot.Tiles[2][2].Terrain = terrainBoulder
+
+	gameMap.revealPlot(target)
+	again, _ := gameMap.plot(target)
+
+	if again != plot {
+		t.Fatal("expected repeated reveal to preserve the stored Plot")
+	}
+	if again.Tiles[2][2].Terrain != terrainBoulder {
+		t.Fatalf("retained terrain = %v, want Boulder", again.Tiles[2][2].Terrain)
 	}
 }
 

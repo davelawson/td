@@ -35,7 +35,7 @@ type screenshotTarget struct {
 	placedBarracks   bool
 	placedDorm       bool
 	placedWoodcutter bool
-	exploredNorth    bool
+	exploredBiomes   bool
 	path             string
 }
 
@@ -97,14 +97,14 @@ func TestCaptureMainMenuScreenshot(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	basePath := filepath.Join("..", "..", "plans", "46-boulder-terrain-sprites", "screenshots")
+	basePath := filepath.Join("..", "..", "plans", "49-frontier-biome-labels", "screenshots")
 	capture := &screenshotApp{
 		app: app,
 		targets: []screenshotTarget{
 			{screen: menu.ScreenMain, path: filepath.Join(basePath, "main-menu.png")},
 			{screen: menu.ScreenNewGame, path: filepath.Join(basePath, "new-game-configuration.png")},
 			{wizardName: "Merlin", path: filepath.Join(basePath, "running-game.png")},
-			{wizardName: "Merlin", exploredNorth: true, path: filepath.Join(basePath, "explored-north.png")},
+			{wizardName: "Merlin", exploredBiomes: true, path: filepath.Join(basePath, "explored-biomes.png")},
 			{wizardName: "Merlin", hoverBuilding: true, path: filepath.Join(basePath, "house-icon.png")},
 			{wizardName: "Merlin", placedHouse: true, path: filepath.Join(basePath, "placed-house.png")},
 			{wizardName: "Merlin", placedWoodcutter: true, path: filepath.Join(basePath, "placed-woodcutter.png")},
@@ -151,12 +151,21 @@ func (a *screenshotApp) Update() error {
 				a.app.gameState.Update(game.Input{})
 			}
 		}
-		if target.exploredNorth {
-			a.app.gameState.Update(game.Input{
-				CursorX: defaultWindowWidth / 2,
-				CursorY: topOfGameScene() + (defaultWindowHeight-topOfGameScene())/2 - 405,
-				Clicked: true,
-			})
+		if target.exploredBiomes {
+			centerX := defaultWindowWidth / 2
+			centerY := topOfGameScene() + defaultGameSceneHeight()/2
+			for _, point := range [][2]int{
+				{centerX, centerY - 405},
+				{centerX + 405, centerY},
+				{centerX, centerY + 405},
+				{centerX - 405, centerY},
+			} {
+				a.app.gameState.Update(game.Input{
+					CursorX: point[0],
+					CursorY: point[1],
+					Clicked: true,
+				})
+			}
 			a.app.gameState.Update(game.Input{WheelY: -10})
 		}
 		if target.hoverBuilding {
