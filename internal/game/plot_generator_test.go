@@ -106,24 +106,6 @@ func TestWeightedTerrainSelectsEmpty(t *testing.T) {
 	}
 }
 
-// TestWeightedTerrainRejectsInvalidWeights verifies invalid percentages fall back to empty.
-func TestWeightedTerrainRejectsInvalidWeights(t *testing.T) {
-	for _, weights := range []terrainWeights{
-		{Tree: -1, Boulder: 3},
-		{Tree: 6, Boulder: -1},
-		{Tree: 75, Boulder: 50},
-	} {
-		if got := weightedTerrain(weights, 0); got != terrainEmpty {
-			t.Fatalf("weights %+v terrain = %v, want empty", weights, got)
-		}
-	}
-	for _, roll := range []int{-1, 100} {
-		if got := weightedTerrain(terrainWeights{Tree: 6, Boulder: 3}, roll); got != terrainEmpty {
-			t.Fatalf("roll %d terrain = %v, want empty", roll, got)
-		}
-	}
-}
-
 // TestNorthRoadOverridesGeneratedBoulder verifies road generation protects Raid paths.
 func TestNorthRoadOverridesGeneratedBoulder(t *testing.T) {
 	plot := newGrasslandsPlotWithSources(func() uint16 {

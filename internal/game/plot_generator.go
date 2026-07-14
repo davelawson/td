@@ -59,16 +59,11 @@ func newOpenGrasslandsPlotWithTweakSource(nextTweak func() uint16) Plot {
 
 // weightedTerrain returns the generated terrain selected by a percentage roll.
 func weightedTerrain(weights terrainWeights, roll int) tileTerrain {
-	if weights.Tree < 0 || weights.Boulder < 0 || weights.Tree+weights.Boulder > 100 {
-		return terrainEmpty
-	}
-	if roll < 0 || roll >= 100 {
-		return terrainEmpty
-	}
 	if roll < weights.Tree {
 		return terrainTree
 	}
-	if roll < weights.Tree+weights.Boulder {
+	roll -= weights.Tree
+	if roll < weights.Boulder {
 		return terrainBoulder
 	}
 	return terrainEmpty

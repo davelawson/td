@@ -15,6 +15,7 @@ After this change, generated grasslands Plots choose Tree, Boulder, or empty gra
 - [x] (2026-07-14T00:10Z) Renamed Forest terrain to Tree in code, tests, and control documents.
 - [x] (2026-07-14T00:12Z) Ran `gofmt -w internal/game/*.go` and `go test ./...`.
 - [x] (2026-07-14T00:14Z) Ran `git diff --check`, ownership check, and Go file line-count review.
+- [x] (2026-07-14T00:20Z) Simplified `weightedTerrain` to a direct Tree, Boulder, Empty ladder.
 
 ## Surprises & Discoveries
 
@@ -32,12 +33,17 @@ After this change, generated grasslands Plots choose Tree, Boulder, or empty gra
 - Decision: Rename Forest terrain to Tree.
   Rationale: The user requested Tree terminology while refactoring terrain generation.
   Date/Author: 2026-07-14 / Codex
+- Decision: Keep `weightedTerrain` as a simple ladder without private-weight validation.
+  Rationale: The weights are private code constants, so defensive validation obscured the intended Tree, Boulder, Empty decision flow.
+  Date/Author: 2026-07-14 / Codex
 
 ## Outcomes & Retrospective
 
 Implementation completed the terrain generation refactor. Grasslands generation now uses explicit percentage weights of Tree 6%, Boulder 3%, and empty grass 91%. A Tile receives only one generated terrain type from a single percentage roll. `Tile.Tweak` remains on map data for stable terrain sprite variant selection and horizontal flipping, but it no longer controls generated terrain.
 
 The Forest terrain enum was renamed to Tree throughout game code, tests, and root control documents. Pine-tree asset names remain unchanged because they describe the concrete art files.
+
+`weightedTerrain` was simplified to check Tree first, then Boulder, then Empty. The invalid-weight test was removed because terrain weights are private implementation constants.
 
 Validation passed on 2026-07-14: `gofmt -w internal/game/*.go`, `go test ./...`, `git diff --check`, and `find . -xdev ! -user dave -printf '%u:%g %p\n'` all succeeded.
 
