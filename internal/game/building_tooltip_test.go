@@ -49,10 +49,10 @@ func TestBuildingTooltipContentForAllBuildingMenuItems(t *testing.T) {
 			index:    0,
 			title:    "Woodcutter",
 			lines: []string{
-				"Assigns a Peasant to bring in Wood after defeated Raids.",
+				"Assigns a Peasant to bring in Wood during Labour.",
 				"Cost: 10 Wood",
 				"Staffing: 1 Peasant",
-				"Production: +10 Wood after each defeated Raid",
+				"Production: +10 Wood during each Labour phase",
 			},
 		},
 		{
@@ -60,10 +60,10 @@ func TestBuildingTooltipContentForAllBuildingMenuItems(t *testing.T) {
 			index:    1,
 			title:    "Stone Quarry",
 			lines: []string{
-				"Assigns a Peasant to quarry Stone after defeated Raids.",
+				"Assigns a Peasant to quarry Stone during Labour.",
 				"Cost: 10 Wood, 10 Stone",
 				"Staffing: 1 Peasant",
-				"Production: +10 Stone after each defeated Raid",
+				"Production: +10 Stone during each Labour phase",
 			},
 		},
 		{
@@ -71,10 +71,10 @@ func TestBuildingTooltipContentForAllBuildingMenuItems(t *testing.T) {
 			index:    2,
 			title:    "Iron Mine",
 			lines: []string{
-				"Assigns a Peasant to extract Metal after defeated Raids.",
+				"Assigns a Peasant to extract Metal during Labour.",
 				"Cost: 10 Wood, 10 Stone, 10 Metal",
 				"Staffing: 1 Peasant",
-				"Production: +10 Metal after each defeated Raid",
+				"Production: +10 Metal during each Labour phase",
 			},
 		},
 		{
@@ -83,7 +83,7 @@ func TestBuildingTooltipContentForAllBuildingMenuItems(t *testing.T) {
 			title:    "Bow Tower",
 			lines: []string{
 				"A staffed archer tower that fires quick arrows.",
-				"Cost: 30 Wood, 10 Stone, 10 Metal",
+				"Cost: 20 Wood, 10 Stone",
 				"Staffing: 1 Soldier",
 				"Range: 3.0 Tiles",
 				"Damage: 10",
@@ -112,7 +112,7 @@ func TestBuildingTooltipContentForAllBuildingMenuItems(t *testing.T) {
 			lines: []string{
 				"A heavy crewed tower that crushes enemies in one Tile.",
 				"Cost: 40 Wood, 60 Stone, 25 Metal",
-				"Staffing: 1 Soldier, 2 Peasants",
+				"Staffing: 1 Soldier, 1 Peasant",
 				"Range: 5.0 Tiles",
 				"Damage: 75",
 				"Fire: every 3.0s",

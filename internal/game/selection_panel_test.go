@@ -242,8 +242,8 @@ func TestSelectedCatapultTowerPanelRows(t *testing.T) {
 	if panel.RangeTiles != 5.0 || panel.FireIntervalSeconds != 3.0 || panel.Damage != 75 {
 		t.Fatalf("tower stats = range %.1f speed %.1f damage %d, want 5.0/3.0/75", panel.RangeTiles, panel.FireIntervalSeconds, panel.Damage)
 	}
-	if panel.Staffing != (ui.PopulationAmounts{Soldiers: 1, Peasants: 2}) {
-		t.Fatalf("staffing = %+v, want 1 Soldier and 2 Peasants", panel.Staffing)
+	if panel.Staffing != (ui.PopulationAmounts{Soldiers: 1, Peasants: 1}) {
+		t.Fatalf("staffing = %+v, want 1 Soldier and 1 Peasant", panel.Staffing)
 	}
 }
 

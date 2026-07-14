@@ -23,8 +23,8 @@ func TestNewStateStartsRunning(t *testing.T) {
 	if state.Paused() {
 		t.Fatal("expected new state to start unpaused")
 	}
-	if state.status.phase != phaseCalm {
-		t.Fatalf("phase = %v, want %v", state.status.phase, phaseCalm)
+	if state.status.phase != phaseManagement {
+		t.Fatalf("phase = %v, want %v", state.status.phase, phaseManagement)
 	}
 	if state.status.resources.wood != 100 || state.status.resources.stone != 50 || state.status.resources.metal != 20 {
 		t.Fatalf("resources = %+v, want wood 100 stone 50 metal 20", state.status.resources)
@@ -276,8 +276,8 @@ func inputWithWheelAndPan(wheelY float64, up, down, left, right bool) Input {
 	return input
 }
 
-// TestStateFormatsCalmTopBar verifies initial top-bar text.
-func TestStateFormatsCalmTopBar(t *testing.T) {
+// TestStateFormatsManagementTopBar verifies initial top-bar text.
+func TestStateFormatsManagementTopBar(t *testing.T) {
 	state, err := New("Merlin", 1920, 1080)
 	if err != nil {
 		t.Fatal(err)
@@ -286,7 +286,7 @@ func TestStateFormatsCalmTopBar(t *testing.T) {
 	if value := state.chapterDayText(); value != "Chapter I: The Ashen Copse | Day 1" {
 		t.Fatalf("chapterDayText = %q", value)
 	}
-	if value := state.phaseText(); value != "Raid in 02:00" {
+	if value := state.phaseText(); value != "Management phase" {
 		t.Fatalf("phaseText = %q", value)
 	}
 }

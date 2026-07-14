@@ -6,7 +6,7 @@ This file describes the game the prototype is trying to become. It may include p
 
 ## Design Status
 
-The game design is intentionally early. The current implementation includes a Sanctum-only starting Plot, free calm-phase exploration of adjacent Plots, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, economic buildings that produce resources after defeated Raids, and tower templates with resource and staffing requirements. The home Plot uses the same sparse grasslands terrain generation as explored grasslands; each unexplored frontier Plot independently receives grasslands or hills with equal probability before exploration and displays that assignment beside its explore button. Every generated Plot is immediately usable and mostly empty grass, with grasslands biased toward Tree and hills biased toward Boulder. Exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
+The game design is intentionally early. The current implementation splits peaceful play into an instantaneous Labour phase after each successful Raid and an open-ended Management phase. A new game begins in Management. Management allows free exploration of adjacent Plots and construction until the player clicks `Next Raid`; Labour pays every placed economic building once before immediately entering Management. The prototype also includes a Sanctum-only starting Plot, a House that adds Peasant population, a Barracks that converts Peasants into Soldiers, a Dorm that converts a Peasant into an Apprentice, and tower templates with resource and staffing requirements. The home Plot uses the same sparse grasslands terrain generation as explored grasslands; each unexplored frontier Plot independently receives grasslands or hills with equal probability before exploration and displays that assignment beside its explore button. Every generated Plot is immediately usable and mostly empty grass, with grasslands biased toward Tree and hills biased toward Boulder. Exploring the central north chain extends the current visible road and Raid path. Economic building and tower construction requires sufficient available staff and reserves those inhabitants. Timed recruitment, reassignment, and staff release are not implemented.
 
 Treat sections below as living intent. Decisions marked as open should not be silently assumed by implementation plans; they should be resolved in `GAME.md` when design work makes them concrete.
 
@@ -47,7 +47,7 @@ The mature game should revolve around a repeatable loop:
 4. Defend against enemies in a tower-defense encounter.
 5. Recover from the result, learn what worked, and improve the next preparation phase.
 
-The exact boundaries between exploration, building, and defense are not decided yet. They may become separate phases, a continuous loop, or a hybrid model if prototyping shows that works better.
+Peaceful play is divided into Labour followed by Management. Labour resolves assigned workers' production at the start of each post-Raid Day. Management owns exploration, construction, and settlement instructions and lasts until the player starts the next Raid. The first prototype makes Labour instantaneous; later worker systems may make its results richer without moving Management actions into Labour.
 
 ## Intended Systems
 
@@ -55,11 +55,11 @@ The exact boundaries between exploration, building, and defense are not decided 
 
 Exploration should give the player information and access. It may reveal terrain, enemy routes, resource nodes, buildable areas, hazards, or future attack pressure.
 
-During the calm phase, the wizard can explore another Plot adjacent to the current Domain. The first implemented slice makes exploration free and immediate: clicking a magnifying-glass button on a border between explored and unexplored Plots reveals the adjacent Plot, and the revealed Plot is treated as part of the usable Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and, when expanding north, defend along a longer path.
+During Management, the wizard can explore another Plot adjacent to the current Domain. The first implemented slice makes exploration free and immediate: clicking a magnifying-glass button on a border between explored and unexplored Plots reveals the adjacent Plot, and the revealed Plot is treated as part of the usable Domain. Once a Plot has been explored, the wizard can begin building structures there. Exploration does not transition directly into tower-defense encounters. Instead, exploration expands the wizard's Domain, allowing the wizard to build structures across a greater area and, when expanding north, defend along a longer path.
 
 Early map inspection uses camera-based movement rather than direct wizard movement. The player can zoom the scene camera with the mouse wheel, pan with `WASD`, or press and hold the right mouse button over the game view and drag so the visible world follows the cursor. Camera inspection works while paused, but it is only inspection. It does not reveal new Plots, gather resources, or move a wizard character.
 
-The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum, House, Barracks, Dorm, economic buildings, and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, population buildings show their cost and population effects, economic buildings show their cost, Peasant requirement, and post-Raid production, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
+The first object-inspection interaction is left-click selection. Structure tiles, including the Sanctum, House, Barracks, Dorm, economic buildings, and towers, can be selected by clicking their Tile, and active raiders can be selected by clicking their visible sprite. A selected object is drawn brighter. The current inspection panel is informational only: raiders show their prototype combat stats, combat towers show their prototype attack stats, population buildings show their cost and population effects, economic buildings show their cost, Peasant requirement, and Labour production, and the Sanctum shows only its name. Selection currently has no command buttons or upgrades; it exists to establish readable object targeting for later inspection and command workflows.
 
 Open decisions include whether later exploration uses direct player movement, camera-based inspection plus tile reveal, another interaction model, or a hybrid of these, which resources are spent to explore Plots after the free prototype slice, and how non-north explored Plots are connected to enemy paths and roads.
 
@@ -75,7 +75,7 @@ In the intended full design, Plots exist in one of these high-level states:
 
 - `Unknown`: the Plot has not been explored. Its detailed Tiles, resources, roads, hazards, and structures are not visible to the player.
 - `Scouted`: the Plot has been explored enough to reveal its terrain, resources, and road exits, but it is not yet part of the Domain.
-- `Claimed`: the Plot belongs to the Domain. The wizard can build structures there during calm phases, and roads within the Plot can become part of Raid paths.
+- `Claimed`: the Plot belongs to the Domain. The wizard can build structures there during Management, and roads within the Plot can become part of Raid paths.
 - `Lair`: the Plot contains the current Chapter Rival's Lair. Claiming this Plot triggers the final Raid of the Chapter.
 
 Exploring a Plot changes it from `Unknown` to `Scouted`. Claiming a scouted Plot changes it to `Claimed` and expands the Domain. The first implemented exploration prototype collapses scouting and claiming into one action: clicking an explore button immediately reveals the adjacent Plot and makes it buildable. The design should preserve the distinction for later versions because it creates room for future choices: reveal a risky area now, or spend more to actually incorporate it into the defended Domain.
@@ -114,9 +114,9 @@ The initial resources are:
 - `Stone`: gathered by quarrying rocks.
 - `Metal`: gathered by exploiting mines.
 
-The first implemented resource-production slice uses economic buildings rather than direct gathering. A Woodcutter produces 10 Wood, a Stone Quarry produces 10 Stone, and an Iron Mine produces 10 Metal after each successfully defeated Raid. Failed Raids that breach the Sanctum do not pay economic building resources. The Iron Mine uses the existing Metal resource; there is no separate Iron resource.
+The first implemented resource-production slice uses economic buildings rather than direct gathering. During Labour, a Woodcutter produces 10 Wood, a Stone Quarry produces 10 Stone, and an Iron Mine produces 10 Metal. Labour begins only after a successfully defeated Raid, so a failed Raid that breaches the Sanctum produces nothing. The Iron Mine uses the existing Metal resource; there is no separate Iron resource.
 
-Open decisions include whether later resources are gathered manually or passively during calm play, whether resources persist across longer campaign structures, whether additional resources are needed, and how resource nodes are discovered or depleted.
+Open decisions include which additional worker activities resolve during Labour, whether future gathering is represented only by assignments or also by direct actions, whether resources persist across longer campaign structures, whether additional resources are needed, and how resource nodes are discovered or depleted.
 
 The in-game top bar should show the current Wood, Stone, and Metal counts as resource icons plus numbers once the economy exists. Prototype HUD values may be fixed until resource gathering and spending systems are implemented.
 
@@ -138,7 +138,7 @@ Base-building should let the player shape a defensible Domain around the Sanctum
 
 Structures can only be built in explored Plots. Expanding the Domain gives the wizard more buildable area, but it can also lengthen the path the wizard must defend during Raids.
 
-The first build-facing UI is a 260-pixel building bar on the left side of the playable scene. It partitions structures into `Housing`, `Economic`, and `Defenses` tabs, with `Housing` selected by default. Housing shows House, Barracks, and Dorm. Economic shows Woodcutter, Stone Quarry, and Iron Mine. Defenses shows Bow Tower, Flame Bolt Tower, and Catapult Tower. Visible entries use structure sprites with colour-coded prototype construction costs and a compact population row for requirements, costs, or grants displayed to the right of each icon. Hovering a building icon shows an informational tooltip with that structure's description, cost, staffing requirement, and implemented production, population effect, or combat stats. Hovering an eligible icon also brightens that icon and emphasizes its cost row. Buildable icon squares use green outlines. Icons for buildings without sufficient resources, population, or staff use red square outlines and are drawn at 70% opacity. During calm play, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads, Tree, or Boulder. Occupied Tiles, road Tiles, Tree Tiles, Boulder Tiles, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused calm play still allows building, but the in-game overlay blocks it.
+The first build-facing UI is a 260-pixel building bar on the left side of the playable scene. It partitions structures into `Housing`, `Economic`, and `Defenses` tabs, with `Housing` selected by default. Housing shows House, Barracks, and Dorm. Economic shows Woodcutter, Stone Quarry, and Iron Mine. Defenses shows Bow Tower, Flame Bolt Tower, and Catapult Tower. Visible entries use structure sprites with colour-coded prototype construction costs and a compact population row for requirements, costs, or grants displayed to the right of each icon. Hovering a building icon shows an informational tooltip with that structure's description, cost, staffing requirement, and implemented production, population effect, or combat stats. Hovering an eligible icon also brightens that icon and emphasizes its cost row. Buildable icon squares use green outlines. Icons for buildings without sufficient resources, population, or staff use red square outlines and are drawn at 70% opacity. During Management, left-dragging an eligible building icon attaches a half-sized copy to the cursor; releasing over an empty grass-like Tile places that structure and deducts its cost. In the current prototype, "grass-like" means the existing empty terrain Tile type, not roads, Tree, or Boulder. Occupied Tiles, road Tiles, Tree Tiles, Boulder Tiles, Labour, active Raids, and breached games reject placement without spending resources or population changes. SPACE-paused Management still allows building, but the in-game overlay blocks it.
 
 Tower templates define staffing requirements. The Bow Tower requires one Soldier, the Flame Bolt Tower requires one Apprentice, and the Catapult Tower requires one Soldier plus two Peasants. Construction is allowed only when every required role is available. A successful build reduces each required role's available count but not its total count. Staff remain committed because tower removal and reassignment do not yet exist. Staffing does not separately disable an already-built tower.
 
@@ -148,7 +148,7 @@ The Barracks is the first population-conversion building. It costs 10 Wood and 1
 
 The Dorm is the first Apprentice-conversion building. It costs 10 Wood and 10 Stone, requires no staff, has no combat stats, consumes 1 available and total Peasant, and immediately grants 1 available and total Apprentice. This creates the first normal-play Apprentice source without adding timed recruitment or a general assignment system.
 
-Economic buildings are the first resource-production buildings. The Woodcutter costs 10 Wood, requires one available Peasant, has no combat stats, reserves that Peasant on construction, and produces 10 Wood after each defeated Raid. The Stone Quarry costs 10 Wood and 10 Stone, requires one available Peasant, reserves that Peasant on construction, and produces 10 Stone after each defeated Raid. The Iron Mine costs 10 Wood, 10 Stone, and 10 Metal, requires one available Peasant, reserves that Peasant on construction, and produces 10 Metal after each defeated Raid.
+Economic buildings are the first resource-production buildings. The Woodcutter costs 10 Wood, requires one available Peasant, has no combat stats, reserves that Peasant on construction, and produces 10 Wood during each Labour phase. The Stone Quarry costs 10 Wood and 10 Stone, requires one available Peasant, reserves that Peasant on construction, and produces 10 Stone during each Labour phase. The Iron Mine costs 10 Wood, 10 Stone, and 10 Metal, requires one available Peasant, reserves that Peasant on construction, and produces 10 Metal during each Labour phase. Because construction occurs during Management, a new economic building first produces after the following successful Raid.
 
 Open decisions include richer build rules for future terrain types, whether structures block paths beyond the current fixed road rejection, how much rebuilding is allowed between attacks, whether later placement needs previews or range indicators, and how explored Plots become claimed, defended, or otherwise incorporated into the Domain.
 
@@ -172,7 +172,7 @@ Open decisions include enemy families, additional tower targeting modes, win and
 
 A Raid is the assault at the end of a Day. It is launched by the Rival of the current Chapter against the wizard's Domain.
 
-During a Raid, enemies attempt to reach and breach the Sanctum. The wizard's preparation during the preceding calm phase should matter: explored Plots, built structures, roads, terrain, and the length of the defended path all shape how the Raid plays out.
+During a Raid, enemies attempt to reach and breach the Sanctum. The wizard's preparation during the preceding Management phase should matter: explored Plots, built structures, roads, terrain, and the length of the defended path all shape how the Raid plays out.
 
 A Raid ends when all enemies have been defeated or when the Sanctum has been breached. If an enemy attempts to breach the Sanctum while the arcane barrier has charges remaining, the barrier spends a charge and atomizes that enemy instead. If no barrier charges remain, the Sanctum is breached.
 
@@ -180,13 +180,13 @@ The final Raid of a Chapter is triggered by Domain expansion. Once the wizard's 
 
 During a Raid, the in-game top bar should show how many enemies remain in the current assault. This can be formatted before enemy simulation exists, but real values should come from the Raid system once it is implemented.
 
-The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button starts the next Raid immediately during calm play. Raid 1 has five enemies in this exact spawn order: skeleton, zombie, skeleton, zombie, skeleton. Each later Raid adds two enemies and remains skeleton-only until a fuller wave-composition design exists. One enemy appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. There are no alternate paths yet.
+The first implemented Raid behavior is deliberately deterministic. A `Next Raid` button ends unpaused Management and starts the next Raid immediately. Raid 1 has five enemies in this exact spawn order: skeleton, zombie, skeleton, zombie, skeleton. Each later Raid adds two enemies and remains skeleton-only until a fuller wave-composition design exists. One enemy appears immediately, and the rest spawn one at a time on a fixed stagger. Enemies use the current starting Plot's straight north road, entering from the north-center road edge and moving south to the centered Sanctum. There are no alternate paths yet.
 
 The first Raid slice stores each active enemy's current world position directly. On the starting road, enemies spawn at `(0, 7)` and move south by decreasing their Y coordinate until they contact the Sanctum at `Y <= 0`. Movement speed comes from `EnemyTemplate.SpeedTilesPerSecond`, is measured in Tiles per second, and is converted through the fixed logical update duration. Maximum health comes from `EnemyTemplate.MaxHealth`, and combat-defeat rewards come from `EnemyTemplate.Resources`. The current skeleton template has 50 health, moves at 1.0 Tiles per second, and rewards 5 Wood and 2 Stone. The current zombie template has 75 health, moves at 0.7 Tiles per second, and rewards 4 Wood, 3 Stone, and 1 Metal.
 
 The first projectile-tower combat slice targets the in-range enemy closest to the Sanctum. If two enemies are equally close, the tower uses the older spawned enemy as the deterministic tie-breaker. The Bow Tower range is 3.0 Tiles, damage is 10, fire interval is 1.0 second, and projectile speed is 9.0 Tiles per second. The Flame Bolt Tower range is 2.5 Tiles, damage is 20, fire interval is 1.5 seconds, and projectile speed is 7.0 Tiles per second. The Catapult Tower range is 5.0 Tiles, damage is 75 to every active enemy in the target's Tile, fire interval is 3.0 seconds, and projectile speed is 3.0 Tiles per second. These timing and speed stats are expressed in real-time seconds rather than update counts.
 
-If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources. When a Raid ends with all enemies defeated, each placed economic building pays its post-Raid resource yield once. A breached Raid does not pay economic building resources.
+If an enemy reaches the Sanctum while Barricade charges remain, the Barricade spends one charge and that enemy is removed. If an enemy reaches the Sanctum when Barricade is zero, the Sanctum is marked breached, the active Raid is cleared, and no further Raids can start until a future recovery or loss-flow design exists. A short embedded prototype sound plays and the defeated enemy's template resources are granted when tower damage defeats a raider; Barricade removal and breach clearing do not count as combat defeats and do not grant those resources. When a Raid ends with all enemies defeated, the next Day begins, Labour pays each placed economic building once, and Management opens immediately. A breached Raid does not advance the Day or perform Labour.
 
 Open decisions include enemy archetypes, whether a Raid can include multiple waves or paths, how Raid difficulty scales with Domain expansion, whether towers or resources can remove enemies before they reach the Sanctum, and what longer-term recovery or loss flow follows a breached Sanctum.
 
@@ -204,13 +204,13 @@ Open decisions include upgrade paths, specialized targeting modes, what other to
 
 A Chapter is the wizard's attempt to defeat a Rival. It lasts as long as it takes for the wizard to expand the Domain to the Rival's Lair and overcome the final Raid that follows.
 
-A Chapter is composed of a series of Days. Every Day begins with a calm phase and ends with a Raid. The calm phase lasts for a set amount of time, giving the wizard a bounded window to explore, gather, build, repair, or otherwise prepare the Domain before the attack begins.
+A Chapter is composed of a series of Days. Peaceful play within a Day is divided into Labour and Management before the Raid. Labour begins immediately after the preceding successful Raid, workers perform their assigned production immediately, and Management begins in the same transition. Management has no timer: it lasts until the wizard clicks `Next Raid`. Day 1 starts directly in Management because there is no preceding Raid to resolve.
 
 Once the wizard's Domain has expanded to include the Plot containing the Rival's Lair, the next Raid is the final Raid. If that Raid is overcome, the Chapter has been completed successfully.
 
-Open decisions include how the Rival's Lair is revealed, what the wizard can do during the calm phase, whether time can be paused or accelerated, and what happens when the Sanctum is breached.
+Open decisions include how the Rival's Lair is revealed, which additional assignments resolve during Labour, which additional instructions belong in Management, and what happens when the Sanctum is breached.
 
-The in-game top bar should always show the current Chapter name and Day number. During calm phases it should also show the time remaining before the next Raid.
+The in-game top bar should always show the current Chapter name, Day number, and current phase. The prototype normally shows `Management phase`; Labour is instantaneous and does not add a result panel or transient animation.
 
 ### Progression
 
@@ -225,14 +225,14 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - The setting is medieval wizardry fantasy, not modern military or science fiction.
 - The player identity is a wizard, currently represented by Wizard name entry in the New Game screen.
 - Save/load, campaign structure, multiplayer, online services, production art pipelines, and release packaging are not part of the current prototype phase.
-- The first gameplay-facing rendered slice starts with a sparse generated-grasslands home Plot containing only the centered Sanctum as an initial structure, a protected straight road north, free calm-phase exploration buttons on unexplored adjacent Plot borders, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and calm-phase drag placement.
+- The first gameplay-facing rendered slice starts in Management with a sparse generated-grasslands home Plot containing only the centered Sanctum as an initial structure, a protected straight road north, free exploration buttons on unexplored adjacent Plot borders, and a widened tabbed building bar listing Housing, Economic, and Defenses groups with right-side costs, population costs, population grants or staffing requirements, informational hover tooltips, green/red capacity outlines, capacity opacity, and Management-phase drag placement.
 - Early map inspection uses camera zoom and pan, not wizard-character movement. Mouse-wheel zoom, `WASD` panning, and right-drag panning are inspection controls only and do not change map data.
-- The first exploration slice uses free magnifying-glass border buttons during calm play, including paused calm play, to reveal orthogonally adjacent Plots. Each frontier Plot independently receives a stable grasslands-or-hills assignment before exploration and displays its name outward beside the button; the label is informational and only the circle reveals. Home and revealed Plots generate 91% empty grass by weight. Grasslands uses 6% Tree and 3% Boulder; hills uses 3% Tree and 6% Boulder. The first implementation collapses scouting and claiming into one action.
+- The first exploration slice uses free magnifying-glass border buttons during Management, including paused Management, to reveal orthogonally adjacent Plots. Each frontier Plot independently receives a stable grasslands-or-hills assignment before exploration and displays its name outward beside the button; the label is informational and only the circle reveals. Home and revealed Plots generate 91% empty grass by weight. Grasslands uses 6% Tree and 3% Boulder; hills uses 3% Tree and 6% Boulder. The first implementation collapses scouting and claiming into one action.
 - Northward exploration along Plot `X=0` extends the visible center road and moves deterministic Raid spawning to the farthest explored north road. Non-north explored Plots do not add Raid paths yet.
 - The first Raid slice uses deterministic sprite-backed skeleton and zombie enemies on the starting Plot's straight north road. Player-built towers fire at in-range enemies; starting a Raid without first building defenses leaves only the Barricade protecting the Sanctum.
 - A new game starts with 100 Wood, 50 Stone, and 20 Metal. Resources cover House, Barracks, Dorm, all three economic buildings, Bow, and Flame Bolt, but zero starting population blocks Barracks, Dorm, economic buildings, and staffed towers until House creates Peasants.
-- The first staffing slice uses available populations to gate tower and economic building construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, Dorm can convert a Peasant into an Apprentice, economic buildings can produce post-Raid resources, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
-- Woodcutter, Stone Quarry, and Iron Mine are the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource after each defeated Raid. The Iron Mine produces Metal, not a separate Iron resource.
+- The first staffing slice uses available populations to gate tower and economic building construction and reserves staff on successful placement. New games still start at `0/0`, House can add Peasants, Barracks can convert Peasants into Soldiers, Dorm can convert a Peasant into an Apprentice, economic buildings can produce Labour resources, and timed recruitment, reassignment, release, broader growth, and losses are not implemented.
+- Woodcutter, Stone Quarry, and Iron Mine are the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource during Labour after a successful Raid. The Iron Mine produces Metal, not a separate Iron resource.
 
 ## Open Game Design Questions
 
@@ -255,8 +255,8 @@ Open decisions include whether progression is run-based, campaign-based, scenari
 - What enemy archetypes, spawn rules, and pathing rules should Raids use after the first placeholder north-road slice?
 - How should future tower stats, damage types, and targeting modes evolve beyond the first Bow Tower baseline?
 - What are the first full win and loss conditions beyond basic Raid completion and Sanctum breach?
-- Should the early prototype use separate phases or continuous real-time play?
-- How long is a calm phase, and can the player pause or accelerate it?
+- Which additional worker jobs should resolve during Labour after economic production?
+- Should later Labour phases remain instantaneous or add a non-blocking presentation of their results?
 - What happens when the Sanctum is breached during a Raid?
 - When should save/load or campaign structure become meaningful enough to design?
 
@@ -276,9 +276,13 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: These terms establish a hierarchy where a wizard's Fable is shaped by a Nemesis, each Chapter focuses on a Rival, and Raids are the Rival's assaults on the Domain.
   Date/Author: 2026-05-08 / Codex
 
-- Decision: Structure each Chapter as a series of Days, where each Day has a timed calm phase followed by a Raid.
-  Rationale: This creates a repeated preparation-and-assault cadence inside each Rival-focused Chapter while keeping exact timing, Raid counts, and breach consequences open for later design.
+- Decision: Structure each Chapter as a series of Days, where each Day has a timed calm phase followed by a Raid. Superseded on 2026-07-14 by separate Labour and Management phases.
+  Rationale: This originally created a repeated preparation-and-assault cadence, but the undifferentiated timer did not distinguish worker production from player instructions.
   Date/Author: 2026-05-08 / Codex
+
+- Decision: Split peaceful play into an instantaneous Labour phase followed by an open-ended Management phase.
+  Rationale: Workers should produce at the beginning of each post-Raid Day, while the player should have an unbounded opportunity to spend resources, construct buildings, explore Plots, and issue settlement instructions before deliberately starting the next Raid. Day 1 starts in Management because no Raid precedes it, and resource totals are the only current Labour feedback.
+  Date/Author: 2026-07-14 / User and Codex
 
 - Decision: Protect the Sanctum with an arcane barrier that atomizes breaching enemies by spending charges.
   Rationale: This gives the central tower a clear defensive rule and creates a concrete failure threshold when enemies reach it after the barrier is exhausted.
@@ -331,8 +335,8 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: Apprentice staffing needs a normal-play source after House without adding a broad recruitment or assignment system. Treating the effect as conversion keeps Peasant and Apprentice totals aligned with the visible inhabitant roles.
   Date/Author: 2026-07-13 / User and Codex
 
-- Decision: Add Woodcutter, Stone Quarry, and Iron Mine as the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource after each defeated Raid. The Iron Mine produces Metal, not a separate Iron resource.
-  Rationale: This creates the first repeatable resource production while keeping worker assignment, timing, and resource taxonomy small enough for the current prototype.
+- Decision: Add Woodcutter, Stone Quarry, and Iron Mine as the first economic buildings. Each reserves one available Peasant and produces 10 of its matching resource during each Labour phase. The Iron Mine produces Metal, not a separate Iron resource.
+  Rationale: This creates the first repeatable worker production while keeping assignment and resource taxonomy small enough for the current prototype. Labour now gives that production a dedicated lifecycle home.
   Date/Author: 2026-06-27 / User and Codex
 
 - Decision: Partition the building bar into `Defenses`, `Economic`, and `Housing` tabs, with `Housing` selected by default.
@@ -445,8 +449,8 @@ Record game design decisions here when they become durable enough to guide imple
   Rationale: The original milestone proved map state and static scene rendering before terrain rules existed; generated Tree and Boulder terrain is now implemented and belongs on the home Plot too.
   Date/Author: 2026-05-13 / Codex
 
-- Decision: Let the wizard spend resources during calm phases to explore new Plots and unlock building there.
-  Rationale: This connects resources, calm-phase planning, Domain expansion, and base-building into one concrete preparation loop.
+- Decision: Let the wizard spend resources during Management to explore new Plots and unlock building there.
+  Rationale: This connects resources, Management planning, Domain expansion, and base-building into one concrete preparation loop.
   Date/Author: 2026-05-08 / Codex
 
 - Decision: Require Plot exploration to be adjacent to the current Domain and make exploration expand the defended path rather than start encounters directly.

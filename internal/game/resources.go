@@ -37,7 +37,7 @@ func (s *State) grantEnemyResources(enemy raidEnemy) {
 	s.status.resources.metal += enemy.template.Resources.Metal
 }
 
-// grantEconomicBuildingResources awards placed economic building yields after a defeated Raid.
+// grantEconomicBuildingResources resolves placed economic building work during Labour.
 func (s *State) grantEconomicBuildingResources() {
 	for _, plotCoord := range s.gameMap.exploredPlotCoordinates() {
 		plot, ok := s.gameMap.plot(plotCoord)
@@ -58,7 +58,7 @@ func (s *State) grantEconomicBuildingResources() {
 	}
 }
 
-// economicBuildingYield returns the Raid-completion yield for one placed feature.
+// economicBuildingYield returns the Labour-phase yield for one placed feature.
 func (s *State) economicBuildingYield(feature tileFeature) (Resources, bool) {
 	switch feature {
 	case featureWoodcutter:

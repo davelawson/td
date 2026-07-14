@@ -77,7 +77,7 @@ func structureEffectTooltipLines(template StructureTemplate) []buildingTooltipLi
 		lines = append(lines, buildingTooltipLine{Value: "Effect: " + populationEffect, Color: colors.text})
 	}
 	if yield := resourceYieldTooltipText(template.ResourceYield); yield != "" {
-		lines = append(lines, buildingTooltipLine{Value: "Production: " + yield + " after each defeated Raid", Color: colors.text})
+		lines = append(lines, buildingTooltipLine{Value: "Production: " + yield + " during each Labour phase", Color: colors.text})
 	}
 	if template.RangeTiles > 0 {
 		lines = append(
@@ -203,7 +203,7 @@ func populationEffectTooltipText(cost PopulationCost, grant PopulationGrant) str
 	return strings.Join(parts, ", ")
 }
 
-// resourceYieldTooltipText formats post-Raid resource production.
+// resourceYieldTooltipText formats Labour resource production.
 func resourceYieldTooltipText(resources Resources) string {
 	parts := []string{}
 	if resources.Wood > 0 {

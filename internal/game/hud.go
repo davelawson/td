@@ -23,7 +23,8 @@ const (
 type phase int
 
 const (
-	phaseCalm phase = iota
+	phaseLabour phase = iota
+	phaseManagement
 	phaseRaid
 )
 
@@ -42,7 +43,6 @@ type gameStatus struct {
 	phase       phase
 	chapter     string
 	day         int
-	calmTime    int
 	barricade   int
 	resources   resourceCounts
 	populations populationCounts
@@ -107,10 +107,9 @@ type populationHUDItem struct {
 // setPrototypeGameStatus initializes fixed state shown before gameplay systems exist.
 func (s *State) setPrototypeGameStatus() {
 	s.status = gameStatus{
-		phase:     phaseCalm,
+		phase:     phaseManagement,
 		chapter:   "Chapter I: The Ashen Copse",
 		day:       1,
-		calmTime:  120,
 		barricade: 3,
 		resources: resourceCounts{
 			wood:  100,
@@ -136,12 +135,14 @@ func (s *State) phaseText() string {
 		return "Sanctum breached"
 	}
 	switch s.status.phase {
+	case phaseLabour:
+		return "Labour phase"
+	case phaseManagement:
+		return "Management phase"
 	case phaseRaid:
 		return fmt.Sprintf("Enemies remaining: %d", s.raidEnemiesRemaining())
 	default:
-		minutes := s.status.calmTime / 60
-		seconds := s.status.calmTime % 60
-		return fmt.Sprintf("Raid in %02d:%02d", minutes, seconds)
+		return "Unknown phase"
 	}
 }
 

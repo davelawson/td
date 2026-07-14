@@ -7,7 +7,7 @@ type exploreButton struct {
 	Biome  plotBiome
 }
 
-// updateExploration applies calm-phase Plot reveal clicks.
+// updateExploration applies Management-phase Plot reveal clicks.
 func (s *State) updateExploration(input Input) {
 	if !input.Clicked || !s.canExploreNow() || s.exploreClickBlockedByUI(input.CursorX, input.CursorY) {
 		return
@@ -21,7 +21,7 @@ func (s *State) updateExploration(input Input) {
 
 // canExploreNow reports whether the current game state allows revealing a Plot.
 func (s *State) canExploreNow() bool {
-	return s.status.phase == phaseCalm && !s.raid.active && !s.raid.breached
+	return s.status.phase == phaseManagement && !s.raid.active && !s.raid.breached
 }
 
 // exploreClickBlockedByUI reports whether screen-space UI owns the click.

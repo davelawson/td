@@ -41,7 +41,7 @@ func (s *State) startNextRaid() {
 
 // canStartRaid reports whether the player can start another Raid.
 func (s *State) canStartRaid() bool {
-	return !s.paused && !s.raid.active && !s.raid.breached
+	return s.status.phase == phaseManagement && !s.paused && !s.raid.active && !s.raid.breached
 }
 
 // raidEnemyCount returns the scripted enemy count for a Raid number.
@@ -140,17 +140,13 @@ func (s *State) applySanctumContact() bool {
 	s.raid.pendingEnemies = 0
 	s.raid.enemies = nil
 	s.combat.projectiles = nil
-	s.status.phase = phaseCalm
 	return false
 }
 
-// completeRaid returns the game to calm state after all Raid enemies are gone.
+// completeRaid begins the next Day after all Raid enemies are gone.
 func (s *State) completeRaid() {
-	s.grantEconomicBuildingResources()
 	s.raid.active = false
-	s.status.phase = phaseCalm
-	s.status.day++
-	s.status.calmTime = 120
+	s.beginPostRaidDay()
 }
 
 // raidEnemiesRemaining returns active and pending enemies in the current Raid.

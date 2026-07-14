@@ -56,8 +56,8 @@ func TestBuildDragPlacesTowerAndDeductsResources(t *testing.T) {
 	if state.gameMap.Home.Tiles[tile.Y][tile.X].Feature != featureBowTower {
 		t.Fatalf("tile feature = %v, want Bow Tower", state.gameMap.Home.Tiles[tile.Y][tile.X].Feature)
 	}
-	if state.status.resources.wood != 70 || state.status.resources.stone != 40 || state.status.resources.metal != 10 {
-		t.Fatalf("resources = %+v, want wood 70 stone 40 metal 10", state.status.resources)
+	if state.status.resources.wood != 80 || state.status.resources.stone != 40 || state.status.resources.metal != 20 {
+		t.Fatalf("resources = %+v, want wood 80 stone 40 metal 20", state.status.resources)
 	}
 	if state.status.populations.soldiers != (populationCount{available: 0, total: 1}) {
 		t.Fatalf("soldiers = %+v, want 0/1 after staffing Bow Tower", state.status.populations.soldiers)
@@ -306,8 +306,8 @@ func TestBuildDragPlacesCatapultTower(t *testing.T) {
 	if state.status.populations.soldiers != (populationCount{available: 0, total: 1}) {
 		t.Fatalf("soldiers = %+v, want 0/1", state.status.populations.soldiers)
 	}
-	if state.status.populations.peasants != (populationCount{available: 0, total: 2}) {
-		t.Fatalf("peasants = %+v, want 0/2", state.status.populations.peasants)
+	if state.status.populations.peasants != (populationCount{available: 1, total: 2}) {
+		t.Fatalf("peasants = %+v, want 1/2", state.status.populations.peasants)
 	}
 }
 
@@ -315,12 +315,12 @@ func TestBuildDragPlacesCatapultTower(t *testing.T) {
 func TestBuildDragRejectsCatapultWhenOneRoleIsShort(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.resources = resourceCounts{wood: 100, stone: 100, metal: 50}
-	setAvailablePopulations(state, 0, 1, 1)
+	setAvailablePopulations(state, 0, 1, 0)
 
 	state.Update(pressBuildingBarItemInput(state, buildingBarCatapultTowerIndex))
 
 	if state.buildDrag.active {
-		t.Fatal("expected one missing Peasant to block Catapult drag")
+		t.Fatal("expected a missing Peasant to block Catapult drag")
 	}
 }
 
@@ -438,7 +438,7 @@ func TestBuildDragRejectsBoulderTile(t *testing.T) {
 	}
 }
 
-// TestBuildDragRejectsActiveRaid verifies tower placement is calm-phase only.
+// TestBuildDragRejectsActiveRaid verifies tower placement is Management-only.
 func TestBuildDragRejectsActiveRaid(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 1, 0)
@@ -459,8 +459,8 @@ func TestBuildDragRejectsActiveRaid(t *testing.T) {
 	}
 }
 
-// TestBuildDragAllowsPausedCalmPlacement verifies pause does not block calm building.
-func TestBuildDragAllowsPausedCalmPlacement(t *testing.T) {
+// TestBuildDragAllowsPausedManagementPlacement verifies pause does not block Management building.
+func TestBuildDragAllowsPausedManagementPlacement(t *testing.T) {
 	state := newRaidTestState(t)
 	setAvailablePopulations(state, 0, 1, 0)
 	tile := tileCoordinate{X: homePlotCenter + 2, Y: 5}

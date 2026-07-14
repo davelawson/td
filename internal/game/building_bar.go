@@ -226,9 +226,9 @@ func (s *State) buildingBarTabAt(x, y int) buildingBarCategory {
 	return buildingBarNoCategory
 }
 
-// canBuildTowersNow reports whether the current game phase allows building placement.
+// canBuildTowersNow reports whether Management currently allows building placement.
 func (s *State) canBuildTowersNow() bool {
-	return s.status.phase == phaseCalm && !s.raid.active && !s.raid.breached
+	return s.status.phase == phaseManagement && !s.raid.active && !s.raid.breached
 }
 
 // placeDraggedBuilding attempts to build the active dragged structure at a screen point.

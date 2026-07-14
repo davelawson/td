@@ -122,8 +122,8 @@ func TestBuildingBarDefensesTabShowsTowers(t *testing.T) {
 	if items[0].Sprite != state.structureCatalog.BowTower.Sprite {
 		t.Fatal("expected sixth item to use Bow Tower sprite")
 	}
-	if items[0].Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
-		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", items[0].Cost)
+	if items[0].Cost != (Resources{Wood: 20, Stone: 10}) {
+		t.Fatalf("Bow Tower cost = %+v, want 20 wood 10 stone", items[0].Cost)
 	}
 	if items[0].Staffing != (StaffingRequirements{Soldiers: 1}) {
 		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", items[0].Staffing)
@@ -143,8 +143,8 @@ func TestBuildingBarDefensesTabShowsTowers(t *testing.T) {
 	if items[2].Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
 		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", items[2].Cost)
 	}
-	if items[2].Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
-		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", items[2].Staffing)
+	if items[2].Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 1}) {
+		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 1 Peasant", items[2].Staffing)
 	}
 }
 
@@ -271,13 +271,12 @@ func TestBuildingBarCostItems(t *testing.T) {
 	assertCostItem(t, items[0], "10", colors.resourceWood)
 	assertCostItem(t, items[1], "10", colors.resourceStone)
 
-	items = buildingBarCostItems(Resources{Wood: 30, Stone: 10, Metal: 10})
-	if len(items) != 3 {
-		t.Fatalf("cost items = %d, want 3", len(items))
+	items = buildingBarCostItems(Resources{Wood: 20, Stone: 10})
+	if len(items) != 2 {
+		t.Fatalf("cost items = %d, want 2", len(items))
 	}
-	assertCostItem(t, items[0], "30", colors.resourceWood)
+	assertCostItem(t, items[0], "20", colors.resourceWood)
 	assertCostItem(t, items[1], "10", colors.resourceStone)
-	assertCostItem(t, items[2], "10", colors.resourceMetal)
 
 	items = buildingBarCostItems(Resources{Wood: 10, Stone: 10, Metal: 10})
 	if len(items) != 3 {
@@ -385,9 +384,9 @@ func TestBuildingBarHighlightRequiresResourcesAndStaff(t *testing.T) {
 	if !state.buildingBarItemHighlighted(2, items[2]) {
 		t.Fatal("expected Catapult Tower to highlight after resources and staff cover it")
 	}
-	state.status.populations.peasants.available = 1
+	state.status.populations.peasants.available = 0
 	if state.buildingBarItemHighlighted(2, items[2]) {
-		t.Fatal("expected one missing Peasant to suppress Catapult Tower highlight")
+		t.Fatal("expected a missing Peasant to suppress Catapult Tower highlight")
 	}
 }
 

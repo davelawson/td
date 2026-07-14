@@ -46,8 +46,8 @@ func TestNewStructureCatalogIncludesBowTower(t *testing.T) {
 	if bowTower.Sprite != assetCatalog.Sprite.Structure.BowTower {
 		t.Fatal("expected Bow Tower sprite to reference the loaded asset catalog sprite")
 	}
-	if bowTower.Cost != (Resources{Wood: 30, Stone: 10, Metal: 10}) {
-		t.Fatalf("Bow Tower cost = %+v, want 30 wood 10 stone 10 metal", bowTower.Cost)
+	if bowTower.Cost != (Resources{Wood: 20, Stone: 10}) {
+		t.Fatalf("Bow Tower cost = %+v, want 20 wood 10 stone", bowTower.Cost)
 	}
 	if bowTower.Staffing != (StaffingRequirements{Soldiers: 1}) {
 		t.Fatalf("Bow Tower staffing = %+v, want 1 Soldier", bowTower.Staffing)
@@ -297,8 +297,8 @@ func TestNewStructureCatalogIncludesCatapultTower(t *testing.T) {
 	if catapultTower.Cost != (Resources{Wood: 40, Stone: 60, Metal: 25}) {
 		t.Fatalf("Catapult Tower cost = %+v, want 40 wood 60 stone 25 metal", catapultTower.Cost)
 	}
-	if catapultTower.Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 2}) {
-		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 2 Peasants", catapultTower.Staffing)
+	if catapultTower.Staffing != (StaffingRequirements{Soldiers: 1, Peasants: 1}) {
+		t.Fatalf("Catapult Tower staffing = %+v, want 1 Soldier and 1 Peasant", catapultTower.Staffing)
 	}
 	if catapultTower.RangeTiles != 5.0 {
 		t.Fatalf("Catapult Tower range = %f, want 5.0", catapultTower.RangeTiles)

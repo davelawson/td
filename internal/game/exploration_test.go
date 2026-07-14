@@ -92,8 +92,8 @@ func TestRevealExistingPlotPreservesGeneratedBiomeAndTerrain(t *testing.T) {
 	}
 }
 
-// TestExploreWorksWhilePausedCalm verifies paused calm play still allows preparation actions.
-func TestExploreWorksWhilePausedCalm(t *testing.T) {
+// TestExploreWorksWhilePausedManagement verifies paused Management still allows preparation actions.
+func TestExploreWorksWhilePausedManagement(t *testing.T) {
 	state := newRaidTestState(t)
 	target := plotCoordinate{X: -1, Y: 0}
 	state.Update(Input{TogglePause: true})
@@ -101,7 +101,7 @@ func TestExploreWorksWhilePausedCalm(t *testing.T) {
 	state.Update(clickExploreButtonInput(t, state, target))
 
 	if !state.gameMap.explored(target) {
-		t.Fatal("expected paused calm exploration to reveal the target plot")
+		t.Fatal("expected paused Management exploration to reveal the target plot")
 	}
 	if state.Updates() != 0 {
 		t.Fatalf("updates = %d, want 0 while paused", state.Updates())
@@ -207,8 +207,8 @@ func TestSelectionWorksOnExploredPlot(t *testing.T) {
 	}
 }
 
-// TestEconomicBuildingOnExploredPlotPaysAfterRaid verifies yields include every explored Plot.
-func TestEconomicBuildingOnExploredPlotPaysAfterRaid(t *testing.T) {
+// TestEconomicBuildingOnExploredPlotWorksDuringLabour verifies yields include every explored Plot.
+func TestEconomicBuildingOnExploredPlotWorksDuringLabour(t *testing.T) {
 	state := newRaidTestState(t)
 	targetPlot := plotCoordinate{X: 1, Y: 0}
 	state.gameMap.revealPlot(targetPlot)

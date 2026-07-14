@@ -183,8 +183,8 @@ func TestRaidEnemyWithoutPositiveSpeedDoesNotMove(t *testing.T) {
 	}
 }
 
-// TestRaidCompletionReturnsToCalmAndAdvancesDay verifies successful Raid lifecycle completion.
-func TestRaidCompletionReturnsToCalmAndAdvancesDay(t *testing.T) {
+// TestRaidCompletionReturnsToManagementAndAdvancesDay verifies successful Raid lifecycle completion.
+func TestRaidCompletionReturnsToManagementAndAdvancesDay(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.barricade = 99
 	state.startNextRaid()
@@ -197,16 +197,16 @@ func TestRaidCompletionReturnsToCalmAndAdvancesDay(t *testing.T) {
 	if state.raid.active {
 		t.Fatal("expected Raid to be inactive after completion")
 	}
-	if state.status.phase != phaseCalm {
-		t.Fatalf("phase = %v, want %v", state.status.phase, phaseCalm)
+	if state.status.phase != phaseManagement {
+		t.Fatalf("phase = %v, want %v", state.status.phase, phaseManagement)
 	}
 	if state.status.day != 2 {
 		t.Fatalf("day = %d, want 2", state.status.day)
 	}
 }
 
-// TestRaidCompletionGrantsEconomicBuildingResources verifies defeated Raids pay producers.
-func TestRaidCompletionGrantsEconomicBuildingResources(t *testing.T) {
+// TestPostRaidLabourGrantsEconomicBuildingResources verifies Labour pays producers.
+func TestPostRaidLabourGrantsEconomicBuildingResources(t *testing.T) {
 	state := newRaidTestState(t)
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
 	state.gameMap.Home.Tiles[5][homePlotCenter+3].Feature = featureStoneQuarry
@@ -226,8 +226,8 @@ func TestRaidCompletionGrantsEconomicBuildingResources(t *testing.T) {
 	}
 }
 
-// TestRaidBreachDoesNotGrantEconomicResources verifies failed Raids do not pay producers.
-func TestRaidBreachDoesNotGrantEconomicResources(t *testing.T) {
+// TestRaidBreachDoesNotResolveLabour verifies failed Raids do not begin the next Day.
+func TestRaidBreachDoesNotResolveLabour(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.barricade = 0
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
@@ -238,11 +238,18 @@ func TestRaidBreachDoesNotGrantEconomicResources(t *testing.T) {
 	}
 	state.status.phase = phaseRaid
 	startingResources := state.status.resources
+	startingDay := state.status.day
 
 	state.Update(Input{})
 
 	if state.status.resources != startingResources {
 		t.Fatalf("resources = %+v, want unchanged %+v", state.status.resources, startingResources)
+	}
+	if state.status.day != startingDay {
+		t.Fatalf("day = %d, want unchanged %d", state.status.day, startingDay)
+	}
+	if state.status.phase != phaseRaid {
+		t.Fatalf("phase = %v, want terminal %v", state.status.phase, phaseRaid)
 	}
 }
 
