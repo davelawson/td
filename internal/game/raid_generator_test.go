@@ -36,8 +36,53 @@ func TestGenerateRaidChallengeFormula(t *testing.T) {
 	if math.Abs(template.challengeRating-want) > 0.000000001 {
 		t.Fatalf("challenge = %.12f, want %.12f", template.challengeRating, want)
 	}
-	if math.Abs(template.progressDurationSeconds-(5+want)) > 0.000000001 {
-		t.Fatalf("duration = %.12f, want %.12f", template.progressDurationSeconds, 5+want)
+	wantDuration := 5 + 2*math.Sqrt(want)
+	if math.Abs(template.progressDurationSeconds-wantDuration) > 0.000000001 {
+		t.Fatalf("duration = %.12f, want %.12f", template.progressDurationSeconds, wantDuration)
+	}
+}
+
+// TestRaidProgressDurationPreservesBaselineAndCompressesLaterRaids verifies the accepted curve.
+func TestRaidProgressDurationPreservesBaselineAndCompressesLaterRaids(t *testing.T) {
+	tests := []struct {
+		challenge float64
+		want      float64
+	}{
+		{challenge: 4, want: 9},
+		{challenge: 16, want: 13},
+		{challenge: 36, want: 17},
+	}
+	for _, test := range tests {
+		if got := raidProgressDuration(test.challenge); got != test.want {
+			t.Fatalf("duration for challenge %.0f = %f, want %f", test.challenge, got, test.want)
+		}
+	}
+}
+
+// TestRaidProgressDurationIncreasesTempo verifies later rosters get less time per enemy.
+func TestRaidProgressDurationIncreasesTempo(t *testing.T) {
+	rules := []raidEnemyRule{
+		{kind: raidEnemySkeletonSwordShield, threshold: 2},
+		{kind: raidEnemyZombie, threshold: 4},
+	}
+	challenges := []float64{4, 16, 36}
+	previousDuration := 0.0
+	previousSecondsPerEnemy := math.Inf(1)
+	for _, challenge := range challenges {
+		template := raidTemplate{
+			challengeRating:         challenge,
+			progressDurationSeconds: raidProgressDuration(challenge),
+			enemyRules:              rules,
+		}
+		secondsPerEnemy := template.progressDurationSeconds / float64(template.totalEnemies())
+		if template.progressDurationSeconds <= previousDuration {
+			t.Fatalf("duration for challenge %.0f = %f, want more than %f", challenge, template.progressDurationSeconds, previousDuration)
+		}
+		if secondsPerEnemy >= previousSecondsPerEnemy {
+			t.Fatalf("seconds per enemy for challenge %.0f = %f, want less than %f", challenge, secondsPerEnemy, previousSecondsPerEnemy)
+		}
+		previousDuration = template.progressDurationSeconds
+		previousSecondsPerEnemy = secondsPerEnemy
 	}
 }
 

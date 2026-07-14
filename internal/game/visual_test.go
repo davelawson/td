@@ -115,6 +115,65 @@ func TestCaptureActiveRaidScreenshot(t *testing.T) {
 	captureStateScreenshot(t, state, path)
 }
 
+// TestCaptureRaidTempoBeforeScreenshot writes the legacy four-second challenge-16 frame when enabled.
+func TestCaptureRaidTempoBeforeScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state := newRaidTempoScreenshotState(t)
+	state.raid.template.progressDurationSeconds = raidProgressDurationBase + state.raid.template.challengeRating
+	for i := 0; i < 240; i++ {
+		state.Update(Input{})
+	}
+	if got, want := len(state.raid.enemies), 1; got != want {
+		t.Fatalf("legacy active enemies after four seconds = %d, want %d", got, want)
+	}
+
+	path := filepath.Join(
+		"..", "..", "plans", "58-accelerating-raid-tempo", "screenshots", "before", "raid-tempo.png",
+	)
+	captureStateScreenshot(t, state, path)
+}
+
+// TestCaptureRaidTempoAfterScreenshot writes the accelerated four-second challenge-16 frame when enabled.
+func TestCaptureRaidTempoAfterScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state := newRaidTempoScreenshotState(t)
+	for i := 0; i < 240; i++ {
+		state.Update(Input{})
+	}
+	if got, want := len(state.raid.enemies), 3; got != want {
+		t.Fatalf("active enemies after four seconds = %d, want %d", got, want)
+	}
+
+	path := filepath.Join(
+		"..", "..", "plans", "58-accelerating-raid-tempo", "screenshots", "after", "raid-tempo.png",
+	)
+	captureStateScreenshot(t, state, path)
+}
+
+func newRaidTempoScreenshotState(t *testing.T) *State {
+	t.Helper()
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clearNaturalTerrain(&state.gameMap.Home)
+	state.gameMap.frontierBiomes = map[plotCoordinate]plotBiome{
+		{X: 0, Y: 1}:  biomeGrasslands,
+		{X: 1, Y: 0}:  biomeGrasslands,
+		{X: 0, Y: -1}: biomeGrasslands,
+		{X: -1, Y: 0}: biomeGrasslands,
+	}
+	state.status.populations.peasants = populationCount{available: 120, total: 120}
+	state.startNextRaid()
+	return state
+}
+
 // captureStateScreenshot runs one state inside Ebitengine and verifies its frame was saved.
 func captureStateScreenshot(t *testing.T, state *State, path string) {
 	t.Helper()

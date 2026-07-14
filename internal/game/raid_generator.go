@@ -3,8 +3,9 @@ package game
 import "math"
 
 const (
-	raidChallengeGrowthBase  = 1.2
-	raidProgressDurationBase = 5.0
+	raidChallengeGrowthBase            = 1.2
+	raidProgressDurationBase           = 5.0
+	raidProgressDurationChallengeScale = 2.0
 )
 
 type raidEnemyKind int
@@ -42,12 +43,17 @@ func generateRaid(raidNumber, settlementPopulation, plotsExplored int) raidTempl
 		(1+float64(settlementPopulation)/10) + 3
 	return raidTemplate{
 		challengeRating:         challengeRating,
-		progressDurationSeconds: raidProgressDurationBase + challengeRating,
+		progressDurationSeconds: raidProgressDuration(challengeRating),
 		enemyRules: []raidEnemyRule{
 			{kind: raidEnemySkeletonSwordShield, threshold: 2},
 			{kind: raidEnemyZombie, threshold: 4},
 		},
 	}
+}
+
+// raidProgressDuration returns the release window for a generated challenge.
+func raidProgressDuration(challengeRating float64) float64 {
+	return raidProgressDurationBase + raidProgressDurationChallengeScale*math.Sqrt(challengeRating)
 }
 
 // scheduledEnemyCount returns how many enemies one rule has scheduled at a challenge score.

@@ -96,6 +96,36 @@ func TestRaidProgressSpawnsAtFirstThreshold(t *testing.T) {
 	}
 }
 
+// TestLaterRaidReleasesMoreEnemiesAfterSameElapsedTime verifies increasing tempo.
+func TestLaterRaidReleasesMoreEnemiesAfterSameElapsedTime(t *testing.T) {
+	state := newRaidTestState(t)
+	state.status.populations.peasants = populationCount{available: 120, total: 120}
+	state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond = 0
+	state.enemyCatalog.Zombie.SpeedTilesPerSecond = 0
+	state.startNextRaid()
+
+	if state.raid.template.challengeRating != 16 || state.raid.template.progressDurationSeconds != 13 {
+		t.Fatalf("generated Raid = %+v, want challenge 16 and duration 13", state.raid.template)
+	}
+	state.updateRaidProgress(4)
+	if got, want := len(state.raid.enemies), 3; got != want {
+		t.Fatalf("active enemies after four seconds = %d, want %d", got, want)
+	}
+	if got, want := state.raid.pendingEnemies, 9; got != want {
+		t.Fatalf("pending enemies after four seconds = %d, want %d", got, want)
+	}
+	wantTemplates := []*EnemyTemplate{
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.SkeletonSwordShield,
+		&state.enemyCatalog.Zombie,
+	}
+	for i, want := range wantTemplates {
+		if state.raid.enemies[i].template != want {
+			t.Fatalf("enemy %d template = %p, want %p", i, state.raid.enemies[i].template, want)
+		}
+	}
+}
+
 // TestRaidProgressSpawnsSimultaneousRulesInTemplateOrder verifies the full baseline roster.
 func TestRaidProgressSpawnsSimultaneousRulesInTemplateOrder(t *testing.T) {
 	state := newRaidTestState(t)
