@@ -23,20 +23,21 @@ func TestGeneratedGrasslandsPlotUsesGrasslandsBiome(t *testing.T) {
 // TestGeneratedGrasslandsPlotCanContainObstacles verifies sparse terrain generation.
 func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 	var next uint16
-	plot := newGrasslandsPlotWithTweakSource(func() uint16 {
+	terrainRolls := repeatingTerrainRolls(0, 6, 9)
+	plot := newGrasslandsPlotWithSources(func() uint16 {
 		value := next
 		next++
 		return value
-	})
+	}, terrainRolls)
 
-	forests := 0
+	trees := 0
 	boulders := 0
 	empty := 0
 	for y := range plot.Tiles {
 		for x := range plot.Tiles[y] {
 			switch plot.Tiles[y][x].Terrain {
-			case terrainForest:
-				forests++
+			case terrainTree:
+				trees++
 			case terrainBoulder:
 				boulders++
 			case terrainEmpty:
@@ -46,8 +47,8 @@ func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 			}
 		}
 	}
-	if forests == 0 {
-		t.Fatal("expected deterministic grasslands generation to include forest")
+	if trees == 0 {
+		t.Fatal("expected deterministic grasslands generation to include Tree")
 	}
 	if boulders == 0 {
 		t.Fatal("expected deterministic grasslands generation to include Boulder")
@@ -57,61 +58,77 @@ func TestGeneratedGrasslandsPlotCanContainObstacles(t *testing.T) {
 	}
 }
 
-// TestDefaultHomePlotDoesNotGenerateForest verifies the starting Plot stays forgiving.
-func TestDefaultHomePlotDoesNotGenerateForest(t *testing.T) {
+// TestDefaultHomePlotDoesNotGenerateObstacles verifies the starting Plot stays forgiving.
+func TestDefaultHomePlotDoesNotGenerateObstacles(t *testing.T) {
 	plot := newDefaultHomePlotWithTweakSource(func() uint16 {
 		return 0
 	})
 
 	for y := range plot.Tiles {
 		for x := range plot.Tiles[y] {
-			if plot.Tiles[y][x].Terrain == terrainForest || plot.Tiles[y][x].Terrain == terrainBoulder {
+			if plot.Tiles[y][x].Terrain == terrainTree || plot.Tiles[y][x].Terrain == terrainBoulder {
 				t.Fatalf("home tile (%d,%d) terrain = %v, want no generated obstacle", x, y, plot.Tiles[y][x].Terrain)
 			}
 		}
 	}
 }
 
-// TestGrasslandsForestGenerationUsesTweakModulo verifies the sparse forest rule.
-func TestGrasslandsForestGenerationUsesTweakModulo(t *testing.T) {
-	if !grasslandsTileIsForest(grasslandsForestTweakModulo) {
-		t.Fatal("expected tweak matching forest modulo to generate forest")
-	}
-	if grasslandsTileIsForest(1) {
-		t.Fatal("expected tweak 1 to remain empty grass")
+// TestWeightedTerrainSelectsTree verifies Tree uses the first weight range.
+func TestWeightedTerrainSelectsTree(t *testing.T) {
+	weights := terrainWeights{Tree: 6, Boulder: 3}
+
+	for _, roll := range []int{0, 5} {
+		if got := weightedTerrain(weights, roll); got != terrainTree {
+			t.Fatalf("roll %d terrain = %v, want Tree", roll, got)
+		}
 	}
 }
 
-// TestGrasslandsBoulderGenerationUsesTweakModulo verifies the sparse Boulder rule.
-func TestGrasslandsBoulderGenerationUsesTweakModulo(t *testing.T) {
-	if !grasslandsTileIsBoulder(0) {
-		t.Fatal("expected tweak 0 to generate Boulder")
-	}
-	if !grasslandsTileIsBoulder(grasslandsBoulderTweakModulo) {
-		t.Fatal("expected tweak matching Boulder modulo to generate Boulder")
-	}
-	if grasslandsTileIsBoulder(1) {
-		t.Fatal("expected tweak 1 to avoid Boulder")
+// TestWeightedTerrainSelectsBoulder verifies Boulder follows Tree in the weight range.
+func TestWeightedTerrainSelectsBoulder(t *testing.T) {
+	weights := terrainWeights{Tree: 6, Boulder: 3}
+
+	for _, roll := range []int{6, 8} {
+		if got := weightedTerrain(weights, roll); got != terrainBoulder {
+			t.Fatalf("roll %d terrain = %v, want Boulder", roll, got)
+		}
 	}
 }
 
-// TestGrasslandsBoulderWinsOverForest verifies overlapping generation is deterministic.
-func TestGrasslandsBoulderWinsOverForest(t *testing.T) {
-	overlap := grasslandsForestTweakModulo * grasslandsBoulderTweakModulo
-	plot := newGrasslandsPlotWithTweakSource(func() uint16 {
-		return overlap
-	})
+// TestWeightedTerrainSelectsEmpty verifies unweighted percentages stay empty.
+func TestWeightedTerrainSelectsEmpty(t *testing.T) {
+	weights := terrainWeights{Tree: 6, Boulder: 3}
 
-	if plot.Tiles[0][0].Terrain != terrainBoulder {
-		t.Fatalf("overlap terrain = %v, want Boulder", plot.Tiles[0][0].Terrain)
+	for _, roll := range []int{9, 99} {
+		if got := weightedTerrain(weights, roll); got != terrainEmpty {
+			t.Fatalf("roll %d terrain = %v, want empty", roll, got)
+		}
+	}
+}
+
+// TestWeightedTerrainRejectsInvalidWeights verifies invalid percentages fall back to empty.
+func TestWeightedTerrainRejectsInvalidWeights(t *testing.T) {
+	for _, weights := range []terrainWeights{
+		{Tree: -1, Boulder: 3},
+		{Tree: 6, Boulder: -1},
+		{Tree: 75, Boulder: 50},
+	} {
+		if got := weightedTerrain(weights, 0); got != terrainEmpty {
+			t.Fatalf("weights %+v terrain = %v, want empty", weights, got)
+		}
+	}
+	for _, roll := range []int{-1, 100} {
+		if got := weightedTerrain(terrainWeights{Tree: 6, Boulder: 3}, roll); got != terrainEmpty {
+			t.Fatalf("roll %d terrain = %v, want empty", roll, got)
+		}
 	}
 }
 
 // TestNorthRoadOverridesGeneratedBoulder verifies road generation protects Raid paths.
 func TestNorthRoadOverridesGeneratedBoulder(t *testing.T) {
-	plot := newGrasslandsPlotWithTweakSource(func() uint16 {
+	plot := newGrasslandsPlotWithSources(func() uint16 {
 		return 0
-	})
+	}, constantTerrainRoll(6))
 
 	applyNorthRoadIfNeeded(plotCoordinate{X: 0, Y: 1}, &plot)
 
@@ -126,9 +143,9 @@ func TestNorthRoadOverridesGeneratedBoulder(t *testing.T) {
 func TestSharedEdgeClearingOverridesGeneratedBoulder(t *testing.T) {
 	gameMap := NewDefaultMap()
 	coord := plotCoordinate{X: 1, Y: 0}
-	plot := newGrasslandsPlotWithTweakSource(func() uint16 {
+	plot := newGrasslandsPlotWithSources(func() uint16 {
 		return 0
-	})
+	}, constantTerrainRoll(6))
 	gameMap.Plots[coord] = &plot
 
 	gameMap.clearSharedEdges(coord)
@@ -140,5 +157,22 @@ func TestSharedEdgeClearingOverridesGeneratedBoulder(t *testing.T) {
 		if gameMap.Home.Tiles[y][plotSize-1].Terrain != terrainEmpty {
 			t.Fatalf("home east edge y=%d terrain = %v, want empty", y, gameMap.Home.Tiles[y][plotSize-1].Terrain)
 		}
+	}
+}
+
+// constantTerrainRoll returns a terrain roll source that always returns one value.
+func constantTerrainRoll(roll int) func() int {
+	return func() int {
+		return roll
+	}
+}
+
+// repeatingTerrainRolls returns a terrain roll source that cycles through values.
+func repeatingTerrainRolls(rolls ...int) func() int {
+	var next int
+	return func() int {
+		roll := rolls[next%len(rolls)]
+		next++
+		return roll
 	}
 }

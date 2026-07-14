@@ -39,15 +39,15 @@ func (s *State) drawPlotTile(screen *ebiten.Image, viewport sceneViewport, plot 
 	switch tile.Terrain {
 	case terrainRoad:
 		tileColor = colors.roadTile
-	case terrainForest:
-		tileColor = colors.forestTile
+	case terrainTree:
+		tileColor = colors.treeTile
 	case terrainBoulder:
 		tileColor = colors.boulderTile
 	}
 	vector.FillRect(screen, rect.x, rect.y, rect.w, rect.h, tileColor, false)
 	vector.StrokeRect(screen, rect.x, rect.y, rect.w, rect.h, 1, colors.tileGrid, false)
 
-	if tile.Terrain == terrainForest {
+	if tile.Terrain == terrainTree {
 		s.drawPineTree(screen, rect.x, rect.y, rect.w, tile)
 	}
 	if tile.Terrain == terrainBoulder {

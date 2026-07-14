@@ -45,7 +45,7 @@ type tileTerrain int
 const (
 	terrainEmpty tileTerrain = iota
 	terrainRoad
-	terrainForest
+	terrainTree
 	terrainBoulder
 )
 

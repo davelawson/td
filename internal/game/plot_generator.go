@@ -2,10 +2,16 @@ package game
 
 import "math/rand"
 
-const (
-	grasslandsForestTweakModulo  uint16 = 17
-	grasslandsBoulderTweakModulo uint16 = 29
-)
+var grasslandsTerrainWeights = terrainWeights{
+	Tree:    6,
+	Boulder: 3,
+}
+
+// terrainWeights describes percentage chances for generated terrain in a Tile.
+type terrainWeights struct {
+	Tree    int
+	Boulder int
+}
 
 // NewDefaultHomePlot creates the grassland starting Plot with a Sanctum and north road.
 func NewDefaultHomePlot() Plot {
@@ -24,22 +30,16 @@ func newDefaultHomePlotWithTweakSource(nextTweak func() uint16) Plot {
 
 // NewGrasslandsPlot creates a generated grasslands Plot for exploration.
 func NewGrasslandsPlot() Plot {
-	return newGrasslandsPlotWithTweakSource(randomTileTweak)
+	return newGrasslandsPlotWithSources(randomTileTweak, randomTerrainRoll)
 }
 
-// newGrasslandsPlotWithTweakSource creates a grasslands Plot with caller-provided Tile tweaks.
-func newGrasslandsPlotWithTweakSource(nextTweak func() uint16) Plot {
+// newGrasslandsPlotWithSources creates a grasslands Plot with caller-provided random sources.
+func newGrasslandsPlotWithSources(nextTweak func() uint16, nextTerrainRoll func() int) Plot {
 	plot := newOpenGrasslandsPlotWithTweakSource(nextTweak)
 	for y := 0; y < plotSize; y++ {
 		for x := 0; x < plotSize; x++ {
 			tile := &plot.Tiles[y][x]
-			if grasslandsTileIsBoulder(tile.Tweak) {
-				tile.Terrain = terrainBoulder
-				continue
-			}
-			if grasslandsTileIsForest(tile.Tweak) {
-				tile.Terrain = terrainForest
-			}
+			tile.Terrain = weightedTerrain(grasslandsTerrainWeights, nextTerrainRoll())
 		}
 	}
 	return plot
@@ -57,14 +57,21 @@ func newOpenGrasslandsPlotWithTweakSource(nextTweak func() uint16) Plot {
 	return plot
 }
 
-// grasslandsTileIsForest reports whether a grasslands Tile should contain sparse forest.
-func grasslandsTileIsForest(tweak uint16) bool {
-	return tweak%grasslandsForestTweakModulo == 0
-}
-
-// grasslandsTileIsBoulder reports whether a grasslands Tile should contain sparse Boulder.
-func grasslandsTileIsBoulder(tweak uint16) bool {
-	return tweak%grasslandsBoulderTweakModulo == 0
+// weightedTerrain returns the generated terrain selected by a percentage roll.
+func weightedTerrain(weights terrainWeights, roll int) tileTerrain {
+	if weights.Tree < 0 || weights.Boulder < 0 || weights.Tree+weights.Boulder > 100 {
+		return terrainEmpty
+	}
+	if roll < 0 || roll >= 100 {
+		return terrainEmpty
+	}
+	if roll < weights.Tree {
+		return terrainTree
+	}
+	if roll < weights.Tree+weights.Boulder {
+		return terrainBoulder
+	}
+	return terrainEmpty
 }
 
 // newTile creates one Tile with its prototype variation tweak assigned.
@@ -77,4 +84,9 @@ func newTile(nextTweak func() uint16) Tile {
 // randomTileTweak returns a random unsigned 16-bit value for Tile variation.
 func randomTileTweak() uint16 {
 	return uint16(rand.Intn(1 << 16))
+}
+
+// randomTerrainRoll returns a random percentage roll for generated terrain.
+func randomTerrainRoll() int {
+	return rand.Intn(100)
 }
