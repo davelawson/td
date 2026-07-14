@@ -228,6 +228,9 @@ func TestPostRaidLabourGrantsEconomicBuildingResources(t *testing.T) {
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
 	state.gameMap.Home.Tiles[5][homePlotCenter+3].Feature = featureStoneQuarry
 	state.gameMap.Home.Tiles[5][homePlotCenter+4].Feature = featureIronMine
+	state.gameMap.Home.Tiles[6][homePlotCenter+2].Terrain = terrainTree
+	state.gameMap.Home.Tiles[6][homePlotCenter+3].Terrain = terrainBoulder
+	state.gameMap.Home.Tiles[6][homePlotCenter+4].Terrain = terrainIronDeposit
 	startingResources := state.status.resources
 
 	state.completeRaid()
@@ -248,6 +251,7 @@ func TestRaidBreachDoesNotResolveLabour(t *testing.T) {
 	state := newRaidTestState(t)
 	state.status.barricade = 0
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
+	state.gameMap.Home.Tiles[5][homePlotCenter+3].Terrain = terrainTree
 	step := state.enemyCatalog.SkeletonSwordShield.SpeedTilesPerSecond * gameUpdateSeconds
 	state.raid = raidState{
 		active:   true,

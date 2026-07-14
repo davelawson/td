@@ -54,6 +54,48 @@ func TestCaptureSelectedIronDepositScreenshot(t *testing.T) {
 	captureStateScreenshot(t, state, path)
 }
 
+// TestCaptureTerrainProductionBeforeScreenshot records a producer and its selected source.
+func TestCaptureTerrainProductionBeforeScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state := newTerrainProductionScreenshotState(t)
+	path := filepath.Join(
+		"..", "..", "plans", "57-terrain-consuming-resource-production", "screenshots", "terrain-production-before.png",
+	)
+	captureStateScreenshot(t, state, path)
+}
+
+// TestCaptureTerrainProductionAfterScreenshot records the terrain and resource result after Labour.
+func TestCaptureTerrainProductionAfterScreenshot(t *testing.T) {
+	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {
+		t.Skip("set TD_CAPTURE_SCREENSHOT to capture visual evidence")
+	}
+
+	state := newTerrainProductionScreenshotState(t)
+	state.beginPostRaidDay()
+	path := filepath.Join(
+		"..", "..", "plans", "57-terrain-consuming-resource-production", "screenshots", "terrain-production-after.png",
+	)
+	captureStateScreenshot(t, state, path)
+}
+
+func newTerrainProductionScreenshotState(t *testing.T) *State {
+	t.Helper()
+	state, err := New("Merlin", 1920, 1080)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clearNaturalTerrain(&state.gameMap.Home)
+	producer := homeTileCoordinate(homePlotCenter+2, homePlotCenter)
+	source := homeTileCoordinate(homePlotCenter+4, homePlotCenter)
+	state.gameMap.Home.Tiles[producer.Y][producer.X].Feature = featureWoodcutter
+	state.gameMap.Home.Tiles[source.Y][source.X] = Tile{Terrain: terrainTree, Tweak: 1}
+	state.selection = selectedItem{kind: selectedItemTerrain, tile: source}
+	return state
+}
+
 // TestCaptureActiveRaidScreenshot writes focused phase-aware Raid UI evidence when enabled.
 func TestCaptureActiveRaidScreenshot(t *testing.T) {
 	if os.Getenv("TD_CAPTURE_SCREENSHOT") == "" {

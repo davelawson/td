@@ -98,7 +98,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		Woodcutter: StructureTemplate{
 			Name:          "Woodcutter",
-			Description:   "Assigns a Peasant to bring in Wood during Labour.",
+			Description:   "Consumes the nearest Tree in the explored Domain to produce Wood during Labour.",
 			Sprite:        assetCatalog.Sprite.Structure.Woodcutter,
 			Cost:          Resources{Wood: 10},
 			Staffing:      StaffingRequirements{Peasants: 1},
@@ -106,7 +106,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		StoneQuarry: StructureTemplate{
 			Name:          "Stone Quarry",
-			Description:   "Assigns a Peasant to quarry Stone during Labour.",
+			Description:   "Consumes the nearest Boulder in the explored Domain to produce Stone during Labour.",
 			Sprite:        assetCatalog.Sprite.Structure.StoneQuarry,
 			Cost:          Resources{Wood: 10, Stone: 10},
 			Staffing:      StaffingRequirements{Peasants: 1},
@@ -114,7 +114,7 @@ func NewStructureCatalog(assetCatalog assets.Catalog) StructureCatalog {
 		},
 		IronMine: StructureTemplate{
 			Name:          "Iron Mine",
-			Description:   "Assigns a Peasant to extract Metal during Labour.",
+			Description:   "Consumes the nearest Iron Deposit in the explored Domain to produce Metal during Labour.",
 			Sprite:        assetCatalog.Sprite.Structure.IronMine,
 			Cost:          Resources{Wood: 10, Stone: 10, Metal: 10},
 			Staffing:      StaffingRequirements{Peasants: 1},

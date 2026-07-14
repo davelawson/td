@@ -189,37 +189,44 @@ func TestNewStructureCatalogIncludesEconomicBuildings(t *testing.T) {
 
 	catalog := NewStructureCatalog(assetCatalog)
 	tests := []struct {
-		name     string
-		template StructureTemplate
-		sprite   any
-		cost     Resources
-		yield    Resources
+		name        string
+		description string
+		template    StructureTemplate
+		sprite      any
+		cost        Resources
+		yield       Resources
 	}{
 		{
-			name:     "Woodcutter",
-			template: catalog.Woodcutter,
-			sprite:   assetCatalog.Sprite.Structure.Woodcutter,
-			cost:     Resources{Wood: 10},
-			yield:    Resources{Wood: 10},
+			name:        "Woodcutter",
+			description: "Consumes the nearest Tree in the explored Domain to produce Wood during Labour.",
+			template:    catalog.Woodcutter,
+			sprite:      assetCatalog.Sprite.Structure.Woodcutter,
+			cost:        Resources{Wood: 10},
+			yield:       Resources{Wood: 10},
 		},
 		{
-			name:     "Stone Quarry",
-			template: catalog.StoneQuarry,
-			sprite:   assetCatalog.Sprite.Structure.StoneQuarry,
-			cost:     Resources{Wood: 10, Stone: 10},
-			yield:    Resources{Stone: 10},
+			name:        "Stone Quarry",
+			description: "Consumes the nearest Boulder in the explored Domain to produce Stone during Labour.",
+			template:    catalog.StoneQuarry,
+			sprite:      assetCatalog.Sprite.Structure.StoneQuarry,
+			cost:        Resources{Wood: 10, Stone: 10},
+			yield:       Resources{Stone: 10},
 		},
 		{
-			name:     "Iron Mine",
-			template: catalog.IronMine,
-			sprite:   assetCatalog.Sprite.Structure.IronMine,
-			cost:     Resources{Wood: 10, Stone: 10, Metal: 10},
-			yield:    Resources{Metal: 10},
+			name:        "Iron Mine",
+			description: "Consumes the nearest Iron Deposit in the explored Domain to produce Metal during Labour.",
+			template:    catalog.IronMine,
+			sprite:      assetCatalog.Sprite.Structure.IronMine,
+			cost:        Resources{Wood: 10, Stone: 10, Metal: 10},
+			yield:       Resources{Metal: 10},
 		},
 	}
 	for _, test := range tests {
 		if test.template.Name != test.name {
 			t.Fatalf("%s name = %q, want %q", test.name, test.template.Name, test.name)
+		}
+		if test.template.Description != test.description {
+			t.Fatalf("%s description = %q, want %q", test.name, test.template.Description, test.description)
 		}
 		if test.template.Sprite != test.sprite {
 			t.Fatalf("%s sprite should reference the loaded asset catalog sprite", test.name)

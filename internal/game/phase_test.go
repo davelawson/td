@@ -10,6 +10,7 @@ import (
 func TestPostRaidDayResolvesLabourBeforeManagement(t *testing.T) {
 	state := newRaidTestState(t)
 	state.gameMap.Home.Tiles[5][homePlotCenter+2].Feature = featureWoodcutter
+	state.gameMap.Home.Tiles[5][homePlotCenter+3].Terrain = terrainTree
 	startingWood := state.status.resources.wood
 
 	state.beginPostRaidDay()
@@ -40,6 +41,7 @@ func TestManagementProducerWaitsForNextLabour(t *testing.T) {
 	if state.status.resources.wood != startingWood-state.structureCatalog.Woodcutter.Cost.Wood {
 		t.Fatalf("wood after construction = %d, want only the construction cost deducted", state.status.resources.wood)
 	}
+	state.gameMap.Home.Tiles[5][homePlotCenter+3].Terrain = terrainTree
 	state.beginPostRaidDay()
 	if state.status.resources.wood != startingWood {
 		t.Fatalf("wood after Labour = %d, want %d", state.status.resources.wood, startingWood)
